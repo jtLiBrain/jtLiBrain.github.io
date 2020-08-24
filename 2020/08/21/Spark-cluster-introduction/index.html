@@ -23,15 +23,21 @@
     var CONFIG = {"hostname":"jtlibrain.github.io","root":"/","scheme":"Gemini","version":"8.0.0-rc.5","exturl":false,"sidebar":{"position":"left","display":"hide","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false};
   </script>
 
-  <meta property="og:type" content="website">
-<meta property="og:title" content="jtLiBrain">
-<meta property="og:url" content="https://jtlibrain.github.io/categories/spark/index.html">
+  <meta name="description" content="本文从宏观的角度上介绍了Spark集群，本站其它Spark文章将以本篇文章为基础进行详细阐述。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Spark集群概述">
+<meta property="og:url" content="https://jtlibrain.github.io/2020/08/21/Spark-cluster-introduction/index.html">
 <meta property="og:site_name" content="jtLiBrain">
+<meta property="og:description" content="本文从宏观的角度上介绍了Spark集群，本站其它Spark文章将以本篇文章为基础进行详细阐述。">
 <meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://jtlibrain.github.io/images/spark/spark-component-overview.svg">
+<meta property="article:published_time" content="2020-08-21T14:49:31.000Z">
+<meta property="article:modified_time" content="2020-08-24T01:24:13.820Z">
 <meta property="article:author" content="JT Li">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://jtlibrain.github.io/images/spark/spark-component-overview.svg">
 
-<link rel="canonical" href="https://jtlibrain.github.io/categories/spark/">
+<link rel="canonical" href="https://jtlibrain.github.io/2020/08/21/Spark-cluster-introduction/">
 
 
 <script class="page-configurations">
@@ -39,12 +45,12 @@
   CONFIG.page = {
     sidebar: "",
     isHome : false,
-    isPost : false,
+    isPost : true,
     lang   : 'en'
   };
 </script>
 
-  <title>Category: spark | jtLiBrain</title>
+  <title>Spark集群概述 | jtLiBrain</title>
   
 
 
@@ -151,7 +157,7 @@
 
   <aside class="sidebar">
 
-    <div class="sidebar-inner sidebar-overview-active">
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
       <ul class="sidebar-nav">
         <li class="sidebar-nav-toc">
           Table of Contents
@@ -163,6 +169,7 @@
 
       <!--noindex-->
       <section class="post-toc-wrap sidebar-panel">
+          <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Spark%E9%9B%86%E7%BE%A4%E6%A6%82%E8%A7%88"><span class="nav-number">1.</span> <span class="nav-text">Spark集群概览</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#TODO"><span class="nav-number">2.</span> <span class="nav-text">TODO</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#NOTEs"><span class="nav-number">3.</span> <span class="nav-text">NOTEs</span></a></li></ol></div>
       </section>
       <!--/noindex-->
 
@@ -217,117 +224,104 @@
       <div class="main-inner">
         
 
-        <div class="content category">
+        <div class="content post posts-expand">
           
 
+    
   
   
-  
-  <div class="post-block">
-    <div class="posts-collapse">
-      <div class="collection-title">
-        <h2 class="collection-header">spark
-          <small>Category</small>
-        </h2>
-      </div>
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://jtlibrain.github.io/2020/08/21/Spark-cluster-introduction/">
 
-      
-    <div class="collection-year">
-      <span class="collection-header">2020</span>
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="JT Li">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="jtLiBrain">
+    </span>
+
+    
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Spark集群概述
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2020-08-21 22:49:31" itemprop="dateCreated datePublished" datetime="2020-08-21T22:49:31+08:00">2020-08-21</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2020-08-24 09:24:13" itemprop="dateModified" datetime="2020-08-24T09:24:13+08:00">2020-08-24</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/spark/" itemprop="url" rel="index"><span itemprop="name">spark</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p>本文从宏观的角度上介绍了Spark集群，本站其它Spark文章将以本篇文章为基础进行详细阐述。</p>
+<a id="more"></a>
+
+<h1 id="Spark集群概览"><a href="#Spark集群概览" class="headerlink" title="Spark集群概览"></a>Spark集群概览</h1><p>下图以Spark On Yarn的Client模式为例，描述了Spark集群在运行时各主要组件的结构状态。其它类型的Spark集群与此会略有不同。</p>
+<p><img src="/images/spark/spark-component-overview.svg"></p>
+<h1 id="TODO"><a href="#TODO" class="headerlink" title="TODO"></a>TODO</h1><h1 id="NOTEs"><a href="#NOTEs" class="headerlink" title="NOTEs"></a>NOTEs</h1><p>本文以Spark 2.4.3为基础。</p>
+
     </div>
 
-  <article itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
+    
+    
+    
 
-      <div class="post-meta">
-        <time itemprop="dateCreated"
-              datetime="2020-08-21T22:49:31+08:00"
-              content="2020-08-21">
-          08-21
-        </time>
-      </div>
+      <footer class="post-footer">
 
-      <div class="post-title">
-          <a class="post-title-link" href="/2020/08/21/Spark-cluster-introduction/" itemprop="url">
-            <span itemprop="name">Spark集群概述</span>
-          </a>
-      </div>
+        
 
-    </header>
-  </article>
 
-  <article itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <div class="post-meta">
-        <time itemprop="dateCreated"
-              datetime="2020-08-20T11:40:18+08:00"
-              content="2020-08-20">
-          08-20
-        </time>
-      </div>
-
-      <div class="post-title">
-          <a class="post-title-link" href="/2020/08/20/spark-on-yarn-details/" itemprop="url">
-            <span itemprop="name">Spark On Yarn原理</span>
-          </a>
-      </div>
-
-    </header>
-  </article>
-
-  <article itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <div class="post-meta">
-        <time itemprop="dateCreated"
-              datetime="2020-08-14T09:43:00+08:00"
-              content="2020-08-14">
-          08-14
-        </time>
-      </div>
-
-      <div class="post-title">
-          <a class="post-title-link" href="/2020/08/14/Spark-rpc-details/" itemprop="url">
-            <span itemprop="name">Spark RPC原理</span>
-          </a>
-      </div>
-
-    </header>
-  </article>
-
-  <article itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <div class="post-meta">
-        <time itemprop="dateCreated"
-              datetime="2020-08-05T16:37:46+08:00"
-              content="2020-08-05">
-          08-05
-        </time>
-      </div>
-
-      <div class="post-title">
-          <a class="post-title-link" href="/2020/08/05/Spark-shuffle-writer/" itemprop="url">
-            <span itemprop="name">Spark shuffle writer</span>
-          </a>
-      </div>
-
-    </header>
-  </article>
-
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/08/20/spark-on-yarn-details/" rel="prev" title="Spark On Yarn原理">
+      <i class="fa fa-chevron-left"></i> Spark On Yarn原理
+    </a></div>
+      <div class="post-nav-item"></div>
     </div>
-  </div>
+      </footer>
+    
+  </article>
   
   
-  
-
   
 
 
 
         </div>
         
+    <div class="comments" id="gitalk-container"></div>
 
 <script>
   window.addEventListener('tabs:register', () => {
@@ -418,6 +412,25 @@
 
   
 
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1.6.2/dist/gitalk.css">
+
+<script>
+NexT.utils.loadComments('#gitalk-container', () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1.6.2/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : 'c94aa78cf2eda71757bf',
+      clientSecret: '01e1353b3f8eac54aafb1224c784b7af0305ce8c',
+      repo        : 'jtLiBrain.github.io',
+      owner       : 'jtLiBrain',
+      admin       : ['jtLiBrain'],
+      id          : 'ffb7317e682acdfc58adc7adca84e201',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
 
 </body>
 </html>
