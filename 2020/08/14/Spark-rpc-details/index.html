@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.0.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.14.0/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css">
+
+<script class="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"jtlibrain.github.io","root":"/","scheme":"Gemini","version":"8.0.0-rc.5","exturl":false,"sidebar":{"position":"left","display":"hide","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false};
+  </script>
+
+  <meta name="description" content="Spark中的RPC整体上来讲分为两层：分发层和传输层。本文中，我们将对Spark RPC框架进行详细阐述。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Spark RPC原理">
+<meta property="og:url" content="https://jtlibrain.github.io/2020/08/14/Spark-rpc-details/index.html">
+<meta property="og:site_name" content="jtLiBrain">
+<meta property="og:description" content="Spark中的RPC整体上来讲分为两层：分发层和传输层。本文中，我们将对Spark RPC框架进行详细阐述。">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://jtlibrain.github.io/images/spark/rpc-classes.svg">
+<meta property="og:image" content="https://jtlibrain.github.io/images/spark/dispatcher-process-details.svg">
+<meta property="article:published_time" content="2020-08-14T01:43:00.000Z">
+<meta property="article:modified_time" content="2020-08-24T01:24:46.081Z">
+<meta property="article:author" content="JT Li">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://jtlibrain.github.io/images/spark/rpc-classes.svg">
+
+<link rel="canonical" href="https://jtlibrain.github.io/2020/08/14/Spark-rpc-details/">
+
+
+<script class="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>Spark RPC原理 | jtLiBrain</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  body { margin-top: 2rem; }
+
+  .use-motion .menu-item,
+  .use-motion .sidebar,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header {
+    visibility: visible;
+  }
+
+  .use-motion .header,
+  .use-motion .site-brand-container .toggle,
+  .use-motion .footer { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle,
+  .use-motion .custom-logo-image {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line {
+    transform: scaleX(1);
+  }
+
+  .search-pop-overlay, .sidebar-nav { display: none; }
+  .sidebar-panel { display: block; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <main class="main">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+        <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">jtLiBrain</h1>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">任何伟大的事都不会一蹴而就，三分智慧，七分韧性</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <section class="post-toc-wrap sidebar-panel">
+          <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%B1%BB%E5%9B%BE"><span class="nav-number">1.</span> <span class="nav-text">类图</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%B6%88%E6%81%AF%E5%88%86%E5%8F%91"><span class="nav-number">2.</span> <span class="nav-text">消息分发</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#RpcEndpoint"><span class="nav-number">2.1.</span> <span class="nav-text">RpcEndpoint</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#RpcEndpointRef"><span class="nav-number">2.2.</span> <span class="nav-text">RpcEndpointRef</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#NettyRpcEndpointRef"><span class="nav-number">2.2.1.</span> <span class="nav-text">NettyRpcEndpointRef</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Inbox"><span class="nav-number">2.3.</span> <span class="nav-text">Inbox</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#RpcEndpointData"><span class="nav-number">2.4.</span> <span class="nav-text">RpcEndpointData</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Dispatcher"><span class="nav-number">2.5.</span> <span class="nav-text">Dispatcher</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B3%A8%E5%86%8CEndpoint"><span class="nav-number">2.5.1.</span> <span class="nav-text">注册Endpoint</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%91%E9%80%81%E6%B6%88%E6%81%AF"><span class="nav-number">2.5.2.</span> <span class="nav-text">发送消息</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A4%84%E7%90%86RpcEndpointData%E6%B6%88%E6%81%AF"><span class="nav-number">2.5.3.</span> <span class="nav-text">处理RpcEndpointData消息</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%B6%88%E6%81%AF%E4%BC%A0%E8%BE%93"><span class="nav-number">3.</span> <span class="nav-text">消息传输</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#TODO"><span class="nav-number">4.</span> <span class="nav-text">TODO</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#NOTEs"><span class="nav-number">5.</span> <span class="nav-text">NOTEs</span></a></li></ol></div>
+      </section>
+      <!--/noindex-->
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">JT Li</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives">
+          <span class="site-state-item-count">8</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="mailto:jtli.brain@hotmail.com" title="E-Mail → mailto:jtli.brain@hotmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </section>
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </header>
+
+      
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div id="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+      <div class="main-inner">
+        
+
+        <div class="content post posts-expand">
+          
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://jtlibrain.github.io/2020/08/14/Spark-rpc-details/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="JT Li">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="jtLiBrain">
+    </span>
+
+    
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Spark RPC原理
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2020-08-14 09:43:00" itemprop="dateCreated datePublished" datetime="2020-08-14T09:43:00+08:00">2020-08-14</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2020-08-24 09:24:46" itemprop="dateModified" datetime="2020-08-24T09:24:46+08:00">2020-08-24</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/spark/" itemprop="url" rel="index"><span itemprop="name">spark</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p>Spark中的RPC整体上来讲分为两层：分发层和传输层。本文中，我们将对Spark RPC框架进行详细阐述。</p>
+<a id="more"></a>
+
+<h1 id="类图"><a href="#类图" class="headerlink" title="类图"></a>类图</h1><p><img src="/images/spark/rpc-classes.svg"></p>
+<h1 id="消息分发"><a href="#消息分发" class="headerlink" title="消息分发"></a>消息分发</h1><p><img src="/images/spark/dispatcher-process-details.svg"></p>
+<p>上图中描述了<code>Dispatcher</code>内部消息的处理过程：</p>
+<ol>
+<li>接收注册<code>Endpoint</code>的请求，将<code>RpcEndpoint</code>进一步封装为<code>EndpointData</code>后注册到<code>Dispatcher</code>的Map结构中（其中，key为Endpoint名称），并同时将该<code>EndpointData</code>添加到<code>EndpointData消息队列</code>，以处理其内部<code>Inbox</code>中默认的<code>OnStart</code>消息；</li>
+<li>在发布消息时，根据请求的<code>endpointName</code>，在注册表中检索相应的<code>EndpointData</code>，将要发送的<code>InboxMessage</code>消息添加到Inbox中，并同时将该<code>EndpointData</code>添加到<code>EndpointData消息队列</code>；</li>
+<li><code>MessageLoop</code>线程池从<code>EndpointData消息队列</code>进行消费，每个<code>MessageLoop</code>线程一次处理一个<code>EndpointData</code>，从其<code>Inbox</code>中一次拉取一个消息对象，根据该消息对象的类型调用<code>RpcEndpoint</code>中相应的方法进行处理；</li>
+</ol>
+<h2 id="RpcEndpoint"><a href="#RpcEndpoint" class="headerlink" title="RpcEndpoint"></a>RpcEndpoint</h2><p>首先，我们来理解一下何为<code>EndPoint</code>？<code>EndPoint</code>可以理解为RPC调用的最终方法载体，它内部定义了响应InboxMessage消息所需的不同处理方法。</p>
+<h2 id="RpcEndpointRef"><a href="#RpcEndpointRef" class="headerlink" title="RpcEndpointRef"></a>RpcEndpointRef</h2><p>RpcEndpointRef是RpcEndpoint的引用，它是关联了地址信息并拥有具体名称的实体，最主要的它内部定义了供发送消息的具体接口，其中：</p>
+<ul>
+<li>send()方法发送的消息，最终由RpcEndpoint.receive()处理；</li>
+<li>ask()/askSync()方法发送的消息，最终由RpcEndpoint.receiveAndReply()处理；</li>
+</ul>
+<h3 id="NettyRpcEndpointRef"><a href="#NettyRpcEndpointRef" class="headerlink" title="NettyRpcEndpointRef"></a>NettyRpcEndpointRef</h3><p>（待）</p>
+<h2 id="Inbox"><a href="#Inbox" class="headerlink" title="Inbox"></a>Inbox</h2><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span>[netty] <span class="class"><span class="keyword">class</span> <span class="title">Inbox</span>(<span class="params"></span></span></span><br><span class="line"><span class="class"><span class="params">    val endpointRef: <span class="type">NettyRpcEndpointRef</span>,</span></span></span><br><span class="line"><span class="class"><span class="params">    val endpoint: <span class="type">RpcEndpoint</span></span>)</span></span><br><span class="line"><span class="class">  <span class="keyword">extends</span> <span class="title">Logging</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">  <span class="meta">@GuardedBy</span>(<span class="string">&quot;this&quot;</span>)</span><br><span class="line">  <span class="keyword">protected</span> <span class="keyword">val</span> messages = <span class="keyword">new</span> java.util.<span class="type">LinkedList</span>[<span class="type">InboxMessage</span>]()</span><br><span class="line"></span><br><span class="line">  <span class="comment">// OnStart should be the first message to process</span></span><br><span class="line">  inbox.synchronized &#123;</span><br><span class="line">    messages.add(<span class="type">OnStart</span>) <span class="comment">// Inbox实例化时默认添加了OnStart消息</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<p>process()中定义了针对不同类型的消息调用endpoint的相应方法；因为每次注册新的Endpoint，RpcEndpointData中的Inbox都会默认添加一个OnStart消息，相应的endpoint.onStart()也会第一时间得到处理。</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">process</span></span>(dispatcher: <span class="type">Dispatcher</span>): <span class="type">Unit</span> = &#123;</span><br><span class="line">  <span class="keyword">var</span> message: <span class="type">InboxMessage</span> = <span class="literal">null</span></span><br><span class="line">  inbox.synchronized &#123;</span><br><span class="line">    <span class="keyword">if</span> (!enableConcurrent &amp;&amp; numActiveThreads != <span class="number">0</span>) &#123;</span><br><span class="line">      <span class="keyword">return</span></span><br><span class="line">    &#125;</span><br><span class="line">    message = messages.poll()</span><br><span class="line">    <span class="keyword">if</span> (message != <span class="literal">null</span>) &#123;</span><br><span class="line">      numActiveThreads += <span class="number">1</span></span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      <span class="keyword">return</span></span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">while</span> (<span class="literal">true</span>) &#123;</span><br><span class="line">    safelyCall(endpoint) &#123;</span><br><span class="line">      message <span class="keyword">match</span> &#123;</span><br><span class="line">        <span class="keyword">case</span> <span class="type">RpcMessage</span>(_sender, content, context) =&gt;</span><br><span class="line">          <span class="keyword">try</span> &#123;</span><br><span class="line">            endpoint.receiveAndReply(context).applyOrElse[<span class="type">Any</span>, <span class="type">Unit</span>](content, &#123; msg =&gt;</span><br><span class="line">              <span class="keyword">throw</span> <span class="keyword">new</span> <span class="type">SparkException</span>(<span class="string">s&quot;Unsupported message <span class="subst">$message</span> from <span class="subst">$&#123;_sender&#125;</span>&quot;</span>)</span><br><span class="line">            &#125;)</span><br><span class="line">          &#125; <span class="keyword">catch</span> &#123;</span><br><span class="line">            <span class="keyword">case</span> e: <span class="type">Throwable</span> =&gt;</span><br><span class="line">              context.sendFailure(e)</span><br><span class="line">              <span class="comment">// Throw the exception -- this exception will be caught by the safelyCall function.</span></span><br><span class="line">              <span class="comment">// The endpoint&#x27;s onError function will be called.</span></span><br><span class="line">              <span class="keyword">throw</span> e</span><br><span class="line">          &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">case</span> <span class="type">OneWayMessage</span>(_sender, content) =&gt;</span><br><span class="line">          endpoint.receive.applyOrElse[<span class="type">Any</span>, <span class="type">Unit</span>](content, &#123; msg =&gt;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> <span class="type">SparkException</span>(<span class="string">s&quot;Unsupported message <span class="subst">$message</span> from <span class="subst">$&#123;_sender&#125;</span>&quot;</span>)</span><br><span class="line">          &#125;)</span><br><span class="line"></span><br><span class="line">        <span class="keyword">case</span> <span class="type">OnStart</span> =&gt;</span><br><span class="line">          endpoint.onStart()</span><br><span class="line">          <span class="keyword">if</span> (!endpoint.isInstanceOf[<span class="type">ThreadSafeRpcEndpoint</span>]) &#123;</span><br><span class="line">            inbox.synchronized &#123;</span><br><span class="line">              <span class="keyword">if</span> (!stopped) &#123;</span><br><span class="line">                enableConcurrent = <span class="literal">true</span></span><br><span class="line">              &#125;</span><br><span class="line">            &#125;</span><br><span class="line">          &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">case</span> <span class="type">OnStop</span> =&gt;</span><br><span class="line">          <span class="keyword">val</span> activeThreads = inbox.synchronized &#123; inbox.numActiveThreads &#125;</span><br><span class="line">          assert(activeThreads == <span class="number">1</span>,</span><br><span class="line">            <span class="string">s&quot;There should be only a single active thread but found <span class="subst">$activeThreads</span> threads.&quot;</span>)</span><br><span class="line">          dispatcher.removeRpcEndpointRef(endpoint)</span><br><span class="line">          endpoint.onStop()</span><br><span class="line">          assert(isEmpty, <span class="string">&quot;OnStop should be the last message&quot;</span>)</span><br><span class="line"></span><br><span class="line">        <span class="keyword">case</span> <span class="type">RemoteProcessConnected</span>(remoteAddress) =&gt;</span><br><span class="line">          endpoint.onConnected(remoteAddress)</span><br><span class="line"></span><br><span class="line">        <span class="keyword">case</span> <span class="type">RemoteProcessDisconnected</span>(remoteAddress) =&gt;</span><br><span class="line">          endpoint.onDisconnected(remoteAddress)</span><br><span class="line"></span><br><span class="line">        <span class="keyword">case</span> <span class="type">RemoteProcessConnectionError</span>(cause, remoteAddress) =&gt;</span><br><span class="line">          endpoint.onNetworkError(cause, remoteAddress)</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    inbox.synchronized &#123;</span><br><span class="line">      <span class="comment">// &quot;enableConcurrent&quot; will be set to false after `onStop` is called, so we should check it</span></span><br><span class="line">      <span class="comment">// every time.</span></span><br><span class="line">      <span class="keyword">if</span> (!enableConcurrent &amp;&amp; numActiveThreads != <span class="number">1</span>) &#123;</span><br><span class="line">        <span class="comment">// If we are not the only one worker, exit</span></span><br><span class="line">        numActiveThreads -= <span class="number">1</span></span><br><span class="line">        <span class="keyword">return</span></span><br><span class="line">      &#125;</span><br><span class="line">      message = messages.poll()</span><br><span class="line">      <span class="keyword">if</span> (message == <span class="literal">null</span>) &#123;</span><br><span class="line">        numActiveThreads -= <span class="number">1</span></span><br><span class="line">        <span class="keyword">return</span></span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="RpcEndpointData"><a href="#RpcEndpointData" class="headerlink" title="RpcEndpointData"></a>RpcEndpointData</h2><h2 id="Dispatcher"><a href="#Dispatcher" class="headerlink" title="Dispatcher"></a>Dispatcher</h2><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span>[netty] <span class="class"><span class="keyword">class</span> <span class="title">Dispatcher</span>(<span class="params">nettyEnv: <span class="type">NettyRpcEnv</span>, numUsableCores: <span class="type">Int</span></span>) <span class="keyword">extends</span> <span class="title">Logging</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">val</span> endpoints: <span class="type">ConcurrentMap</span>[<span class="type">String</span>, <span class="type">EndpointData</span>] =</span><br><span class="line">    <span class="keyword">new</span> <span class="type">ConcurrentHashMap</span>[<span class="type">String</span>, <span class="type">EndpointData</span>]</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">val</span> endpointRefs: <span class="type">ConcurrentMap</span>[<span class="type">RpcEndpoint</span>, <span class="type">RpcEndpointRef</span>] =</span><br><span class="line">    <span class="keyword">new</span> <span class="type">ConcurrentHashMap</span>[<span class="type">RpcEndpoint</span>, <span class="type">RpcEndpointRef</span>]</span><br><span class="line"></span><br><span class="line">  <span class="comment">// Track the receivers whose inboxes may contain messages.</span></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">val</span> receivers = <span class="keyword">new</span> <span class="type">LinkedBlockingQueue</span>[<span class="type">EndpointData</span>]</span><br><span class="line"></span><br><span class="line">  <span class="comment">/** Thread pool used for dispatching messages. */</span></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">val</span> threadpool: <span class="type">ThreadPoolExecutor</span> = &#123;</span><br><span class="line">    <span class="keyword">val</span> availableCores =</span><br><span class="line">      <span class="keyword">if</span> (numUsableCores &gt; <span class="number">0</span>) numUsableCores <span class="keyword">else</span> <span class="type">Runtime</span>.getRuntime.availableProcessors()</span><br><span class="line">    <span class="keyword">val</span> numThreads = nettyEnv.conf.getInt(<span class="string">&quot;spark.rpc.netty.dispatcher.numThreads&quot;</span>,</span><br><span class="line">      math.max(<span class="number">2</span>, availableCores))</span><br><span class="line">    <span class="keyword">val</span> pool = <span class="type">ThreadUtils</span>.newDaemonFixedThreadPool(numThreads, <span class="string">&quot;dispatcher-event-loop&quot;</span>)</span><br><span class="line">    <span class="keyword">for</span> (i &lt;- <span class="number">0</span> until numThreads) &#123;</span><br><span class="line">      pool.execute(<span class="keyword">new</span> <span class="type">MessageLoop</span>)</span><br><span class="line">    &#125;</span><br><span class="line">    pool</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>其中：</p>
+<ul>
+<li><code>endpoints</code>中保存了注册过的RpcEndpointData信息；</li>
+<li><code>endpointRefs</code>中保存了注册过的RpcEndpoint与RpcEndpointRef的映射关系；</li>
+<li><code>receivers</code>使用了阻塞队列来实现，用来跟踪发送的消息实体；</li>
+</ul>
+<h3 id="注册Endpoint"><a href="#注册Endpoint" class="headerlink" title="注册Endpoint"></a>注册Endpoint</h3><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">registerRpcEndpoint</span></span>(name: <span class="type">String</span>, endpoint: <span class="type">RpcEndpoint</span>): <span class="type">NettyRpcEndpointRef</span> = &#123;</span><br><span class="line">  <span class="keyword">val</span> addr = <span class="type">RpcEndpointAddress</span>(nettyEnv.address, name)</span><br><span class="line">  <span class="keyword">val</span> endpointRef = <span class="keyword">new</span> <span class="type">NettyRpcEndpointRef</span>(nettyEnv.conf, addr, nettyEnv)</span><br><span class="line">  synchronized &#123;</span><br><span class="line">    <span class="keyword">if</span> (stopped) &#123;</span><br><span class="line">      <span class="keyword">throw</span> <span class="keyword">new</span> <span class="type">IllegalStateException</span>(<span class="string">&quot;RpcEnv has been stopped&quot;</span>)</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (endpoints.putIfAbsent(name, <span class="keyword">new</span> <span class="type">EndpointData</span>(name, endpoint, endpointRef)) != <span class="literal">null</span>) &#123;</span><br><span class="line">      <span class="keyword">throw</span> <span class="keyword">new</span> <span class="type">IllegalArgumentException</span>(<span class="string">s&quot;There is already an RpcEndpoint called <span class="subst">$name</span>&quot;</span>)</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">val</span> data = endpoints.get(name)</span><br><span class="line">    endpointRefs.put(data.endpoint, data.ref)</span><br><span class="line">    receivers.offer(data)  <span class="comment">// for the OnStart message</span></span><br><span class="line">  &#125;</span><br><span class="line">  endpointRef</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="发送消息"><a href="#发送消息" class="headerlink" title="发送消息"></a>发送消息</h3><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="function"><span class="keyword">def</span> <span class="title">postMessage</span></span>(</span><br><span class="line">    endpointName: <span class="type">String</span>,</span><br><span class="line">    message: <span class="type">InboxMessage</span>,</span><br><span class="line">    callbackIfStopped: (<span class="type">Exception</span>) =&gt; <span class="type">Unit</span>): <span class="type">Unit</span> = &#123;</span><br><span class="line">  <span class="keyword">val</span> error = synchronized &#123;</span><br><span class="line">    <span class="keyword">val</span> data = endpoints.get(endpointName)</span><br><span class="line">    <span class="keyword">if</span> (stopped) &#123;</span><br><span class="line">      <span class="type">Some</span>(<span class="keyword">new</span> <span class="type">RpcEnvStoppedException</span>())</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (data == <span class="literal">null</span>) &#123;</span><br><span class="line">      <span class="type">Some</span>(<span class="keyword">new</span> <span class="type">SparkException</span>(<span class="string">s&quot;Could not find <span class="subst">$endpointName</span>.&quot;</span>))</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      data.inbox.post(message) <span class="comment">//向相应的RpcEndpointData的收件箱添加消息</span></span><br><span class="line">      receivers.offer(data) <span class="comment">//同时，向receivers消息队列添加消息，以便MessageLoop线程处理消息</span></span><br><span class="line">      <span class="type">None</span></span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// We don&#x27;t need to call `onStop` in the `synchronized` block</span></span><br><span class="line">  error.foreach(callbackIfStopped)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="处理RpcEndpointData消息"><a href="#处理RpcEndpointData消息" class="headerlink" title="处理RpcEndpointData消息"></a>处理RpcEndpointData消息</h3><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/** Message loop used for dispatching messages. */</span></span><br><span class="line"><span class="keyword">private</span> <span class="class"><span class="keyword">class</span> <span class="title">MessageLoop</span> <span class="keyword">extends</span> <span class="title">Runnable</span> </span>&#123;</span><br><span class="line">  <span class="keyword">override</span> <span class="function"><span class="keyword">def</span> <span class="title">run</span></span>(): <span class="type">Unit</span> = &#123;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">      <span class="keyword">while</span> (<span class="literal">true</span>) &#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">          <span class="keyword">val</span> data = receivers.take()</span><br><span class="line">          <span class="keyword">if</span> (data == <span class="type">PoisonPill</span>) &#123;</span><br><span class="line">            <span class="comment">// Put PoisonPill back so that other MessageLoops can see it.</span></span><br><span class="line">            receivers.offer(<span class="type">PoisonPill</span>)</span><br><span class="line">            <span class="keyword">return</span></span><br><span class="line">          &#125;</span><br><span class="line">          data.inbox.process(<span class="type">Dispatcher</span>.<span class="keyword">this</span>)</span><br><span class="line">        &#125; <span class="keyword">catch</span> &#123;</span><br><span class="line">          <span class="keyword">case</span> <span class="type">NonFatal</span>(e) =&gt; logError(e.getMessage, e)</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125; <span class="keyword">catch</span> &#123;</span><br><span class="line">      ... ...</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="消息传输"><a href="#消息传输" class="headerlink" title="消息传输"></a>消息传输</h1><p>（待）</p>
+<h1 id="TODO"><a href="#TODO" class="headerlink" title="TODO"></a>TODO</h1><h1 id="NOTEs"><a href="#NOTEs" class="headerlink" title="NOTEs"></a>NOTEs</h1><p>本文以Spark 2.4.3为基础。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/08/05/Spark-shuffle-writer/" rel="prev" title="Spark shuffle writer">
+      <i class="fa fa-chevron-left"></i> Spark shuffle writer
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2020/08/20/spark-on-yarn-details/" rel="next" title="Spark On Yarn原理">
+      Spark On Yarn原理 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+        </div>
+        
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">JT Li</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="//cdn.jsdelivr.net/npm/animejs@3.2.0/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1.6.2/dist/gitalk.css">
+
+<script>
+NexT.utils.loadComments('#gitalk-container', () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1.6.2/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : 'c94aa78cf2eda71757bf',
+      clientSecret: '01e1353b3f8eac54aafb1224c784b7af0305ce8c',
+      repo        : 'jtLiBrain.github.io',
+      owner       : 'jtLiBrain',
+      admin       : ['jtLiBrain'],
+      id          : '0adbb8b0f67744d4bceb9d9eadf882a0',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+</body>
+</html>
