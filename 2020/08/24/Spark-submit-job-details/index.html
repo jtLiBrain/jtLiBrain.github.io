@@ -23,17 +23,17 @@
     var CONFIG = {"hostname":"jtlibrain.github.io","root":"/","scheme":"Gemini","version":"8.0.0-rc.5","exturl":false,"sidebar":{"position":"left","display":"hide","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false};
   </script>
 
-  <meta name="description" content="本篇介绍Spark是如何将我们定义的代码以作业的形式提交至集群的。本篇主要关注于作业提交，作业提交后任务的运行在《Spark运行任务原理》">
+  <meta name="description" content="本篇介绍Spark是如何将我们定义的代码以作业的形式提交至集群的。本篇主要关注于作业提交，作业提交后任务的运行在《Spark运行任务原理》中有详细讲述。">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Spark提交作业原理">
 <meta property="og:url" content="https://jtlibrain.github.io/2020/08/24/Spark-submit-job-details/index.html">
 <meta property="og:site_name" content="jtLiBrain">
-<meta property="og:description" content="本篇介绍Spark是如何将我们定义的代码以作业的形式提交至集群的。本篇主要关注于作业提交，作业提交后任务的运行在《Spark运行任务原理》">
+<meta property="og:description" content="本篇介绍Spark是如何将我们定义的代码以作业的形式提交至集群的。本篇主要关注于作业提交，作业提交后任务的运行在《Spark运行任务原理》中有详细讲述。">
 <meta property="og:locale" content="en_US">
 <meta property="og:image" content="https://jtlibrain.github.io/images/spark/submit-job.svg">
 <meta property="og:image" content="https://jtlibrain.github.io/images/spark/DAGScheduler-getShuffleDependencies-case.svg">
 <meta property="article:published_time" content="2020-08-24T02:56:34.000Z">
-<meta property="article:modified_time" content="2020-09-04T14:50:22.865Z">
+<meta property="article:modified_time" content="2020-09-05T12:39:05.684Z">
 <meta property="article:author" content="JT Li">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="https://jtlibrain.github.io/images/spark/submit-job.svg">
@@ -264,7 +264,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2020-09-04 22:50:22" itemprop="dateModified" datetime="2020-09-04T22:50:22+08:00">2020-09-04</time>
+                <time title="Modified: 2020-09-05 20:39:05" itemprop="dateModified" datetime="2020-09-05T20:39:05+08:00">2020-09-05</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -285,7 +285,7 @@
     
     
     <div class="post-body" itemprop="articleBody">
-        <p>本篇介绍Spark是如何将我们定义的代码以作业的形式提交至集群的。本篇主要关注于作业提交，作业提交后任务的运行在《<a href="/2020/08/28/Spark-run-task-details">Spark运行任务原理</a>》</p>
+        <p>本篇介绍Spark是如何将我们定义的代码以作业的形式提交至集群的。本篇主要关注于作业提交，作业提交后任务的运行在《<a href="/2020/08/28/Spark-run-task-details">Spark运行任务原理</a>》中有详细讲述。</p>
 <a id="more"></a>
 
 <p><img src="/images/spark/submit-job.svg"></p>

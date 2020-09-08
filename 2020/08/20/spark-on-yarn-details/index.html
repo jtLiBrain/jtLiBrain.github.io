@@ -23,16 +23,16 @@
     var CONFIG = {"hostname":"jtlibrain.github.io","root":"/","scheme":"Gemini","version":"8.0.0-rc.5","exturl":false,"sidebar":{"position":"left","display":"hide","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false};
   </script>
 
-  <meta name="description" content="Spark On Yarn运行方式有两种，分别为client和cluster。本文主要阐述向Yarn提交了Spark应用的流程以及一些重要的接口。">
+  <meta name="description" content="Spark On Yarn运行方式有两种，分别为client和cluster。本文主要阐述向Yarn提交Spark应用的流程以及一些重要的接口。">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Spark On Yarn原理">
 <meta property="og:url" content="https://jtlibrain.github.io/2020/08/20/spark-on-yarn-details/index.html">
 <meta property="og:site_name" content="jtLiBrain">
-<meta property="og:description" content="Spark On Yarn运行方式有两种，分别为client和cluster。本文主要阐述向Yarn提交了Spark应用的流程以及一些重要的接口。">
+<meta property="og:description" content="Spark On Yarn运行方式有两种，分别为client和cluster。本文主要阐述向Yarn提交Spark应用的流程以及一些重要的接口。">
 <meta property="og:locale" content="en_US">
 <meta property="og:image" content="https://jtlibrain.github.io/images/spark/submit-Spark-to-yarn-process.svg">
 <meta property="article:published_time" content="2020-08-20T03:40:18.000Z">
-<meta property="article:modified_time" content="2020-08-25T13:40:48.974Z">
+<meta property="article:modified_time" content="2020-09-05T12:38:02.644Z">
 <meta property="article:author" content="JT Li">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="https://jtlibrain.github.io/images/spark/submit-Spark-to-yarn-process.svg">
@@ -263,7 +263,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2020-08-25 21:40:48" itemprop="dateModified" datetime="2020-08-25T21:40:48+08:00">2020-08-25</time>
+                <time title="Modified: 2020-09-05 20:38:02" itemprop="dateModified" datetime="2020-09-05T20:38:02+08:00">2020-09-05</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -284,11 +284,11 @@
     
     
     <div class="post-body" itemprop="articleBody">
-        <p>Spark On Yarn运行方式有两种，分别为client和cluster。本文主要阐述向Yarn提交了Spark应用的流程以及一些重要的接口。</p>
+        <p>Spark On Yarn运行方式有两种，分别为client和cluster。本文主要阐述向Yarn提交Spark应用的流程以及一些重要的接口。</p>
 <a id="more"></a>
 
 <h1 id="提交流程"><a href="#提交流程" class="headerlink" title="提交流程"></a>提交流程</h1><p>下图是以client模式提交Spark应用时的流程，cluster模式下Spark的AM和Driver是同一进程，与此图描述会略有不同。</p>
-<p>其中，黄色框表示的是Spark相关的组件，蓝色框表示的是Yarn相关的组件；<code>NodeManager-A</code>表示的是某个NodeManager进程A，<code>NodeManager-B*</code>和<code>CoarseGrainedExecutorBackend-E*</code>的<code>*</code>号表示会有多个相应的进程。</p>
+<p>其中，黄色框表示的是Spark相关的组件，蓝色框表示的是Yarn相关的组件；<code>NodeManager-A</code>表示的是某个NodeManager进程A，<code>NodeManager-B*</code>和<code>CoarseGrainedExecutorBackend-E*</code>的<code>*</code>表示会有多个相应的进程。</p>
 <p><img src="/images/spark/submit-Spark-to-yarn-process.svg"></p>
 <h1 id="YarnAllocator"><a href="#YarnAllocator" class="headerlink" title="YarnAllocator"></a>YarnAllocator</h1><p>YarnAllocator负责向YARN ResourceManager请求容器资源，并决定以怎样的方式来使用这些容器资源，下面我们来了解一下这个类中比较重要的部分。</p>
 <h1 id="ExecutorRunnable"><a href="#ExecutorRunnable" class="headerlink" title="ExecutorRunnable"></a>ExecutorRunnable</h1><h1 id="TODO"><a href="#TODO" class="headerlink" title="TODO"></a>TODO</h1><h1 id="NOTEs"><a href="#NOTEs" class="headerlink" title="NOTEs"></a>NOTEs</h1><p>本文以Spark 2.4.3为基础。</p>
