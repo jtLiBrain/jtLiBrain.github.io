@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.0.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.14.0/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css">
+
+<script class="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"jtlibrain.github.io","root":"/","scheme":"Gemini","version":"8.0.0-rc.5","exturl":false,"sidebar":{"position":"left","display":"hide","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false};
+  </script>
+
+  <meta name="description" content="《Spark SQL:SparkSession概述》中讲述了SparkSession的整体框架，本篇我们详细介绍Spark SQL中最为重要的Catalyst优化引擎。 注：本来为草稿状态">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Spark SQL：Catalyst优化引擎原理">
+<meta property="og:url" content="https://jtlibrain.github.io/2020/09/11/Spark-SQL-Catalyst-details/index.html">
+<meta property="og:site_name" content="jtLiBrain">
+<meta property="og:description" content="《Spark SQL:SparkSession概述》中讲述了SparkSession的整体框架，本篇我们详细介绍Spark SQL中最为重要的Catalyst优化引擎。 注：本来为草稿状态">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2020-09-11T08:01:56.000Z">
+<meta property="article:modified_time" content="2020-09-18T08:20:04.256Z">
+<meta property="article:author" content="JT Li">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://jtlibrain.github.io/2020/09/11/Spark-SQL-Catalyst-details/">
+
+
+<script class="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>Spark SQL：Catalyst优化引擎原理 | jtLiBrain</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  body { margin-top: 2rem; }
+
+  .use-motion .menu-item,
+  .use-motion .sidebar,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header {
+    visibility: visible;
+  }
+
+  .use-motion .header,
+  .use-motion .site-brand-container .toggle,
+  .use-motion .footer { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle,
+  .use-motion .custom-logo-image {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line {
+    transform: scaleX(1);
+  }
+
+  .search-pop-overlay, .sidebar-nav { display: none; }
+  .sidebar-panel { display: block; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <main class="main">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+        <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">jtLiBrain</h1>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">任何伟大的事都不会一蹴而就，三分智慧，七分韧性</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <section class="post-toc-wrap sidebar-panel">
+          <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%80%BB%E8%BE%91%E8%AE%A1%E5%88%92"><span class="nav-number">1.</span> <span class="nav-text">逻辑计划</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%88%86%E6%9E%90%E9%98%B6%E6%AE%B5"><span class="nav-number">2.</span> <span class="nav-text">分析阶段</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Analyzer"><span class="nav-number">2.1.</span> <span class="nav-text">Analyzer</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%80%BB%E8%BE%91%E4%BC%98%E5%8C%96%E9%98%B6%E6%AE%B5"><span class="nav-number">3.</span> <span class="nav-text">逻辑优化阶段</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%89%A9%E7%90%86%E8%AE%A1%E5%88%92%E9%98%B6%E6%AE%B5"><span class="nav-number">4.</span> <span class="nav-text">物理计划阶段</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BB%A3%E7%A0%81%E7%94%9F%E6%88%90%E9%98%B6%E6%AE%B5"><span class="nav-number">5.</span> <span class="nav-text">代码生成阶段</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#NOTEs"><span class="nav-number">6.</span> <span class="nav-text">NOTEs</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%82%E8%80%83"><span class="nav-number">7.</span> <span class="nav-text">参考</span></a></li></ol></div>
+      </section>
+      <!--/noindex-->
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">JT Li</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives">
+          <span class="site-state-item-count">10</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="mailto:jtli.brain@hotmail.com" title="E-Mail → mailto:jtli.brain@hotmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </section>
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </header>
+
+      
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div id="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+      <div class="main-inner">
+        
+
+        <div class="content post posts-expand">
+          
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://jtlibrain.github.io/2020/09/11/Spark-SQL-Catalyst-details/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="JT Li">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="jtLiBrain">
+    </span>
+
+    
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Spark SQL：Catalyst优化引擎原理
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2020-09-11 16:01:56" itemprop="dateCreated datePublished" datetime="2020-09-11T16:01:56+08:00">2020-09-11</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2020-09-18 16:20:04" itemprop="dateModified" datetime="2020-09-18T16:20:04+08:00">2020-09-18</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/spark/" itemprop="url" rel="index"><span itemprop="name">spark</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p>《<a href="">Spark SQL:SparkSession概述</a>》中讲述了SparkSession的整体框架，本篇我们详细介绍Spark SQL中最为重要的Catalyst优化引擎。</p>
+<p><strong>注：本来为草稿状态</strong></p>
+<a id="more"></a>
+
+<p>作为Catalyst的核心，它定义了一个通用框架来表示<strong>树</strong>、并使用<strong>规则</strong>对<strong>树</strong>进行操作。在此框架之上，构建了针对在关系查询处理过程当中的类库(例如，表达式、逻辑查询计划)、以及几组规则用来处理查询执行时的不同阶段。</p>
+<p>同时，Catalyst也提供了一些公共的扩展点，包括：外部数据源和用户定义类型。</p>
+<p>Cataly中的主要数据类型是<strong>树</strong>，<strong>树</strong>是由<strong>节点</strong>构成的。有不同类型的<strong>节点</strong>，并且每个<strong>节点</strong>都会有零个/多个子节点。节点的具体类型是作为<code>TreeNode</code>类的子类进行定义的。<strong>节点</strong>是不可变的类型，可以利用函数转换进行操作。</p>
+<p>树</p>
+<p>规则</p>
+<p>规则可以看作是从一棵树到另一棵树的函数。虽然规则可以在其入参的树上执行任意的代码逻辑，但是最常见的方法是使用一组模式匹配函数进行查找、并将子树替换为特定结构。</p>
+<p>Catalyst中，“树”提供了<code>transform</code>方法，它对该树的所有节点递归地运用模式匹配函数、将与模式匹配的节点进行转换。传递给<code>transform</code>方法的模式匹配表达式是偏函数。Catalyst会测试树的哪一部分要被给定的规则进行匹配，它会自动跳过不匹配的节点、并进入其子树中进行深度匹配。这样就意味着，“规则”只需要关心其给出的优化策略所适用的“树”结构，而无需关心与其不匹配的“树”结构。</p>
+<p>实际当中，要完全转换一棵树，规则可能需要被多次执行。Catalyst将规则分组成batch，然后执行batch直到到达一个固定的点，即直到运用batch里的规则树不再产生变化了。</p>
+<p>从源码的角度，我们可以看一下</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">catalyst</span><br><span class="line">core</span><br><span class="line">hive</span><br><span class="line">hive-thriftserver</span><br></pre></td></tr></table></figure>
+
+<p>TreeNode</p>
+<p>每个阶段的tree node的类型都是不同的。Catalyst中节点类型有分别针对：表达式、数据类型、逻辑和物理运算符。</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">children</span></span>: <span class="type">Seq</span>[<span class="type">BaseType</span>]</span><br></pre></td></tr></table></figure>
+
+
+
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Returns a copy of this node where `rule` has been recursively applied to the tree.</span></span><br><span class="line"><span class="comment"> * When `rule` does not apply to a given node it is left unchanged.</span></span><br><span class="line"><span class="comment"> * Users should not expect a specific directionality. If a specific directionality is needed,</span></span><br><span class="line"><span class="comment"> * transformDown or transformUp should be used.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * @param rule the function use to transform this nodes children</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">transform</span></span>(rule: <span class="type">PartialFunction</span>[<span class="type">BaseType</span>, <span class="type">BaseType</span>]): <span class="type">BaseType</span> = &#123;</span><br><span class="line">  transformDown(rule)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Returns a copy of this node where `rule` has been recursively applied to it and all of its</span></span><br><span class="line"><span class="comment"> * children (pre-order). When `rule` does not apply to a given node it is left unchanged.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * @param rule the function used to transform this nodes children</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">transformDown</span></span>(rule: <span class="type">PartialFunction</span>[<span class="type">BaseType</span>, <span class="type">BaseType</span>]): <span class="type">BaseType</span> = &#123;</span><br><span class="line">  <span class="keyword">val</span> afterRule = <span class="type">CurrentOrigin</span>.withOrigin(origin) &#123;</span><br><span class="line">    rule.applyOrElse(<span class="keyword">this</span>, identity[<span class="type">BaseType</span>])</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// Check if unchanged and then possibly return old copy to avoid gc churn.</span></span><br><span class="line">  <span class="keyword">if</span> (<span class="keyword">this</span> fastEquals afterRule) &#123;</span><br><span class="line">    mapChildren(_.transformDown(rule))</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    afterRule.mapChildren(_.transformDown(rule))</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+
+
+<h1 id="逻辑计划"><a href="#逻辑计划" class="headerlink" title="逻辑计划"></a>逻辑计划</h1><h1 id="分析阶段"><a href="#分析阶段" class="headerlink" title="分析阶段"></a>分析阶段</h1><h2 id="Analyzer"><a href="#Analyzer" class="headerlink" title="Analyzer"></a>Analyzer</h2><p>逻辑查询计划的分析器，借助SessionCatalog中的信息，它可以将UnresolvedAttribute和UnresolvedRelation转化为</p>
+<h1 id="逻辑优化阶段"><a href="#逻辑优化阶段" class="headerlink" title="逻辑优化阶段"></a>逻辑优化阶段</h1><h1 id="物理计划阶段"><a href="#物理计划阶段" class="headerlink" title="物理计划阶段"></a>物理计划阶段</h1><h1 id="代码生成阶段"><a href="#代码生成阶段" class="headerlink" title="代码生成阶段"></a>代码生成阶段</h1><h1 id="NOTEs"><a href="#NOTEs" class="headerlink" title="NOTEs"></a>NOTEs</h1><p>本文以Spark 2.4.3为基础。</p>
+<h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><ol>
+<li><a target="_blank" rel="noopener" href="http://hbasefly.com/2017/03/01/sparksql-catalyst/">http://hbasefly.com/2017/03/01/sparksql-catalyst/</a></li>
+<li><a target="_blank" rel="noopener" href="http://people.csail.mit.edu/matei/papers/2015/sigmod_spark_sql.pdf">http://people.csail.mit.edu/matei/papers/2015/sigmod_spark_sql.pdf</a></li>
+<li><a target="_blank" rel="noopener" href="https://databricks.com/blog/2015/04/13/deep-dive-into-spark-sqls-catalyst-optimizer.html">https://databricks.com/blog/2015/04/13/deep-dive-into-spark-sqls-catalyst-optimizer.html</a></li>
+</ol>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/08/28/Spark-run-task-details/" rel="prev" title="Spark运行任务原理">
+      <i class="fa fa-chevron-left"></i> Spark运行任务原理
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2020/09/18/Spark-SQL-SparkSession-overview/" rel="next" title="Spark SQL:SparkSession概述">
+      Spark SQL:SparkSession概述 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+        </div>
+        
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">JT Li</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="//cdn.jsdelivr.net/npm/animejs@3.2.0/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1.6.2/dist/gitalk.css">
+
+<script>
+NexT.utils.loadComments('#gitalk-container', () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1.6.2/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : 'c94aa78cf2eda71757bf',
+      clientSecret: '01e1353b3f8eac54aafb1224c784b7af0305ce8c',
+      repo        : 'jtLiBrain.github.io',
+      owner       : 'jtLiBrain',
+      admin       : ['jtLiBrain'],
+      id          : '0e942ee6ac6508c2103aab25872a7e24',
+        language: 'en',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+</body>
+</html>
