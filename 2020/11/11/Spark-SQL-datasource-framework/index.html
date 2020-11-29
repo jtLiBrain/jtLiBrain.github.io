@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.0.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.14.0/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css">
+
+<script class="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"jtlibrain.github.io","root":"/","scheme":"Gemini","version":"8.0.0-rc.5","exturl":false,"sidebar":{"position":"left","display":"hide","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false};
+  </script>
+
+  <meta name="description" content="(草稿)">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Spark SQL: datasource framework">
+<meta property="og:url" content="https://jtlibrain.github.io/2020/11/11/Spark-SQL-datasource-framework/index.html">
+<meta property="og:site_name" content="jtLiBrain">
+<meta property="og:description" content="(草稿)">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2020-11-11T15:05:19.000Z">
+<meta property="article:modified_time" content="2020-11-29T05:04:23.764Z">
+<meta property="article:author" content="JT Li">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://jtlibrain.github.io/2020/11/11/Spark-SQL-datasource-framework/">
+
+
+<script class="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>Spark SQL: datasource framework | jtLiBrain</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  body { margin-top: 2rem; }
+
+  .use-motion .menu-item,
+  .use-motion .sidebar,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header {
+    visibility: visible;
+  }
+
+  .use-motion .header,
+  .use-motion .site-brand-container .toggle,
+  .use-motion .footer { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle,
+  .use-motion .custom-logo-image {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line {
+    transform: scaleX(1);
+  }
+
+  .search-pop-overlay, .sidebar-nav { display: none; }
+  .sidebar-panel { display: block; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <main class="main">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+        <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">jtLiBrain</h1>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">任何伟大的事都不会一蹴而就，三分智慧，七分韧性</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <section class="post-toc-wrap sidebar-panel">
+          <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#DataFrameReader"><span class="nav-number">1.</span> <span class="nav-text">DataFrameReader</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#DataSource%E7%B1%BB"><span class="nav-number">2.</span> <span class="nav-text">DataSource类</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#resolveRelation"><span class="nav-number">2.1.</span> <span class="nav-text">resolveRelation()</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#DataSource%E5%AF%B9%E8%B1%A1"><span class="nav-number">3.</span> <span class="nav-text">DataSource对象</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#DataSourceRegister"><span class="nav-number">4.</span> <span class="nav-text">DataSourceRegister</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E6%BA%90%E7%9B%B8%E5%85%B3%E6%8E%A5%E5%8F%A3"><span class="nav-number">5.</span> <span class="nav-text">数据源相关接口</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#RelationProvider"><span class="nav-number">5.1.</span> <span class="nav-text">RelationProvider</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#SchemaRelationProvider"><span class="nav-number">5.2.</span> <span class="nav-text">SchemaRelationProvider</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#StreamSourceProvider"><span class="nav-number">5.3.</span> <span class="nav-text">StreamSourceProvider</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#CreatableRelationProvider"><span class="nav-number">5.4.</span> <span class="nav-text">CreatableRelationProvider</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#StreamSinkProvider"><span class="nav-number">5.5.</span> <span class="nav-text">StreamSinkProvider</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#BaseRelation"><span class="nav-number">6.</span> <span class="nav-text">BaseRelation</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#TableScan"><span class="nav-number">6.1.</span> <span class="nav-text">TableScan</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#PrunedScan"><span class="nav-number">6.2.</span> <span class="nav-text">PrunedScan</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#PrunedFilteredScan"><span class="nav-number">6.3.</span> <span class="nav-text">PrunedFilteredScan</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#CatalystScan"><span class="nav-number">6.4.</span> <span class="nav-text">CatalystScan</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#InsertableRelation"><span class="nav-number">6.5.</span> <span class="nav-text">InsertableRelation</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#NOTEs"><span class="nav-number"></span> <span class="nav-text">NOTEs</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%82%E8%80%83"><span class="nav-number"></span> <span class="nav-text">参考</span></a></div>
+      </section>
+      <!--/noindex-->
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">JT Li</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">14</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="mailto:jtli.brain@hotmail.com" title="E-Mail → mailto:jtli.brain@hotmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </section>
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </header>
+
+      
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div id="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+      <div class="main-inner">
+        
+
+        <div class="content post posts-expand">
+          
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://jtlibrain.github.io/2020/11/11/Spark-SQL-datasource-framework/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="JT Li">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="jtLiBrain">
+    </span>
+
+    
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Spark SQL: datasource framework
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2020-11-11 23:05:19" itemprop="dateCreated datePublished" datetime="2020-11-11T23:05:19+08:00">2020-11-11</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2020-11-29 13:04:23" itemprop="dateModified" datetime="2020-11-29T13:04:23+08:00">2020-11-29</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/spark/" itemprop="url" rel="index"><span itemprop="name">spark</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p>(草稿)</p>
+<a id="more"></a>
+
+<h2 id="DataFrameReader"><a href="#DataFrameReader" class="headerlink" title="DataFrameReader"></a>DataFrameReader</h2><p>该方法只适用于HadoopFsRelationProvider表示的数据源。</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">load</span></span>(paths: <span class="type">String</span>*): <span class="type">DataFrame</span> = &#123;</span><br><span class="line">  <span class="keyword">if</span> (source.toLowerCase(<span class="type">Locale</span>.<span class="type">ROOT</span>) == <span class="type">DDLUtils</span>.<span class="type">HIVE_PROVIDER</span>) &#123;</span><br><span class="line">    <span class="keyword">throw</span> <span class="keyword">new</span> <span class="type">AnalysisException</span>(<span class="string">&quot;Hive data source can only be used with tables, you can not &quot;</span> +</span><br><span class="line">      <span class="string">&quot;read files of Hive data source directly.&quot;</span>)</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">val</span> cls = <span class="type">DataSource</span>.lookupDataSource(source, sparkSession.sessionState.conf)</span><br><span class="line">  <span class="keyword">if</span> (classOf[<span class="type">DataSourceV2</span>].isAssignableFrom(cls)) &#123;</span><br><span class="line">    <span class="keyword">val</span> ds = cls.newInstance().asInstanceOf[<span class="type">DataSourceV2</span>]</span><br><span class="line">    <span class="keyword">if</span> (ds.isInstanceOf[<span class="type">ReadSupport</span>]) &#123;</span><br><span class="line">      <span class="keyword">val</span> sessionOptions = <span class="type">DataSourceV2Utils</span>.extractSessionConfigs(</span><br><span class="line">        ds = ds, conf = sparkSession.sessionState.conf)</span><br><span class="line">      <span class="keyword">val</span> pathsOption = &#123;</span><br><span class="line">        <span class="keyword">val</span> objectMapper = <span class="keyword">new</span> <span class="type">ObjectMapper</span>()</span><br><span class="line">        <span class="type">DataSourceOptions</span>.<span class="type">PATHS_KEY</span> -&gt; objectMapper.writeValueAsString(paths.toArray)</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="type">Dataset</span>.ofRows(sparkSession, <span class="type">DataSourceV2Relation</span>.create(</span><br><span class="line">        ds, sessionOptions ++ extraOptions.toMap + pathsOption,</span><br><span class="line">        userSpecifiedSchema = userSpecifiedSchema))</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      loadV1Source(paths: _*)</span><br><span class="line">    &#125;</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    loadV1Source(paths: _*)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<p>org/apache/spark/sql/execution/datasources</p>
+<h2 id="DataSource类"><a href="#DataSource类" class="headerlink" title="DataSource类"></a>DataSource类</h2><p>它是Spark SQL中负责可插拔式数据源框架中主要的类，它作为具体数据源实现与Spark SQL框架之间桥梁，是对具体数据源实现的描述。该类的主要功能有：</p>
+<ol>
+<li><p>提供描述底层数据源的参数；</p>
+</li>
+<li><p>用于将<strong>描述</strong>解析成查询计划中所使用的具体实现，如resolveRelation()</p>
+</li>
+<li><p>使用外部类库，写出数据；</p>
+<p>从使用者的角度，DataSource对象可以通过<code>org.apache.spark.sql.DataFrameReader</code>或<code>CREATE TABLE USING</code>被显式创建。另外，该类也被使用在将来自元数据库的描述解析为具体实现的过程当中。</p>
+</li>
+</ol>
+<p>区别几个概念：</p>
+<ol>
+<li>数据源（或者数据源实现类，即数据源provider类），它们用于创建各自所针对的关系（即，relation）；</li>
+<li>DataSource类，</li>
+</ol>
+<h3 id="resolveRelation"><a href="#resolveRelation" class="headerlink" title="resolveRelation()"></a>resolveRelation()</h3><p>作用是创建解析后的BaseRelation，</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">resolveRelation</span></span>(checkFilesExist: <span class="type">Boolean</span> = <span class="literal">true</span>): <span class="type">BaseRelation</span> = &#123;</span><br><span class="line">  <span class="comment">// 每次创建数据源实现类的实例</span></span><br><span class="line">  <span class="keyword">val</span> relation = (providingClass.newInstance(), userSpecifiedSchema) <span class="keyword">match</span> &#123;</span><br><span class="line">    <span class="comment">// <span class="doctag">TODO:</span> Throw when too much is given.</span></span><br><span class="line">    <span class="keyword">case</span> (dataSource: <span class="type">SchemaRelationProvider</span>, <span class="type">Some</span>(schema)) =&gt;</span><br><span class="line">      dataSource.createRelation(sparkSession.sqlContext, caseInsensitiveOptions, schema)</span><br><span class="line">    <span class="keyword">case</span> (dataSource: <span class="type">RelationProvider</span>, <span class="type">None</span>) =&gt;</span><br><span class="line">      dataSource.createRelation(sparkSession.sqlContext, caseInsensitiveOptions)</span><br><span class="line">    <span class="keyword">case</span> (_: <span class="type">SchemaRelationProvider</span>, <span class="type">None</span>) =&gt;</span><br><span class="line">      <span class="keyword">throw</span> <span class="keyword">new</span> <span class="type">AnalysisException</span>(<span class="string">s&quot;A schema needs to be specified when using <span class="subst">$className</span>.&quot;</span>)</span><br><span class="line">    <span class="keyword">case</span> (dataSource: <span class="type">RelationProvider</span>, <span class="type">Some</span>(schema)) =&gt;</span><br><span class="line">      <span class="keyword">val</span> baseRelation =</span><br><span class="line">        dataSource.createRelation(sparkSession.sqlContext, caseInsensitiveOptions)</span><br><span class="line">      <span class="keyword">if</span> (baseRelation.schema != schema) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> <span class="type">AnalysisException</span>(<span class="string">s&quot;<span class="subst">$className</span> does not allow user-specified schemas.&quot;</span>)</span><br><span class="line">      &#125;</span><br><span class="line">      baseRelation</span><br><span class="line"></span><br><span class="line">    <span class="comment">// We are reading from the results of a streaming query. Load files from the metadata log</span></span><br><span class="line">    <span class="comment">// instead of listing them using HDFS APIs.</span></span><br><span class="line">    <span class="keyword">case</span> (format: <span class="type">FileFormat</span>, _)</span><br><span class="line">        <span class="keyword">if</span> <span class="type">FileStreamSink</span>.hasMetadata(</span><br><span class="line">          caseInsensitiveOptions.get(<span class="string">&quot;path&quot;</span>).toSeq ++ paths,</span><br><span class="line">          sparkSession.sessionState.newHadoopConf()) =&gt;</span><br><span class="line">      ... ...</span><br><span class="line">      <span class="type">HadoopFsRelation</span>(</span><br><span class="line">        fileCatalog,</span><br><span class="line">        partitionSchema = fileCatalog.partitionSchema,</span><br><span class="line">        dataSchema = dataSchema,</span><br><span class="line">        bucketSpec = <span class="type">None</span>,</span><br><span class="line">        format,</span><br><span class="line">        caseInsensitiveOptions)(sparkSession)</span><br><span class="line"></span><br><span class="line">    <span class="comment">// This is a non-streaming file based datasource.</span></span><br><span class="line">    <span class="keyword">case</span> (format: <span class="type">FileFormat</span>, _) =&gt;</span><br><span class="line">      <span class="keyword">val</span> globbedPaths =</span><br><span class="line">        checkAndGlobPathIfNecessary(checkEmptyGlobPath = <span class="literal">true</span>, checkFilesExist = checkFilesExist)</span><br><span class="line">      <span class="keyword">val</span> useCatalogFileIndex = sparkSession.sqlContext.conf.manageFilesourcePartitions &amp;&amp;</span><br><span class="line">        catalogTable.isDefined &amp;&amp; catalogTable.get.tracksPartitionsInCatalog &amp;&amp;</span><br><span class="line">        catalogTable.get.partitionColumnNames.nonEmpty</span><br><span class="line">      <span class="keyword">val</span> (fileCatalog, dataSchema, partitionSchema) = <span class="keyword">if</span> (useCatalogFileIndex) &#123;</span><br><span class="line">        <span class="keyword">val</span> defaultTableSize = sparkSession.sessionState.conf.defaultSizeInBytes</span><br><span class="line">        <span class="keyword">val</span> index = <span class="keyword">new</span> <span class="type">CatalogFileIndex</span>(</span><br><span class="line">          sparkSession,</span><br><span class="line">          catalogTable.get,</span><br><span class="line">          catalogTable.get.stats.map(_.sizeInBytes.toLong).getOrElse(defaultTableSize))</span><br><span class="line">        (index, catalogTable.get.dataSchema, catalogTable.get.partitionSchema)</span><br><span class="line">      &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">val</span> index = createInMemoryFileIndex(globbedPaths)</span><br><span class="line">        <span class="keyword">val</span> (resultDataSchema, resultPartitionSchema) =</span><br><span class="line">          getOrInferFileFormatSchema(format, <span class="type">Some</span>(index))</span><br><span class="line">        (index, resultDataSchema, resultPartitionSchema)</span><br><span class="line">      &#125;</span><br><span class="line"></span><br><span class="line">      <span class="type">HadoopFsRelation</span>(</span><br><span class="line">        fileCatalog,</span><br><span class="line">        partitionSchema = partitionSchema,</span><br><span class="line">        dataSchema = dataSchema.asNullable,</span><br><span class="line">        bucketSpec = bucketSpec,</span><br><span class="line">        format,</span><br><span class="line">        caseInsensitiveOptions)(sparkSession)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">case</span> _ =&gt;</span><br><span class="line">      <span class="keyword">throw</span> <span class="keyword">new</span> <span class="type">AnalysisException</span>(</span><br><span class="line">        <span class="string">s&quot;<span class="subst">$className</span> is not a valid Spark SQL Data Source.&quot;</span>)</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 校验逻辑</span></span><br><span class="line"></span><br><span class="line">  relation</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="DataSource对象"><a href="#DataSource对象" class="headerlink" title="DataSource对象"></a>DataSource对象</h2><p>这个对象我们主要关注它的<code>lookupDataSource(provider: String, conf: SQLConf): Class[_]</code>。</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">lookupDataSource</span></span>(provider: <span class="type">String</span>, conf: <span class="type">SQLConf</span>): <span class="type">Class</span>[_] = &#123;</span><br><span class="line">  <span class="keyword">val</span> provider1 = backwardCompatibilityMap.getOrElse(provider, provider) <span class="keyword">match</span> &#123;</span><br><span class="line">    <span class="keyword">case</span> name <span class="keyword">if</span> name.equalsIgnoreCase(<span class="string">&quot;orc&quot;</span>) &amp;&amp;</span><br><span class="line">      conf.getConf(<span class="type">SQLConf</span>.<span class="type">ORC_IMPLEMENTATION</span>) == <span class="string">&quot;native&quot;</span> =&gt;</span><br><span class="line">      classOf[<span class="type">OrcFileFormat</span>].getCanonicalName</span><br><span class="line">    <span class="keyword">case</span> name <span class="keyword">if</span> name.equalsIgnoreCase(<span class="string">&quot;orc&quot;</span>) &amp;&amp;</span><br><span class="line">      conf.getConf(<span class="type">SQLConf</span>.<span class="type">ORC_IMPLEMENTATION</span>) == <span class="string">&quot;hive&quot;</span> =&gt;</span><br><span class="line">      <span class="string">&quot;org.apache.spark.sql.hive.orc.OrcFileFormat&quot;</span></span><br><span class="line">    <span class="keyword">case</span> <span class="string">&quot;com.databricks.spark.avro&quot;</span> <span class="keyword">if</span> conf.replaceDatabricksSparkAvroEnabled =&gt;</span><br><span class="line">      <span class="string">&quot;org.apache.spark.sql.avro.AvroFileFormat&quot;</span></span><br><span class="line">    <span class="keyword">case</span> name =&gt; name</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">val</span> provider2 = <span class="string">s&quot;<span class="subst">$provider1</span>.DefaultSource&quot;</span></span><br><span class="line">  <span class="keyword">val</span> loader = <span class="type">Utils</span>.getContextOrSparkClassLoader</span><br><span class="line">  <span class="comment">// 加载所有注册为DataSourceRegister接口的类型</span></span><br><span class="line">  <span class="keyword">val</span> serviceLoader = <span class="type">ServiceLoader</span>.load(classOf[<span class="type">DataSourceRegister</span>], loader)</span><br><span class="line"></span><br><span class="line">  <span class="keyword">try</span> &#123;</span><br><span class="line">    <span class="comment">// 首先，在注册为DataSourceRegister的类型中查找是否别名与请求的provider1有匹配的</span></span><br><span class="line">    serviceLoader.asScala.filter(_.shortName().equalsIgnoreCase(provider1)).toList <span class="keyword">match</span> &#123;</span><br><span class="line">      <span class="comment">// 请求的provider格式与注册的别名都不配置</span></span><br><span class="line">      <span class="keyword">case</span> <span class="type">Nil</span> =&gt;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">          <span class="comment">// 直接加载provider1和provider2所表示的类</span></span><br><span class="line">          <span class="type">Try</span>(loader.loadClass(provider1)).orElse(<span class="type">Try</span>(loader.loadClass(provider2))) <span class="keyword">match</span> &#123;</span><br><span class="line">            <span class="keyword">case</span> <span class="type">Success</span>(dataSource) =&gt;</span><br><span class="line">              <span class="comment">// Found the data source using fully qualified path</span></span><br><span class="line">              dataSource</span><br><span class="line">            <span class="keyword">case</span> <span class="type">Failure</span>(error) =&gt;</span><br><span class="line">              ... ...</span><br><span class="line">          &#125;</span><br><span class="line">        &#125; <span class="keyword">catch</span> &#123;</span><br><span class="line">          ... ...</span><br><span class="line">        &#125;</span><br><span class="line">      <span class="keyword">case</span> head :: <span class="type">Nil</span> =&gt;</span><br><span class="line">        <span class="comment">// 有准确的注册别名</span></span><br><span class="line">        head.getClass</span><br><span class="line">      <span class="keyword">case</span> sources =&gt;</span><br><span class="line">        <span class="comment">// 对于有多个注册别名与之配置的情况，如果只有一个类的是&quot;org.apache.spark&quot;开头，就使用这个Spark内部的类。</span></span><br><span class="line">        <span class="keyword">val</span> sourceNames = sources.map(_.getClass.getName)</span><br><span class="line">        <span class="keyword">val</span> internalSources = sources.filter(_.getClass.getName.startsWith(<span class="string">&quot;org.apache.spark&quot;</span>))</span><br><span class="line">        <span class="keyword">if</span> (internalSources.size == <span class="number">1</span>) &#123;</span><br><span class="line">          logWarning(<span class="string">s&quot;Multiple sources found for <span class="subst">$provider1</span> (<span class="subst">$&#123;sourceNames.mkString(&quot;, &quot;)&#125;</span>), &quot;</span> +</span><br><span class="line">            <span class="string">s&quot;defaulting to the internal datasource (<span class="subst">$&#123;internalSources.head.getClass.getName&#125;</span>).&quot;</span>)</span><br><span class="line">          internalSources.head.getClass</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">          <span class="keyword">throw</span> <span class="keyword">new</span> <span class="type">AnalysisException</span>(<span class="string">s&quot;Multiple sources found for <span class="subst">$provider1</span> &quot;</span> +</span><br><span class="line">            <span class="string">s&quot;(<span class="subst">$&#123;sourceNames.mkString(&quot;, &quot;)&#125;</span>), please specify the fully qualified class name.&quot;</span>)</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125; <span class="keyword">catch</span> &#123;</span><br><span class="line">    ... ...</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>CSVFileFormat<br>JsonFileFormat<br>OrcFileFormat<br>ParquetFileFormat<br>TextFileFormat<br>LibSVMFileFormat</p>
+<p>HiveFileFormat</p>
+<p>ImageFileFormat</p>
+<p>ConsoleSinkProvider<br>JdbcRelationProviderRateStreamProvider<br>TextSocketSourceProvider<br>KafkaSourceProvider</p>
+<p>org/apache/spark/sql/sources</p>
+<h2 id="DataSourceRegister"><a href="#DataSourceRegister" class="headerlink" title="DataSourceRegister"></a>DataSourceRegister</h2><p>数据源实现这个trait，这样就可以为数据源注册别名了。</p>
+<h2 id="数据源相关接口"><a href="#数据源相关接口" class="headerlink" title="数据源相关接口"></a>数据源相关接口</h2><p><strong><em>数据源也称为数据源provider</em></strong>。</p>
+<h3 id="RelationProvider"><a href="#RelationProvider" class="headerlink" title="RelationProvider"></a>RelationProvider</h3><h3 id="SchemaRelationProvider"><a href="#SchemaRelationProvider" class="headerlink" title="SchemaRelationProvider"></a>SchemaRelationProvider</h3><h3 id="StreamSourceProvider"><a href="#StreamSourceProvider" class="headerlink" title="StreamSourceProvider"></a>StreamSourceProvider</h3><h3 id="CreatableRelationProvider"><a href="#CreatableRelationProvider" class="headerlink" title="CreatableRelationProvider"></a>CreatableRelationProvider</h3><h3 id="StreamSinkProvider"><a href="#StreamSinkProvider" class="headerlink" title="StreamSinkProvider"></a>StreamSinkProvider</h3><h2 id="BaseRelation"><a href="#BaseRelation" class="headerlink" title="BaseRelation"></a>BaseRelation</h2><p>它表示带有schema的元组集合。该类的子类必须能够以<code>StructType</code>的形式生成数据的schema。其具体的实现需要继承一种<code>Scan</code>类，这些<code>Scan</code>中为执行定义了不同的抽象方法。</p>
+<h3 id="TableScan"><a href="#TableScan" class="headerlink" title="TableScan"></a>TableScan</h3><p>它是一个BaseRelation，将其元组集合生成为Row对象的RDD。</p>
+<h3 id="PrunedScan"><a href="#PrunedScan" class="headerlink" title="PrunedScan"></a>PrunedScan</h3><p>它是一个BaseRelation，在将其元组集合生成为Row对象的RDD之前，它能排除掉那些不必要的列。</p>
+<h3 id="PrunedFilteredScan"><a href="#PrunedFilteredScan" class="headerlink" title="PrunedFilteredScan"></a>PrunedFilteredScan</h3><p>它是一个BaseRelation，在将匹配的元组集合生成为Row对象的RDD之前，它能排除掉不必要的列、并且使用所选的谓词进行过滤</p>
+<h3 id="CatalystScan"><a href="#CatalystScan" class="headerlink" title="CatalystScan"></a>CatalystScan</h3><p>略</p>
+<h3 id="InsertableRelation"><a href="#InsertableRelation" class="headerlink" title="InsertableRelation"></a>InsertableRelation</h3><p>它是一个BaseRelation，它可以用来将数据插入其内。</p>
+<h1 id="NOTEs"><a href="#NOTEs" class="headerlink" title="NOTEs"></a>NOTEs</h1><p>本文以Spark 2.4.3为基础。</p>
+<h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><ol>
+<li><a target="_blank" rel="noopener" href="https://jaceklaskowski.gitbooks.io/mastering-spark-sql/content/spark-sql-DataSource.html">https://jaceklaskowski.gitbooks.io/mastering-spark-sql/content/spark-sql-DataSource.html</a></li>
+<li></li>
+</ol>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/10/28/Druid-Overview/" rel="prev" title="Druid Overview">
+      <i class="fa fa-chevron-left"></i> Druid Overview
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2020/11/18/Druid-quick-start/" rel="next" title="Druid Quick Start">
+      Druid Quick Start <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+        </div>
+        
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">JT Li</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="//cdn.jsdelivr.net/npm/animejs@3.2.0/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1.6.2/dist/gitalk.css">
+
+<script>
+NexT.utils.loadComments('#gitalk-container', () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1.6.2/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : 'c94aa78cf2eda71757bf',
+      clientSecret: '01e1353b3f8eac54aafb1224c784b7af0305ce8c',
+      repo        : 'jtLiBrain.github.io',
+      owner       : 'jtLiBrain',
+      admin       : ['jtLiBrain'],
+      id          : 'dcac8e27c00d39a167eb54eb96604fd5',
+        language: 'en',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+</body>
+</html>

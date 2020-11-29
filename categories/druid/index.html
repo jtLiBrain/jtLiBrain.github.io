@@ -23,19 +23,15 @@
     var CONFIG = {"hostname":"jtlibrain.github.io","root":"/","scheme":"Gemini","version":"8.0.0-rc.5","exturl":false,"sidebar":{"position":"left","display":"hide","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false};
   </script>
 
-  <meta name="description" content="RDD、Dependency、Stage是Spark中极其重要的概念，它们之间有着天然的联系。本篇将对它们以及它们之间的联系进行简单介绍。">
-<meta property="og:type" content="article">
-<meta property="og:title" content="Spark中的RDD、依赖、stage以及它们之间的联系">
-<meta property="og:url" content="https://jtlibrain.github.io/2020/08/28/Spark-RDD-dependency-stage-relation/index.html">
+  <meta property="og:type" content="website">
+<meta property="og:title" content="jtLiBrain">
+<meta property="og:url" content="https://jtlibrain.github.io/categories/druid/index.html">
 <meta property="og:site_name" content="jtLiBrain">
-<meta property="og:description" content="RDD、Dependency、Stage是Spark中极其重要的概念，它们之间有着天然的联系。本篇将对它们以及它们之间的联系进行简单介绍。">
 <meta property="og:locale" content="en_US">
-<meta property="article:published_time" content="2020-08-28T03:38:06.000Z">
-<meta property="article:modified_time" content="2020-08-28T07:28:12.466Z">
 <meta property="article:author" content="JT Li">
 <meta name="twitter:card" content="summary">
 
-<link rel="canonical" href="https://jtlibrain.github.io/2020/08/28/Spark-RDD-dependency-stage-relation/">
+<link rel="canonical" href="https://jtlibrain.github.io/categories/druid/">
 
 
 <script class="page-configurations">
@@ -43,12 +39,12 @@
   CONFIG.page = {
     sidebar: "",
     isHome : false,
-    isPost : true,
+    isPost : false,
     lang   : 'en'
   };
 </script>
 
-  <title>Spark中的RDD、依赖、stage以及它们之间的联系 | jtLiBrain</title>
+  <title>Category: druid | jtLiBrain</title>
   
 
 
@@ -160,7 +156,7 @@
 
   <aside class="sidebar">
 
-    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+    <div class="sidebar-inner sidebar-overview-active">
       <ul class="sidebar-nav">
         <li class="sidebar-nav-toc">
           Table of Contents
@@ -172,7 +168,6 @@
 
       <!--noindex-->
       <section class="post-toc-wrap sidebar-panel">
-          <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#RDD"><span class="nav-number">1.</span> <span class="nav-text">RDD</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Dependency"><span class="nav-number">2.</span> <span class="nav-text">Dependency</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Stage"><span class="nav-number">3.</span> <span class="nav-text">Stage</span></a></li></ol></div>
       </section>
       <!--/noindex-->
 
@@ -228,98 +223,77 @@
       <div class="main-inner">
         
 
-        <div class="content post posts-expand">
+        <div class="content category">
           
 
-    
   
   
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="https://jtlibrain.github.io/2020/08/28/Spark-RDD-dependency-stage-relation/">
+  
+  <div class="post-block">
+    <div class="posts-collapse">
+      <div class="collection-title">
+        <h2 class="collection-header">druid
+          <small>Category</small>
+        </h2>
+      </div>
 
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="JT Li">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="jtLiBrain">
-    </span>
-
-    
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          Spark中的RDD、依赖、stage以及它们之间的联系
-        </h1>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-              
-
-              <time title="Created: 2020-08-28 11:38:06 / Modified: 15:28:12" itemprop="dateCreated datePublished" datetime="2020-08-28T11:38:06+08:00">2020-08-28</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">In</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/spark/" itemprop="url" rel="index"><span itemprop="name">spark</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-        <p>RDD、Dependency、Stage是Spark中极其重要的概念，它们之间有着天然的联系。本篇将对它们以及它们之间的联系进行简单介绍。</p>
-<a id="more"></a>
-
-<h1 id="RDD"><a href="#RDD" class="headerlink" title="RDD"></a>RDD</h1><h1 id="Dependency"><a href="#Dependency" class="headerlink" title="Dependency"></a>Dependency</h1><h1 id="Stage"><a href="#Stage" class="headerlink" title="Stage"></a>Stage</h1>
+      
+    <div class="collection-year">
+      <span class="collection-header">2020</span>
     </div>
 
-    
-    
-    
+  <article itemscope itemtype="http://schema.org/Article">
+    <header class="post-header">
 
-      <footer class="post-footer">
+      <div class="post-meta">
+        <time itemprop="dateCreated"
+              datetime="2020-11-18T21:59:57+08:00"
+              content="2020-11-18">
+          11-18
+        </time>
+      </div>
 
-        
+      <div class="post-title">
+          <a class="post-title-link" href="/2020/11/18/Druid-quick-start/" itemprop="url">
+            <span itemprop="name">Druid Quick Start</span>
+          </a>
+      </div>
 
-
-        
-    <div class="post-nav">
-      <div class="post-nav-item">
-    <a href="/2020/08/24/Spark-submit-job-details/" rel="prev" title="Spark提交作业原理">
-      <i class="fa fa-chevron-left"></i> Spark提交作业原理
-    </a></div>
-      <div class="post-nav-item">
-    <a href="/2020/08/28/Spark-run-task-details/" rel="next" title="Spark运行任务原理">
-      Spark运行任务原理 <i class="fa fa-chevron-right"></i>
-    </a></div>
-    </div>
-      </footer>
-    
+    </header>
   </article>
+
+  <article itemscope itemtype="http://schema.org/Article">
+    <header class="post-header">
+
+      <div class="post-meta">
+        <time itemprop="dateCreated"
+              datetime="2020-10-28T21:47:01+08:00"
+              content="2020-10-28">
+          10-28
+        </time>
+      </div>
+
+      <div class="post-title">
+          <a class="post-title-link" href="/2020/10/28/Druid-Overview/" itemprop="url">
+            <span itemprop="name">Druid Overview</span>
+          </a>
+      </div>
+
+    </header>
+  </article>
+
+    </div>
+  </div>
   
   
+  
+
   
 
 
 
         </div>
         
-    <div class="comments" id="gitalk-container"></div>
 
 <script>
   window.addEventListener('tabs:register', () => {
@@ -412,25 +386,6 @@
 
   
 
-<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1.6.2/dist/gitalk.css">
-
-<script>
-NexT.utils.loadComments('#gitalk-container', () => {
-  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1.6.2/dist/gitalk.min.js', () => {
-    var gitalk = new Gitalk({
-      clientID    : 'c94aa78cf2eda71757bf',
-      clientSecret: '01e1353b3f8eac54aafb1224c784b7af0305ce8c',
-      repo        : 'jtLiBrain.github.io',
-      owner       : 'jtLiBrain',
-      admin       : ['jtLiBrain'],
-      id          : '546f424ad92c9317e65bb6397ea955de',
-        language: 'en',
-      distractionFreeMode: true
-    });
-    gitalk.render('gitalk-container');
-  }, window.Gitalk);
-});
-</script>
 
 </body>
 </html>

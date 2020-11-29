@@ -33,7 +33,7 @@
 <meta property="og:image" content="https://jtlibrain.github.io/images/spark/submit-job.svg">
 <meta property="og:image" content="https://jtlibrain.github.io/images/spark/DAGScheduler-getShuffleDependencies-case.svg">
 <meta property="article:published_time" content="2020-08-24T02:56:34.000Z">
-<meta property="article:modified_time" content="2020-09-05T12:39:05.684Z">
+<meta property="article:modified_time" content="2020-09-24T06:49:17.108Z">
 <meta property="article:author" content="JT Li">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="https://jtlibrain.github.io/images/spark/submit-job.svg">
@@ -189,14 +189,14 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">10</span>
+          <span class="site-state-item-count">14</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-count">4</span>
         <span class="site-state-item-name">categories</span></a>
       </div>
   </nav>
@@ -270,7 +270,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2020-09-05 20:39:05" itemprop="dateModified" datetime="2020-09-05T20:39:05+08:00">2020-09-05</time>
+                <time title="Modified: 2020-09-24 14:49:17" itemprop="dateModified" datetime="2020-09-24T14:49:17+08:00">2020-09-24</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -307,7 +307,7 @@
 <h1 id="ShuffleMapStage"><a href="#ShuffleMapStage" class="headerlink" title="ShuffleMapStage"></a>ShuffleMapStage</h1><p>在DAG执行当中，ShuffleMapStage是作为一种中间状态的stage，它用来为shuffle产生数据。<code>shuffleDep</code>表示的是该stage是作为某个shuffle的一部分，更确切地说，当前ShuffleMapStage为<code>shuffleDep</code>所表示的shuffle输出map端中间数据。所以我们可以理解为shuffle依赖是一个stage的创建依据：即，为shuffle依赖上游创建一个stage，这个stage末尾会运行map任务为此shuffle操作产生中间数据。</p>
 <h1 id="DAGScheduler"><a href="#DAGScheduler" class="headerlink" title="DAGScheduler"></a>DAGScheduler</h1><p>DAGScheduler是高层级的调度层，它是面向stage的调度。它负责为任务计算stage DAG、追踪哪些RDD和哪些stage的输出是已经被物化了的、并且寻找最佳的调度策略来运行任务。之后，它会将stages以TaskSet的形式提交到底层TaskScheduler。</p>
 <p>除此，它还担负了在由于shuffle输出文件丢失导致失败时，重提交上游stages的任务；以及在作业执行完成后，对作业所涉及的数据结构的清理。</p>
-<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 包含被缓存的RDD分区的位置，其中该map的key为RDD的ID，value表示的数组的索引为分区编号，</span></span><br><span class="line"><span class="comment"> * 数组项表示该分区被缓存的位置集合。</span></span><br><span class="line"><span class="comment"> * 每次job执行完都会进行清理缓存的数据。</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">val</span> cacheLocs = <span class="keyword">new</span> <span class="type">HashMap</span>[<span class="type">Int</span>, <span class="type">IndexedSeq</span>[<span class="type">Seq</span>[<span class="type">TaskLocation</span>]]]</span><br><span class="line"></span><br><span class="line"><span class="comment">// 等待运行的Stage，它们的上游stage还没有完成</span></span><br><span class="line"><span class="keyword">private</span>[scheduler] <span class="keyword">val</span> waitingStages = <span class="keyword">new</span> <span class="type">HashSet</span>[<span class="type">Stage</span>]</span><br><span class="line"></span><br><span class="line"><span class="comment">// 当前在运行的stage</span></span><br><span class="line"><span class="keyword">private</span>[scheduler] <span class="keyword">val</span> runningStages = <span class="keyword">new</span> <span class="type">HashSet</span>[<span class="type">Stage</span>]</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span>[scheduler] <span class="keyword">val</span> activeJobs = <span class="keyword">new</span> <span class="type">HashSet</span>[<span class="type">ActiveJob</span>]</span><br></pre></td></tr></table></figure>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 包含被缓存的RDD分区的位置，其中Map中的：</span></span><br><span class="line"><span class="comment"> * key为RDD的ID；value表示的数组的索引为分区编号，数组项表示该分区被缓存的位置集合。</span></span><br><span class="line"><span class="comment"> * 每次job执行完都会进行清理缓存的数据。</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">val</span> cacheLocs = <span class="keyword">new</span> <span class="type">HashMap</span>[<span class="type">Int</span>, <span class="type">IndexedSeq</span>[<span class="type">Seq</span>[<span class="type">TaskLocation</span>]]]</span><br><span class="line"></span><br><span class="line"><span class="comment">// 等待运行的Stage，它们的上游stage还没有完成</span></span><br><span class="line"><span class="keyword">private</span>[scheduler] <span class="keyword">val</span> waitingStages = <span class="keyword">new</span> <span class="type">HashSet</span>[<span class="type">Stage</span>]</span><br><span class="line"></span><br><span class="line"><span class="comment">// 当前在运行的stage</span></span><br><span class="line"><span class="keyword">private</span>[scheduler] <span class="keyword">val</span> runningStages = <span class="keyword">new</span> <span class="type">HashSet</span>[<span class="type">Stage</span>]</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span>[scheduler] <span class="keyword">val</span> activeJobs = <span class="keyword">new</span> <span class="type">HashSet</span>[<span class="type">ActiveJob</span>]</span><br></pre></td></tr></table></figure>
 
 <h2 id="DAGSchedulerEventProcessLoop"><a href="#DAGSchedulerEventProcessLoop" class="headerlink" title="DAGSchedulerEventProcessLoop"></a>DAGSchedulerEventProcessLoop</h2><p>它继承自<code>EventLoop[DAGSchedulerEvent]</code>，作为接收DAGSchedulerEvent事件类型的环路。</p>
 <p>在内部，使用阻塞队列作为消息队列，接收调用者发送的消息；运行一个专门的线程来处理所有事件，并将接收到的消息根据消息类型，交由DAGScheduler进一步处理。</p>

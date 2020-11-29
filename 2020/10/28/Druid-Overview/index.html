@@ -23,19 +23,21 @@
     var CONFIG = {"hostname":"jtlibrain.github.io","root":"/","scheme":"Gemini","version":"8.0.0-rc.5","exturl":false,"sidebar":{"position":"left","display":"hide","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false};
   </script>
 
-  <meta name="description" content="RDD、Dependency、Stage是Spark中极其重要的概念，它们之间有着天然的联系。本篇将对它们以及它们之间的联系进行简单介绍。">
+  <meta name="description" content="(草稿)">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Spark中的RDD、依赖、stage以及它们之间的联系">
-<meta property="og:url" content="https://jtlibrain.github.io/2020/08/28/Spark-RDD-dependency-stage-relation/index.html">
+<meta property="og:title" content="Druid Overview">
+<meta property="og:url" content="https://jtlibrain.github.io/2020/10/28/Druid-Overview/index.html">
 <meta property="og:site_name" content="jtLiBrain">
-<meta property="og:description" content="RDD、Dependency、Stage是Spark中极其重要的概念，它们之间有着天然的联系。本篇将对它们以及它们之间的联系进行简单介绍。">
+<meta property="og:description" content="(草稿)">
 <meta property="og:locale" content="en_US">
-<meta property="article:published_time" content="2020-08-28T03:38:06.000Z">
-<meta property="article:modified_time" content="2020-08-28T07:28:12.466Z">
+<meta property="og:image" content="https://jtlibrain.github.io/images/druid/overview.svg">
+<meta property="article:published_time" content="2020-10-28T13:47:01.000Z">
+<meta property="article:modified_time" content="2020-11-29T05:16:33.264Z">
 <meta property="article:author" content="JT Li">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://jtlibrain.github.io/images/druid/overview.svg">
 
-<link rel="canonical" href="https://jtlibrain.github.io/2020/08/28/Spark-RDD-dependency-stage-relation/">
+<link rel="canonical" href="https://jtlibrain.github.io/2020/10/28/Druid-Overview/">
 
 
 <script class="page-configurations">
@@ -48,7 +50,7 @@
   };
 </script>
 
-  <title>Spark中的RDD、依赖、stage以及它们之间的联系 | jtLiBrain</title>
+  <title>Druid Overview | jtLiBrain</title>
   
 
 
@@ -172,7 +174,7 @@
 
       <!--noindex-->
       <section class="post-toc-wrap sidebar-panel">
-          <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#RDD"><span class="nav-number">1.</span> <span class="nav-text">RDD</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Dependency"><span class="nav-number">2.</span> <span class="nav-text">Dependency</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Stage"><span class="nav-number">3.</span> <span class="nav-text">Stage</span></a></li></ol></div>
+          <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Router%E5%92%8CBroker%E8%8A%82%E7%82%B9"><span class="nav-number">1.</span> <span class="nav-text">Router和Broker节点</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Router%E8%8A%82%E7%82%B9"><span class="nav-number">1.1.</span> <span class="nav-text">Router节点</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Broker%E8%8A%82%E7%82%B9"><span class="nav-number">1.2.</span> <span class="nav-text">Broker节点</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%AB%98%E5%8F%AF%E7%94%A8"><span class="nav-number">1.2.1.</span> <span class="nav-text">高可用</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Coordinator%E5%92%8CHistorical%E8%8A%82%E7%82%B9"><span class="nav-number">2.</span> <span class="nav-text">Coordinator和Historical节点</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Coordinator%E8%8A%82%E7%82%B9"><span class="nav-number">2.1.</span> <span class="nav-text">Coordinator节点</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%AB%98%E5%8F%AF%E7%94%A8-1"><span class="nav-number">2.1.1.</span> <span class="nav-text">高可用</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Historical%E8%8A%82%E7%82%B9"><span class="nav-number">2.2.</span> <span class="nav-text">Historical节点</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Overlord%E5%92%8CMiddle-Manager%E8%8A%82%E7%82%B9"><span class="nav-number">3.</span> <span class="nav-text">Overlord和Middle Manager节点</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Overlord%E8%8A%82%E7%82%B9"><span class="nav-number">3.1.</span> <span class="nav-text">Overlord节点</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Middle-Manager%E8%8A%82%E7%82%B9"><span class="nav-number">3.2.</span> <span class="nav-text">Middle Manager节点</span></a></li></ol></li></ol></div>
       </section>
       <!--/noindex-->
 
@@ -235,7 +237,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="https://jtlibrain.github.io/2020/08/28/Spark-RDD-dependency-stage-relation/">
+    <link itemprop="mainEntityOfPage" href="https://jtlibrain.github.io/2020/10/28/Druid-Overview/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -250,7 +252,7 @@
     
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          Spark中的RDD、依赖、stage以及它们之间的联系
+          Druid Overview
         </h1>
 
         <div class="post-meta">
@@ -259,17 +261,23 @@
                 <i class="far fa-calendar"></i>
               </span>
               <span class="post-meta-item-text">Posted on</span>
-              
 
-              <time title="Created: 2020-08-28 11:38:06 / Modified: 15:28:12" itemprop="dateCreated datePublished" datetime="2020-08-28T11:38:06+08:00">2020-08-28</time>
+              <time title="Created: 2020-10-28 21:47:01" itemprop="dateCreated datePublished" datetime="2020-10-28T21:47:01+08:00">2020-10-28</time>
             </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2020-11-29 13:16:33" itemprop="dateModified" datetime="2020-11-29T13:16:33+08:00">2020-11-29</time>
+              </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
                 <i class="far fa-folder"></i>
               </span>
               <span class="post-meta-item-text">In</span>
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/spark/" itemprop="url" rel="index"><span itemprop="name">spark</span></a>
+                  <a href="/categories/druid/" itemprop="url" rel="index"><span itemprop="name">druid</span></a>
                 </span>
             </span>
 
@@ -282,10 +290,17 @@
     
     
     <div class="post-body" itemprop="articleBody">
-        <p>RDD、Dependency、Stage是Spark中极其重要的概念，它们之间有着天然的联系。本篇将对它们以及它们之间的联系进行简单介绍。</p>
+        <p>(草稿)</p>
 <a id="more"></a>
 
-<h1 id="RDD"><a href="#RDD" class="headerlink" title="RDD"></a>RDD</h1><h1 id="Dependency"><a href="#Dependency" class="headerlink" title="Dependency"></a>Dependency</h1><h1 id="Stage"><a href="#Stage" class="headerlink" title="Stage"></a>Stage</h1>
+
+
+<p><img src="/images/druid/overview.svg"></p>
+<p>管理节点，</p>
+<p>实际部署中，一方面，考虑到容错性能问题，至少需要部署两个管理节点作为互备；另一方面，由于Druid支持横向扩展，所以在使用初期考虑机器资源有限，可以将管理节点和查询节点混合部署在同一台机器上</p>
+<h1 id="Router和Broker节点"><a href="#Router和Broker节点" class="headerlink" title="Router和Broker节点"></a>Router和Broker节点</h1><h2 id="Router节点"><a href="#Router节点" class="headerlink" title="Router节点"></a>Router节点</h2><h2 id="Broker节点"><a href="#Broker节点" class="headerlink" title="Broker节点"></a>Broker节点</h2><h3 id="高可用"><a href="#高可用" class="headerlink" title="高可用"></a>高可用</h3><p>一般Druid集群只需要一个Broker节点，但是为了防止出现单个节点失败导致无查询节点可用，通常会多加一个查询节点，实践中常常通过使用Nginx作为客户端查询的Gateway来完成对多个查询节点的负载均衡，以达到集群高可用的效果。</p>
+<h1 id="Coordinator和Historical节点"><a href="#Coordinator和Historical节点" class="headerlink" title="Coordinator和Historical节点"></a>Coordinator和Historical节点</h1><h2 id="Coordinator节点"><a href="#Coordinator节点" class="headerlink" title="Coordinator节点"></a>Coordinator节点</h2><h3 id="高可用-1"><a href="#高可用-1" class="headerlink" title="高可用"></a>高可用</h3><p>集群中添加多个协调节点来使Coordinator节点的高可用。</p>
+<h2 id="Historical节点"><a href="#Historical节点" class="headerlink" title="Historical节点"></a>Historical节点</h2><h1 id="Overlord和Middle-Manager节点"><a href="#Overlord和Middle-Manager节点" class="headerlink" title="Overlord和Middle Manager节点"></a>Overlord和Middle Manager节点</h1><h2 id="Overlord节点"><a href="#Overlord节点" class="headerlink" title="Overlord节点"></a>Overlord节点</h2><h2 id="Middle-Manager节点"><a href="#Middle-Manager节点" class="headerlink" title="Middle Manager节点"></a>Middle Manager节点</h2>
     </div>
 
     
@@ -300,12 +315,12 @@
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/2020/08/24/Spark-submit-job-details/" rel="prev" title="Spark提交作业原理">
-      <i class="fa fa-chevron-left"></i> Spark提交作业原理
+    <a href="/2020/09/18/Spark-SQL-SparkSession-overview/" rel="prev" title="Spark SQL：SparkSession概述">
+      <i class="fa fa-chevron-left"></i> Spark SQL：SparkSession概述
     </a></div>
       <div class="post-nav-item">
-    <a href="/2020/08/28/Spark-run-task-details/" rel="next" title="Spark运行任务原理">
-      Spark运行任务原理 <i class="fa fa-chevron-right"></i>
+    <a href="/2020/11/11/Spark-SQL-datasource-framework/" rel="next" title="Spark SQL: datasource framework">
+      Spark SQL: datasource framework <i class="fa fa-chevron-right"></i>
     </a></div>
     </div>
       </footer>
@@ -423,7 +438,7 @@ NexT.utils.loadComments('#gitalk-container', () => {
       repo        : 'jtLiBrain.github.io',
       owner       : 'jtLiBrain',
       admin       : ['jtLiBrain'],
-      id          : '546f424ad92c9317e65bb6397ea955de',
+      id          : 'dc81b72ee8a01c7906be4c0ecac83ba8',
         language: 'en',
       distractionFreeMode: true
     });
