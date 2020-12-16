@@ -38,7 +38,7 @@
 <meta property="og:image" content="https://jtlibrain.github.io/images/scala/quality-scoverage.png">
 <meta property="og:image" content="https://jtlibrain.github.io/images/scala/quality-sonarqube-scala-profile.png">
 <meta property="article:published_time" content="2020-11-27T14:12:38.000Z">
-<meta property="article:modified_time" content="2020-12-08T15:36:31.904Z">
+<meta property="article:modified_time" content="2020-12-14T13:53:15.480Z">
 <meta property="article:author" content="JT Li">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="https://jtlibrain.github.io/images/scala/quality-scalastyle.png">
@@ -194,14 +194,14 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">14</span>
+          <span class="site-state-item-count">15</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-count">5</span>
         <span class="site-state-item-name">categories</span></a>
       </div>
   </nav>
@@ -275,7 +275,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2020-12-08 23:36:31" itemprop="dateModified" datetime="2020-12-08T23:36:31+08:00">2020-12-08</time>
+                <time title="Modified: 2020-12-14 21:53:15" itemprop="dateModified" datetime="2020-12-14T21:53:15+08:00">2020-12-14</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -326,8 +326,8 @@
 <li><code>&lt;testSourceDirectory/&gt;</code>：test源码路径</li>
 <li><code>&lt;configLocation/&gt;</code>：风格文件</li>
 <li><code>&lt;outputFile/&gt;</code>：检查报告输出文件</li>
+<li>并且，<code>check</code> mojo没有绑定到Maven项目的构建过程当中，而是要独立运行。</li>
 </ul>
-<p>并且，<code>check</code> mojo没有绑定到Maven项目的构建过程当中，而是独立要独立运行。</p>
 <figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">plugin</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.scalastyle<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>scalastyle-maven-plugin<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>1.0.0<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">configuration</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">verbose</span>&gt;</span>false<span class="tag">&lt;/<span class="name">verbose</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">failOnViolation</span>&gt;</span>true<span class="tag">&lt;/<span class="name">failOnViolation</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">includeTestSourceDirectory</span>&gt;</span>true<span class="tag">&lt;/<span class="name">includeTestSourceDirectory</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">failOnWarning</span>&gt;</span>false<span class="tag">&lt;/<span class="name">failOnWarning</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">sourceDirectory</span>&gt;</span>$&#123;project.basedir&#125;/src/main/scala<span class="tag">&lt;/<span class="name">sourceDirectory</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">testSourceDirectory</span>&gt;</span>$&#123;project.basedir&#125;/src/test/scala<span class="tag">&lt;/<span class="name">testSourceDirectory</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">configLocation</span>&gt;</span>$&#123;project.basedir&#125;/style/scalastyle_config.xml<span class="tag">&lt;/<span class="name">configLocation</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">outputFile</span>&gt;</span>$&#123;project.build.directory&#125;/scalastyle-output.xml<span class="tag">&lt;/<span class="name">outputFile</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">outputEncoding</span>&gt;</span>UTF-8<span class="tag">&lt;/<span class="name">outputEncoding</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">configuration</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">executions</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">execution</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">goals</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">goal</span>&gt;</span>check<span class="tag">&lt;/<span class="name">goal</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;/<span class="name">goals</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">execution</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">executions</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">plugin</span>&gt;</span></span><br></pre></td></tr></table></figure>
 
 
@@ -336,7 +336,8 @@
 <p><img src="/images/scala/quality-scalastyle.png"></p>
 <h1 id="构建测试设施"><a href="#构建测试设施" class="headerlink" title="构建测试设施"></a>构建测试设施</h1><img src="/images/scala/quality-workflow.svg" style="zoom:50%;" />
 
-<h2 id="Java测试"><a href="#Java测试" class="headerlink" title="Java测试"></a>Java测试</h2><h3 id="JUnit"><a href="#JUnit" class="headerlink" title="JUnit"></a>JUnit</h3><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependencies</span>&gt;</span></span><br><span class="line">    ... ...</span><br><span class="line">    <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>junit<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>junit<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">version</span>&gt;</span>4.13.1<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">scope</span>&gt;</span>test<span class="tag">&lt;/<span class="name">scope</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line">    ... ...</span><br><span class="line"><span class="tag">&lt;/<span class="name">dependencies</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<h2 id="Java测试"><a href="#Java测试" class="headerlink" title="Java测试"></a>Java测试</h2><h3 id="JUnit"><a href="#JUnit" class="headerlink" title="JUnit"></a>JUnit</h3><p>参考：<a target="_blank" rel="noopener" href="https://junit.org/"></a></p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependencies</span>&gt;</span></span><br><span class="line">    ... ...</span><br><span class="line">    <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>junit<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>junit<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">version</span>&gt;</span>4.13.1<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">scope</span>&gt;</span>test<span class="tag">&lt;/<span class="name">scope</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line">    ... ...</span><br><span class="line"><span class="tag">&lt;/<span class="name">dependencies</span>&gt;</span></span><br></pre></td></tr></table></figure>
 
 
 
@@ -412,7 +413,10 @@
     <a href="/2020/11/18/Druid-quick-start/" rel="prev" title="Druid Quick Start">
       <i class="fa fa-chevron-left"></i> Druid Quick Start
     </a></div>
-      <div class="post-nav-item"></div>
+      <div class="post-nav-item">
+    <a href="/2020/12/16/Scala-Toolkit/" rel="next" title="Scala Tookit">
+      Scala Tookit <i class="fa fa-chevron-right"></i>
+    </a></div>
     </div>
       </footer>
     
