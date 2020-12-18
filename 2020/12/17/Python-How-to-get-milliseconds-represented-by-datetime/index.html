@@ -31,7 +31,7 @@
 <meta property="og:description" content="对于datetime类型的对象，Python内置提供了time.mktime(p_tuple)和datetime类的timestamp()来返回自January 1, 1970, 00:00:00 GMT以来的秒数，但并没有提供直接获取毫秒数的方法，那么如何获取datetime对象从格林威治纪元时间起始的毫秒数呢？time.mktime(p_tuple)和datetime类的timestamp()">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2020-12-17T12:56:16.000Z">
-<meta property="article:modified_time" content="2020-12-17T16:11:46.729Z">
+<meta property="article:modified_time" content="2020-12-18T12:46:19.898Z">
 <meta property="article:author" content="JT Li">
 <meta name="twitter:card" content="summary">
 
@@ -267,7 +267,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2020-12-18 00:11:46" itemprop="dateModified" datetime="2020-12-18T00:11:46+08:00">2020-12-18</time>
+                <time title="Modified: 2020-12-18 20:46:19" itemprop="dateModified" datetime="2020-12-18T20:46:19+08:00">2020-12-18</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -305,7 +305,7 @@
 <br/>
 
 <p>为了方便验证，我们定义了如下方法，用来打印datetime对象的一些信息：</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">print_time</span>(<span class="params">t</span>):</span></span><br><span class="line">    print(t)</span><br><span class="line">    print(<span class="string">&quot;t.tzname: &#123;&#125;&quot;</span>.format(t.tzname()))</span><br><span class="line">    print(<span class="string">&quot;t.timetuple()   : &#123;&#125;&quot;</span>.format(t.timetuple()))</span><br><span class="line">    print(<span class="string">&quot;t.utctimetuple(): &#123;&#125;&quot;</span>.format(t.utctimetuple()))</span><br><span class="line">    print(<span class="string">&quot;time.mktime(t.timetuple())   : &#123;&#125;&quot;</span>.format(time.mktime(t.timetuple())))</span><br><span class="line">    print(<span class="string">&quot;time.mktime(t.utctimetuple()): &#123;&#125;&quot;</span>.format(time.mktime(t.utctimetuple())))</span><br><span class="line">    print(<span class="string">&quot;t.timestamp()                : &#123;&#125;&quot;</span>.format(t.timestamp()))</span><br><span class="line">    print(<span class="string">&quot;--------------------------\n&quot;</span>)</span><br></pre></td></tr></table></figure>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">print_time</span>(<span class="params">t</span>):</span></span><br><span class="line">    print(t)</span><br><span class="line">    print(<span class="string">&quot;t.tzname: &#123;&#125;&quot;</span>.format(t.tzname()))</span><br><span class="line">    print(<span class="string">&quot;t.year, t.month, t.day, t.hour: &#123;&#125; &#123;&#125; &#123;&#125; &#123;&#125;&quot;</span>.format(t.year, t.month, t.day, t.hour))</span><br><span class="line">    print(<span class="string">&quot;t.timetuple()   : &#123;&#125;&quot;</span>.format(t.timetuple()))</span><br><span class="line">    print(<span class="string">&quot;t.utctimetuple(): &#123;&#125;&quot;</span>.format(t.utctimetuple()))</span><br><span class="line">    print(<span class="string">&quot;time.mktime(t.timetuple())   : &#123;&#125;&quot;</span>.format(time.mktime(t.timetuple())))</span><br><span class="line">    print(<span class="string">&quot;time.mktime(t.utctimetuple()): &#123;&#125;&quot;</span>.format(time.mktime(t.utctimetuple())))</span><br><span class="line">    print(<span class="string">&quot;t.timestamp()                : &#123;&#125;&quot;</span>.format(t.timestamp()))</span><br><span class="line">    print(<span class="string">&quot;--------------------------\n&quot;</span>)</span><br></pre></td></tr></table></figure>
 
 
 
@@ -371,8 +371,11 @@
 <h2 id="剖析timestamp"><a href="#剖析timestamp" class="headerlink" title="剖析timestamp()"></a>剖析timestamp()</h2><p>以下为timestamp()的源码，该方法在没有时区信息时，使用<code>_mktime()</code>方法计算秒数，<code>_mktime()</code>内部使用了本地时区信息；在有时区信息时，直接减去<code>_EPOCH</code>值。</p>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">timestamp</span>(<span class="params">self</span>):</span></span><br><span class="line">    <span class="string">&quot;Return POSIX timestamp as float&quot;</span></span><br><span class="line">    <span class="keyword">if</span> self._tzinfo <span class="keyword">is</span> <span class="literal">None</span>:</span><br><span class="line">        s = self._mktime()</span><br><span class="line">        <span class="keyword">return</span> s + self.microsecond / <span class="number">1e6</span></span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        <span class="keyword">return</span> (self - _EPOCH).total_seconds()</span><br></pre></td></tr></table></figure>
 
-
-
+<p>所以，</p>
+<ul>
+<li>local变量没有定义时区，对于print_time(local)，case1北京时区下输出1608134400.0 （北京时间2020-12-17 00:00:00），case2UTC时区下输出1608163200.0（北京时间2020-12-17 08:00:00）；</li>
+<li>cst变量带有时区信息，对于print_time(cst)，case1北京时区和case2UTC时区下都输出了同样的结果；</li>
+</ul>
 <h1 id="结论"><a href="#结论" class="headerlink" title="结论"></a>结论</h1><p>借助timestamp()方式来获取毫秒数在绝大多数场景下更会如我们所希望的：</p>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">get_ts_in_ms</span>(<span class="params">t</span>):</span></span><br><span class="line">    <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">    获取时间t表示的从格林威治时间1970-01-01 00:00:00开始的毫秒数</span></span><br><span class="line"><span class="string">    :param t: 为datetime类型</span></span><br><span class="line"><span class="string">    :return:</span></span><br><span class="line"><span class="string">    &quot;&quot;&quot;</span></span><br><span class="line">    <span class="keyword">return</span> int(t.timestamp()) * <span class="number">1000</span> + int(t.microsecond / <span class="number">1000</span>)</span><br></pre></td></tr></table></figure>
 
