@@ -31,7 +31,7 @@
 <meta property="og:description" content="对于datetime类型的对象，Python内置提供了time.mktime(p_tuple)和datetime类的timestamp()来返回自January 1, 1970, 00:00:00 GMT以来的秒数，但并没有提供直接获取毫秒数的方法，那么如何获取datetime对象从格林威治纪元时间起始的毫秒数呢？time.mktime(p_tuple)和datetime类的timestamp()">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2020-12-17T12:56:16.000Z">
-<meta property="article:modified_time" content="2020-12-18T12:52:58.068Z">
+<meta property="article:modified_time" content="2020-12-19T03:10:01.999Z">
 <meta property="article:author" content="JT Li">
 <meta name="twitter:card" content="summary">
 
@@ -267,7 +267,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2020-12-18 20:52:58" itemprop="dateModified" datetime="2020-12-18T20:52:58+08:00">2020-12-18</time>
+                <time title="Modified: 2020-12-19 11:10:01" itemprop="dateModified" datetime="2020-12-19T11:10:01+08:00">2020-12-19</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -341,42 +341,42 @@
 
 
 
-<h1 id="剖析"><a href="#剖析" class="headerlink" title="剖析"></a>剖析</h1><h2 id="剖析timetuple-和utctimetuple"><a href="#剖析timetuple-和utctimetuple" class="headerlink" title="剖析timetuple()和utctimetuple()"></a>剖析timetuple()和utctimetuple()</h2><p>以下为timetuple()的源码，它使用的是datetime实例的year、month、day、hour、minute、second直接构建元组结构。</p>
+<h1 id="剖析"><a href="#剖析" class="headerlink" title="剖析"></a>剖析</h1><h2 id="剖析timetuple-和utctimetuple"><a href="#剖析timetuple-和utctimetuple" class="headerlink" title="剖析timetuple()和utctimetuple()"></a>剖析timetuple()和utctimetuple()</h2><p>以下为<code>timetuple()</code>的源码，它使用了datetime实例的year、month、day、hour、minute、second来直接构建元组结构。</p>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">timetuple</span>(<span class="params">self</span>):</span></span><br><span class="line">    <span class="string">&quot;Return local time tuple compatible with time.localtime().&quot;</span></span><br><span class="line">    dst = self.dst()</span><br><span class="line">    <span class="keyword">if</span> dst <span class="keyword">is</span> <span class="literal">None</span>:</span><br><span class="line">        dst = <span class="number">-1</span></span><br><span class="line">    <span class="keyword">elif</span> dst:</span><br><span class="line">        dst = <span class="number">1</span></span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        dst = <span class="number">0</span></span><br><span class="line">    <span class="keyword">return</span> _build_struct_time(self.year, self.month, self.day,</span><br><span class="line">                              self.hour, self.minute, self.second,</span><br><span class="line">                              dst)</span><br></pre></td></tr></table></figure>
 
 <br/>
 
-<p>以下为utctimetuple()源码，它使用了utcoffset()方法根据当前datetime实例是否定义了时区来计算utc偏移量；如果datetime实例有时区信息，那么utctimetuple()将减/加该偏移量后得到的year、month、day、hour、minute、second进行构建元组结构；否则直接使用datetime实例的year、month、day、hour、minute、second构建元组结构。</p>
+<p>以下为<code>utctimetuple()</code>源码，它使用了<code>utcoffset()</code>方法根据当前datetime实例是否定义了时区来计算UTC偏移量；如果datetime实例有时区信息，那么<code>utctimetuple()</code>将减/加（东区<code>减</code>，西区<code>加</code>）该偏移量后得到的year、month、day、hour、minute、second进行构建元组结构；否则直接使用datetime实例的year、month、day、hour、minute、second构建元组结构，从语义上讲，该方法是<code>转换</code>的语义，在转换UTC元组时，它使用了时间对象的时区信息。</p>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">utctimetuple</span>(<span class="params">self</span>):</span></span><br><span class="line">    <span class="string">&quot;Return UTC time tuple compatible with time.gmtime().&quot;</span></span><br><span class="line">    offset = self.utcoffset()</span><br><span class="line">    <span class="keyword">if</span> offset:</span><br><span class="line">        self -= offset</span><br><span class="line">    y, m, d = self.year, self.month, self.day</span><br><span class="line">    hh, mm, ss = self.hour, self.minute, self.second</span><br><span class="line">    <span class="keyword">return</span> _build_struct_time(y, m, d, hh, mm, ss, <span class="number">0</span>)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">utcoffset</span>(<span class="params">self</span>):</span></span><br><span class="line">    <span class="string">&quot;&quot;&quot;Return the timezone offset as timedelta positive east of UTC (negative west of</span></span><br><span class="line"><span class="string">    UTC).&quot;&quot;&quot;</span></span><br><span class="line">    <span class="keyword">if</span> self._tzinfo <span class="keyword">is</span> <span class="literal">None</span>:</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">None</span></span><br><span class="line">    offset = self._tzinfo.utcoffset(self)</span><br><span class="line">    _check_utc_offset(<span class="string">&quot;utcoffset&quot;</span>, offset)</span><br><span class="line">    <span class="keyword">return</span> offset</span><br></pre></td></tr></table></figure>
 
 <p>所以，</p>
 <ul>
-<li>case1中print_time(local)：对于没有时区信息的<code>local</code>变量，t.timetuple()和t.utctimetuple()返回的元组信息除了tm_isdst以外都是一致的；</li>
-<li>case1中print_time(cst)：cst变量的实例的时区偏移量为8小时，t.utctimetuple()返回的元组信息中要晚于t.timetuple()8个小时；</li>
-<li>case1中print_time(utc)：utc变量的实例的时区偏移量为0小时，所以t.timetuple()和t.utctimetuple()返回的元组信息除了tm_isdst以外都是一致的；</li>
-<li>另外，print_time(local)、print_time(cst)、print_time(utc)对于t.timetuple()和t.utctimetuple()的输出在case1和case2中是一致的，与操作系统设置的时区并无关系；</li>
+<li>case1中print_time(local)：对于没有时区信息的<code>local</code>变量，<code>t.timetuple()</code>和<code>t.utctimetuple()</code>返回的元组信息除了tm_isdst（夏令时）以外都是一致的；</li>
+<li>case1中print_time(cst)：<code>cst</code>变量的实例的时区偏移量为8小时，<code>t.utctimetuple()</code>返回的元组信息中要晚于<code>t.timetuple()</code>8个小时；</li>
+<li>case1中print_time(utc)：<code>utc</code>变量的实例的时区偏移量为0小时，所以<code>t.timetuple()</code>和<code>t.utctimetuple()</code>返回的元组信息除了tm_isdst（夏令时）以外都是一致的；</li>
+<li>另外，print_time(local)、print_time(cst)、print_time(utc)对于<code>t.timetuple()</code>和<code>t.utctimetuple()</code>的输出在case1和case2中是一致的，与操作系统设置的时区并无关系；</li>
 </ul>
-<h2 id="剖析time-mktime-p-tuple"><a href="#剖析time-mktime-p-tuple" class="headerlink" title="剖析time.mktime(p_tuple)"></a>剖析time.mktime(p_tuple)</h2><p>以下为mktime()的说明，它的语义是对时间元组（注意，元组不具有时区信息）表示的本地时间计算秒数。</p>
+<h2 id="剖析time-mktime-p-tuple"><a href="#剖析time-mktime-p-tuple" class="headerlink" title="剖析time.mktime(p_tuple)"></a>剖析time.mktime(p_tuple)</h2><p>以下为<code>mktime()</code>的说明，它的语义是对时间元组（注意，元组结构不具有时区信息）所代表的本地时间计算秒数。</p>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">mktime</span>(<span class="params">p_tuple</span>):</span> <span class="comment"># real signature unknown; restored from __doc__</span></span><br><span class="line">    <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">    mktime(tuple) -&gt; floating point number</span></span><br><span class="line"><span class="string">    </span></span><br><span class="line"><span class="string">    Convert a time tuple in local time to seconds since the Epoch.</span></span><br><span class="line"><span class="string">    Note that mktime(gmtime(0)) will not generally return zero for most</span></span><br><span class="line"><span class="string">    time zones; instead the returned value will either be equal to that</span></span><br><span class="line"><span class="string">    of the timezone or altzone attributes on the time module.</span></span><br><span class="line"><span class="string">    &quot;&quot;&quot;</span></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0.0</span></span><br></pre></td></tr></table></figure>
 
 <p>所以，</p>
 <ul>
-<li>print_time(local)，在case1和case2不同时区下，t.timetuple()和t.utctimetuple()表示的元组都是time.struct_time(tm_year=2020, tm_mon=12, tm_mday=17, tm_hour=0, tm_min=0, tm_sec=0, tm_wday=3, tm_yday=352, …)<ul>
-<li>case1中，该元组被mktime()认为是CST时间2020-12-17 00:00:00，则结果都为1608134400.0；</li>
-<li>case2中，该元组被mktime()认为是UTC时间2020-12-17 00:00:00，则结果都为1608163200.0；</li>
+<li>print_time(local)，在case1和case2不同时区下，<code>t.timetuple()</code>和<code>t.utctimetuple()</code>表示的元组都是time.struct_time(tm_year=2020, tm_mon=12, tm_mday=17, tm_hour=0, tm_min=0, tm_sec=0, tm_wday=3, tm_yday=352, …)<ul>
+<li>case1中，该元组被<code>mktime()</code>认为是CST时间2020-12-17 00:00:00，则结果都为1608134400.0；</li>
+<li>case2中，该元组被<code>mktime()</code>认为是UTC时间2020-12-17 00:00:00，则结果都为1608163200.0；</li>
 </ul>
 </li>
 <li>同理，可以分析print_time(cst)、print_time(utc)</li>
 </ul>
-<h2 id="剖析timestamp"><a href="#剖析timestamp" class="headerlink" title="剖析timestamp()"></a>剖析timestamp()</h2><p>以下为timestamp()的源码，该方法在没有时区信息时，使用<code>_mktime()</code>方法计算秒数，<code>_mktime()</code>内部使用了本地时区信息；在有时区信息时，直接减去<code>_EPOCH</code>值。</p>
+<h2 id="剖析timestamp"><a href="#剖析timestamp" class="headerlink" title="剖析timestamp()"></a>剖析timestamp()</h2><p>以下为<code>timestamp()</code>的源码，该方法在没有时区信息时，使用<code>_mktime()</code>方法计算秒数，<code>_mktime()</code>内部使用了本地时区信息；在有时区信息时，直接减去<code>_EPOCH</code>值。</p>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">timestamp</span>(<span class="params">self</span>):</span></span><br><span class="line">    <span class="string">&quot;Return POSIX timestamp as float&quot;</span></span><br><span class="line">    <span class="keyword">if</span> self._tzinfo <span class="keyword">is</span> <span class="literal">None</span>:</span><br><span class="line">        s = self._mktime()</span><br><span class="line">        <span class="keyword">return</span> s + self.microsecond / <span class="number">1e6</span></span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        <span class="keyword">return</span> (self - _EPOCH).total_seconds()</span><br></pre></td></tr></table></figure>
 
 <p>所以，</p>
 <ul>
-<li>local变量没有定义时区，对于print_time(local)，case1北京时区下输出1608134400.0 （北京时间2020-12-17 00:00:00），case2UTC时区下输出1608163200.0（北京时间2020-12-17 08:00:00）；</li>
-<li>cst变量带有时区信息，对于print_time(cst)，case1北京时区和case2UTC时区下都输出了同样的结果1608134400.0 （北京时间2020-12-17 00:00:00）；</li>
+<li><code>local</code>变量没有定义时区，对于print_time(local)，case1北京时区下输出1608134400.0 （北京时间2020-12-17 00:00:00），case2UTC时区下输出1608163200.0（北京时间2020-12-17 08:00:00）；</li>
+<li><code>cst</code>变量带有时区信息，对于print_time(cst)，case1北京时区和case2UTC时区下都输出了同样的结果1608134400.0 （北京时间2020-12-17 00:00:00）；</li>
 </ul>
-<h1 id="结论"><a href="#结论" class="headerlink" title="结论"></a>结论</h1><p>借助timestamp()方式来获取毫秒数在绝大多数场景下更会如我们所希望的：</p>
+<h1 id="结论"><a href="#结论" class="headerlink" title="结论"></a>结论</h1><p><code>time.mktime(t.timetuple())</code>适用于构建本地时区时间（即，LocalTime）的场景，借助<code>timestamp()</code>来获取秒数更适用于多时区编程的场景：</p>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">get_ts_in_ms</span>(<span class="params">t</span>):</span></span><br><span class="line">    <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">    获取时间t表示的从格林威治时间1970-01-01 00:00:00开始的毫秒数</span></span><br><span class="line"><span class="string">    :param t: 为datetime类型</span></span><br><span class="line"><span class="string">    :return:</span></span><br><span class="line"><span class="string">    &quot;&quot;&quot;</span></span><br><span class="line">    <span class="keyword">return</span> int(t.timestamp()) * <span class="number">1000</span> + int(t.microsecond / <span class="number">1000</span>)</span><br></pre></td></tr></table></figure>
 
 
