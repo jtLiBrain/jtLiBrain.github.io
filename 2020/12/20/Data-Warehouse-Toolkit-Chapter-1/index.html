@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.0.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.14.0/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css">
+
+<script class="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"jtlibrain.github.io","root":"/","scheme":"Gemini","version":"8.0.0-rc.5","exturl":false,"sidebar":{"position":"left","display":"hide","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false};
+  </script>
+
+  <meta name="description" content="第一章，探讨了维度建模的核心概念以及介绍了Kimball DW&#x2F;BI架构的主要组件。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="《Data Warehouse Toolkit》：第一章，数仓、商业智能与维度建模入门">
+<meta property="og:url" content="https://jtlibrain.github.io/2020/12/20/Data-Warehouse-Toolkit-Chapter-1/index.html">
+<meta property="og:site_name" content="jtLiBrain">
+<meta property="og:description" content="第一章，探讨了维度建模的核心概念以及介绍了Kimball DW&#x2F;BI架构的主要组件。">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://jtlibrain.github.io/images/datawarehouse/1-1.svg">
+<meta property="og:image" content="https://jtlibrain.github.io/images/datawarehouse/1-4.png">
+<meta property="og:image" content="https://jtlibrain.github.io/images/datawarehouse/1-5.svg">
+<meta property="og:image" content="https://jtlibrain.github.io/images/datawarehouse/1-7.svg">
+<meta property="article:published_time" content="2020-12-20T12:45:49.000Z">
+<meta property="article:modified_time" content="2020-12-20T13:09:43.350Z">
+<meta property="article:author" content="JT Li">
+<meta property="article:tag" content="学习笔记">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://jtlibrain.github.io/images/datawarehouse/1-1.svg">
+
+<link rel="canonical" href="https://jtlibrain.github.io/2020/12/20/Data-Warehouse-Toolkit-Chapter-1/">
+
+
+<script class="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>《Data Warehouse Toolkit》：第一章，数仓、商业智能与维度建模入门 | jtLiBrain</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  body { margin-top: 2rem; }
+
+  .use-motion .menu-item,
+  .use-motion .sidebar,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header {
+    visibility: visible;
+  }
+
+  .use-motion .header,
+  .use-motion .site-brand-container .toggle,
+  .use-motion .footer { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle,
+  .use-motion .custom-logo-image {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line {
+    transform: scaleX(1);
+  }
+
+  .search-pop-overlay, .sidebar-nav { display: none; }
+  .sidebar-panel { display: block; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <main class="main">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+        <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">jtLiBrain</h1>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">任何伟大的事都不会一蹴而就，三分智慧，七分韧性</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <section class="post-toc-wrap sidebar-panel">
+          <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%95%B0%E4%BB%93%E5%92%8C%E5%95%86%E4%B8%9A%E6%99%BA%E8%83%BD%E7%9A%84%E7%9B%AE%E6%A0%87"><span class="nav-number">1.</span> <span class="nav-text">数仓和商业智能的目标</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%BB%B4%E5%BA%A6%E5%BB%BA%E6%A8%A1%E7%AE%80%E4%BB%8B"><span class="nav-number">2.</span> <span class="nav-text">维度建模简介</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%98%9F%E5%BD%A2%E6%A8%A1%E5%9E%8B%E5%92%8COLAP%E7%AB%8B%E6%96%B9%E4%BD%93"><span class="nav-number">2.1.</span> <span class="nav-text">星形模型和OLAP立方体</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%94%A8%E4%BA%8E%E6%B5%8B%E5%BA%A6%E7%9A%84%E4%BA%8B%E5%AE%9E%E8%A1%A8"><span class="nav-number">2.2.</span> <span class="nav-text">用于测度的事实表</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%94%A8%E4%BA%8E%E6%8F%8F%E8%BF%B0%E4%B8%8A%E4%B8%8B%E6%96%87%E7%9A%84%E7%BB%B4%E5%BA%A6%E8%A1%A8"><span class="nav-number">2.3.</span> <span class="nav-text">用于描述上下文的维度表</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%98%9F%E5%BD%A2%E6%A8%A1%E5%9E%8B%E4%B8%AD%E8%BF%9E%E6%8E%A5%E4%BA%8B%E5%AE%9E%E8%A1%A8%E5%92%8C%E7%BB%B4%E5%BA%A6%E8%A1%A8"><span class="nav-number">2.4.</span> <span class="nav-text">星形模型中连接事实表和维度表</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Kimball%E7%9A%84DW-BI%E6%9E%B6%E6%9E%84"><span class="nav-number">3.</span> <span class="nav-text">Kimball的DW&#x2F;BI架构</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%9A%E5%8A%A1%E6%BA%90%E5%A4%B4%E7%B3%BB%E7%BB%9F"><span class="nav-number">3.1.</span> <span class="nav-text">业务源头系统</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%8A%BD%E5%8F%96%E3%80%81%E8%BD%AC%E6%8D%A2%E5%92%8C%E5%8A%A0%E8%BD%BD%E7%B3%BB%E7%BB%9F"><span class="nav-number">3.2.</span> <span class="nav-text">抽取、转换和加载系统</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%91%88%E7%8E%B0%E5%B1%82%E4%B8%BA%E4%BA%86%E6%94%AF%E6%92%91%E5%95%86%E4%B8%9A%E6%99%BA%E8%83%BD"><span class="nav-number">3.3.</span> <span class="nav-text">呈现层为了支撑商业智能</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%95%86%E4%B8%9A%E6%99%BA%E8%83%BD%E5%BA%94%E7%94%A8%E7%A8%8B%E5%BA%8F"><span class="nav-number">3.4.</span> <span class="nav-text">商业智能应用程序</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%94%A8%E9%A4%90%E9%A6%86%E6%9D%A5%E6%AF%94%E5%96%BBKimball%E6%9E%B6%E6%9E%84"><span class="nav-number">3.5.</span> <span class="nav-text">用餐馆来比喻Kimball架构</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B9%95%E5%90%8E%E5%8E%A8%E6%88%BF%E4%B8%AD%E7%9A%84ETL"><span class="nav-number">3.5.1.</span> <span class="nav-text">幕后厨房中的ETL</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%89%8D%E7%AB%AF%E9%A4%90%E5%8E%85%E4%B8%AD%E7%9A%84%E6%95%B0%E6%8D%AE%E5%91%88%E7%8E%B0%E5%92%8CBI"><span class="nav-number">3.5.2.</span> <span class="nav-text">前端餐厅中的数据呈现和BI</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%85%B6%E5%AE%83DW-BI%E6%9E%B6%E6%9E%84"><span class="nav-number">4.</span> <span class="nav-text">其它DW&#x2F;BI架构</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%8B%AC%E7%AB%8B%E7%9A%84%E6%95%B0%E6%8D%AE%E9%9B%86%E5%B8%82%E6%9E%B6%E6%9E%84"><span class="nav-number">4.1.</span> <span class="nav-text">独立的数据集市架构</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%AD%E5%BF%83%E8%BE%90%E5%B0%84%E5%9E%8B%E5%85%AC%E5%8F%B8%E4%BF%A1%E6%81%AF%E5%B7%A5%E5%8E%82%E7%9A%84Inmon%E6%9E%B6%E6%9E%84"><span class="nav-number">4.2.</span> <span class="nav-text">中心辐射型公司信息工厂的Inmon架构</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B7%B7%E5%90%88%E4%BA%86%E4%B8%AD%E5%BF%83%E8%BE%90%E5%B0%84%E5%9E%8B%E5%92%8CKimbal%E7%9A%84%E6%9E%B6%E6%9E%84"><span class="nav-number">4.3.</span> <span class="nav-text">混合了中心辐射型和Kimbal的架构</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%BB%B4%E5%BA%A6%E5%BB%BA%E6%A8%A1%E7%9A%84%E4%B8%8D%E5%AE%9E%E7%A5%9E%E8%AF%9D"><span class="nav-number">5.</span> <span class="nav-text">维度建模的不实神话</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%8D%E5%AE%9E%E7%A5%9E%E8%AF%9D1%EF%BC%9A%E7%BB%B4%E5%BA%A6%E6%A8%A1%E5%9E%8B%E5%8F%AA%E9%92%88%E5%AF%B9%E6%B1%87%E6%80%BB%E6%95%B0%E6%8D%AE"><span class="nav-number">5.1.</span> <span class="nav-text">不实神话1：维度模型只针对汇总数据</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%8D%E5%AE%9E%E7%A5%9E%E8%AF%9D2%EF%BC%9A%E7%BB%B4%E5%BA%A6%E6%A8%A1%E5%9E%8B%E6%98%AF%E5%B1%9E%E4%BA%8E%E9%83%A8%E9%97%A8%E7%9A%84%EF%BC%8C%E8%80%8C%E4%B8%8D%E6%98%AF%E4%BC%81%E4%B8%9A%E7%9A%84"><span class="nav-number">5.2.</span> <span class="nav-text">不实神话2：维度模型是属于部门的，而不是企业的</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%8D%E5%AE%9E%E7%A5%9E%E8%AF%9D3%EF%BC%9A%E7%BB%B4%E5%BA%A6%E6%A8%A1%E5%9E%8B%E6%98%AF%E4%B8%8D%E5%8F%AF%E4%BC%B8%E7%BC%A9%E7%9A%84"><span class="nav-number">5.3.</span> <span class="nav-text">不实神话3：维度模型是不可伸缩的</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%8D%E5%AE%9E%E7%A5%9E%E8%AF%9D4%EF%BC%9A"><span class="nav-number">5.4.</span> <span class="nav-text">不实神话4：</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%8D%E5%AE%9E%E7%A5%9E%E8%AF%9D5%EF%BC%9A"><span class="nav-number">5.5.</span> <span class="nav-text">不实神话5：</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%82%E8%80%83"><span class="nav-number">6.</span> <span class="nav-text">参考</span></a></li></ol></div>
+      </section>
+      <!--/noindex-->
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">JT Li</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">17</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">8</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="mailto:jtli.brain@hotmail.com" title="E-Mail → mailto:jtli.brain@hotmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </section>
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </header>
+
+      
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div id="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+      <div class="main-inner">
+        
+
+        <div class="content post posts-expand">
+          
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://jtlibrain.github.io/2020/12/20/Data-Warehouse-Toolkit-Chapter-1/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="JT Li">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="jtLiBrain">
+    </span>
+
+    
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          《Data Warehouse Toolkit》：第一章，数仓、商业智能与维度建模入门
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+              
+
+              <time title="Created: 2020-12-20 20:45:49 / Modified: 21:09:43" itemprop="dateCreated datePublished" datetime="2020-12-20T20:45:49+08:00">2020-12-20</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%95%B0%E6%8D%AE%E4%BB%93%E5%BA%93/" itemprop="url" rel="index"><span itemprop="name">数据仓库</span></a>
+                </span>
+                  , 
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%95%B0%E6%8D%AE%E4%BB%93%E5%BA%93/%E3%80%8AData-Warehouse-Toolkit%E3%80%8B/" itemprop="url" rel="index"><span itemprop="name">《Data Warehouse Toolkit》</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="Views" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">Views: </span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p>第一章，探讨了维度建模的核心概念以及介绍了Kimball DW/BI架构的主要组件。</p>
+<a id="more"></a>
+
+
+<h1 id="数仓和商业智能的目标"><a href="#数仓和商业智能的目标" class="headerlink" title="数仓和商业智能的目标"></a>数仓和商业智能的目标</h1><h1 id="维度建模简介"><a href="#维度建模简介" class="headerlink" title="维度建模简介"></a>维度建模简介</h1><p>维度建模作为呈现分析数据的首选技术手段已经被广泛接受，因为它解决了两个同时性的需求：</p>
+<ul>
+<li>交付的数据是业务人员是可以理解的；</li>
+<li>交付快速查询的能力；</li>
+</ul>
+<p>尽管维度建模通常实现在关系型数据管理系统中，但是它不同于第三范式，3NF寻求的是消除数据冗余。3NF和维度模型都能够用ERDs来表示，因为它们都是由连接后的关系表组成的；它们之间关键性的区别是规范化的程度。</p>
+<p>标准的3NF结构在业务处理当中是极其有用的，因为更新或插入的事务只能在一处对数据库进行操作。然而，标准化的模型对于BI查询太过复杂了。</p>
+<p>注意：维度模型包含了与标准化模型一样的信息，但维度模型是以一种用户易理解、查询高效、以及能应对变化的格式对数据进行打包。</p>
+<h2 id="星形模型和OLAP立方体"><a href="#星形模型和OLAP立方体" class="headerlink" title="星形模型和OLAP立方体"></a>星形模型和OLAP立方体</h2><p>在关系型数据库管理系统中实现的维度模型被称为星形模型，在多维数据库环境中实现的维度模型被称为联机分析处理（OLAP）立方体。</p>
+<img src="/images/datawarehouse/1-1.svg" style="zoom:60%;" />
+
+
+
+<h2 id="用于测度的事实表"><a href="#用于测度的事实表" class="headerlink" title="用于测度的事实表"></a>用于测度的事实表</h2><p>维度模型中的事实表用于存储由组织内的业务过程中事件所产生的表现测度（performance measurement）结果。应该努力做到将这些由业务过程产生的低层级测度数据存到一个维度模型中。因为测度数据大多数都是最大的数据集，不应该为了解决企业内多部门的功能被复制到多处。</p>
+<p>术语<strong>事实</strong>（fact）代表的是一种业务衡量标准。想象一下，站在市场的角度来观察商品被出售，在每次交易事务的时候写下每种商品的单位数量和销售额。这些测度随着商品在收银机处被扫描后就被捕获了。</p>
+<p>事实表中的每一行对应一个测度事件。每行中的数据所处于特定的明细级别，被称为粒度。例如，交易事务中，每次商品被出售都会有一行数据。维度建模的一个核心思想是一个事实表中所有测度数据行必须是同样的粒度。</p>
+<p>注意：物理世界中的一个测度事件会一对一地对应事实表中一行，这是维度建模的基本原则。</p>
+<p>最有用的事实是数值的和可加的。关于事实表中数值型事实的分类介绍，可以参考Kimball Group的<a target="_blank" rel="noopener" href="https://www.kimballgroup.com/data-warehouse-business-intelligence-resources/kimball-techniques/dimensional-modeling-techniques/additive-semi-additive-non-additive-fact/">《Additive, Semi-Additive, and Non-Additive Facts》</a>。</p>
+<p>事实通常为连续值，这有助于区分事实和维度属性。文本型的事实理论上是存在的，但是很少会使用到。大多数情况，文本类型的测度都是某事物的描述。设计者应该尽量将文本数据放到维度中，在那里这些文本可以与其它文本型的维度属性更有效地联系起来，并且占用更少的空间。不要在事实表中存储冗余的文本信息。除非文本在事实表中对于每行都是唯一的，否则它们是应该被放在维度表中。</p>
+<p>事实表常常是在行数上是深的，但在列数上窄的。</p>
+<p>事实表的粒度有三个类别：<a target="_blank" rel="noopener" href="https://www.kimballgroup.com/data-warehouse-business-intelligence-resources/kimball-techniques/dimensional-modeling-techniques/transaction-fact-table/">事务型</a>、<a target="_blank" rel="noopener" href="https://www.kimballgroup.com/data-warehouse-business-intelligence-resources/kimball-techniques/dimensional-modeling-techniques/periodic-snapshot-fact-table/">周期快照</a>、以及<a target="_blank" rel="noopener" href="https://www.kimballgroup.com/data-warehouse-business-intelligence-resources/kimball-techniques/dimensional-modeling-techniques/accumulating-snapshot-fact-table/">累积快照</a>。</p>
+<p>所有事实表都有两个或更多个外键，它们连接维度表的主键。当事实表中的所有键都各自正确匹配上它们在相应维度表中的主键时，这些表满足了参照完整性。</p>
+<p>事实表表达的是<code>多对多</code>的关系。其它的就是维度表。</p>
+<h2 id="用于描述上下文的维度表"><a href="#用于描述上下文的维度表" class="headerlink" title="用于描述上下文的维度表"></a>用于描述上下文的维度表</h2><p>维度表是作为事实表的完整性相伴的。维度表包含着与之关联的业务流程测度事件的文本性上下文。它们描述的是与事件所相关的“谁（who）、做了什么（what）、在哪里（where）、什么时候（when）、如何做的（how）、以及为什么做的（why）”。</p>
+<p>维度表通常都会有很多列或者属性，会有比事实表更少的行。维度属性提供了查询约束、分组、以及报表标签的主要来源。</p>
+<p>属性应该由真词组成，而不是模糊的缩写。你应该尽量最少地在维度表中使用码值，而是使用更详尽的文本属性。</p>
+<p>在很多方面，数仓实际上就是维度属性；DW/BI环境的分析能力与维度属性的质量和深度是成正比的。花费在提供详尽业务术语的时间越多，越好。花费在增添一个属性列上域值的时间越多，越好。花费在确保一个属性列上值的质量的时间越多，越好。</p>
+<p>在对操作源数据进行分类的时候，有时一个数值型数据元素是事实还是维度属性有时是不明确的。通常，问一下该列是否具有很多值、并参与计算（这样的列是事实）或者是基本上稳定、参与约束和行标签的离散值描述（这样的列是纬度属性）就可以做出判断了。偶尔，你不能确定如何区分的时候，可以将该数据元素建模为任何一种形式（或者两种形式）。</p>
+<p>注意：一个数值型的量是事实还是维度属性不是一件特别难的决定。连续型数值差不多都是事实，小范围的离散型数值几乎都是维度属性。</p>
+<p>图1-4所显示的维度表表示了层级关系。例如，从产品上卷到品牌，然后再上卷到到类别。对与产品维度中的每一行，你应该存储相关联的品牌和类别的描述。基于易用和查询性能的层级描述信息在存储冗余的。不要急于通过在产品维度中只存储品牌的码值、创建单独的品牌查找表，同样对于类别描述也做成单独的类别查找表来规范化数据。这样的规范化称为<em>雪片化</em>。非3范式，维度表通常都是高度非规范化的，每个维度表中都是一个扁平的<code>多对一</code>的关系。因为维度表通常是几何级数的小于事实表，通过规范化或雪片化来提升存储效率实际上对于整体数据库的规模没有实质的影响。</p>
+<img src="/images/datawarehouse/1-4.png" style="zoom:70%;" />
+
+
+
+<h2 id="星形模型中连接事实表和维度表"><a href="#星形模型中连接事实表和维度表" class="headerlink" title="星形模型中连接事实表和维度表"></a>星形模型中连接事实表和维度表</h2><p>每个业务过程都表示为维度模型。</p>
+<p><img src="/images/datawarehouse/1-5.svg"></p>
+<p>关于维度模型首先要注意到的是它的简单和对称。</p>
+<h1 id="Kimball的DW-BI架构"><a href="#Kimball的DW-BI架构" class="headerlink" title="Kimball的DW/BI架构"></a>Kimball的DW/BI架构</h1><img src="/images/datawarehouse/1-7.svg" style="zoom:70%;" />
+
+
+
+<h2 id="业务源头系统"><a href="#业务源头系统" class="headerlink" title="业务源头系统"></a>业务源头系统</h2><p>源系统的最优先的是处理工作和可用性。对于源系统的业务查询是很有限的。</p>
+<h2 id="抽取、转换和加载系统"><a href="#抽取、转换和加载系统" class="headerlink" title="抽取、转换和加载系统"></a>抽取、转换和加载系统</h2><p>抽取是将数据获取到数仓环境中的第一步。抽取意味着读取并理解源数据，并将所需要的数据复制到ETL系统。</p>
+<p>在数据被抽取到ETL系统之后，会有很多潜在的转换，例如清洗数据（校正拼写错误、解决域冲突、处理缺失元素、以及解析到标准格式）、合并来自多个源的数据、以及对数据去重。</p>
+<p>ETL过程的最后一步是构建并将数据加载到呈现层中的目标维度模型。因为在交付时，ETL系统的主要任务是交付维度表和事实表，所以这些子系统是至关重要的。所定义的这些子系统很多都主要集中在维度表的处理上，例如代理键的分配、查找码值来提供合适的描述、拆分或联合列来呈现合适的数据值、或者将底层的3范式表结构连接成扁平的非范式维度。相反，事实表通常都会很大、加载很耗时，但是将它们准备给呈现层通常都是很直接的。</p>
+<p>关于ETL系统中的数据是否应该在加载给呈现层的维度结构以前应该被重物理化为规范化结构，这一点仍是行业的痛点。ETL系统通常都是。很多时候，ETL系统不是基于关系技术的，可能只是依赖平面文件的系统。在校验完数据后，再构建3NF的物理数据库有时是没有意思的，。</p>
+<h2 id="呈现层为了支撑商业智能"><a href="#呈现层为了支撑商业智能" class="headerlink" title="呈现层为了支撑商业智能"></a>呈现层为了支撑商业智能</h2><p>DW/BI的呈现层是数据被组织、存储、以及可直接用于用户、报表编写人员、以及其它分析类的BI应用程序的查询的地方。因为幕后ETL系统是禁入的，所以呈现层就成为了DW/BI环境，它是业务通过访问工具和BI应用程序能看到和触及的全部。</p>
+<p>对于呈现层我们有几个强烈的观点。首先，我们强调维度模型中的数据要被呈现、存储、以及访问。第二，呈现层必须包含明细的、原子性数据。最细粒度的数据必须在呈现层是可用，这样用户就可以询问最准确的问题了。第三，呈现数据层应该是围绕业务流程测度事件进行的结构化，而不应该是为了交付一天的报表而进行的设计。一个企业的业务流程是跨组织部门和功能边界的。应该是为原子性销售度量构建单个事实表，而不是为不同部门制定不同的策略。</p>
+<p>注意，DW/BI系统的呈现层中的数据必须是维度的、原子的、以业务流程为中心的、依托企业数仓bus架构的。数据一定不是根据某个单独部门的理解被构建出来的。</p>
+<h2 id="商业智能应用程序"><a href="#商业智能应用程序" class="headerlink" title="商业智能应用程序"></a>商业智能应用程序</h2><h2 id="用餐馆来比喻Kimball架构"><a href="#用餐馆来比喻Kimball架构" class="headerlink" title="用餐馆来比喻Kimball架构"></a>用餐馆来比喻Kimball架构</h2><h3 id="幕后厨房中的ETL"><a href="#幕后厨房中的ETL" class="headerlink" title="幕后厨房中的ETL"></a>幕后厨房中的ETL</h3><p>ETL系统类比于餐馆中的厨房。有才能的厨师选用原始材料，把它们转换成用餐者所享用的美食。</p>
+<p>厨房要达到组织有序，需要考虑几个设计目标。第一，布局必须是高效的。第二，厨房交付始终如一的质量。第三，厨房输出的菜肴必须是高度完整的。</p>
+<p>数仓中的ETL系统类似于餐馆中的厨房。源数据被神奇般地转换为有意义的、可展示用的信息。在任何数据从源被抽取之前，幕后ETL系统必须被布局和架构好。就像厨房，ETL系统被设计以确保吞吐量。它必须高效地将原始源数据转换到目标模型，最小化不必要的移动。</p>
+<p>显然，ETL系统也极度关心数据质量、完整、和一致。输入数据在进入的时候按照合理的质量被检查。</p>
+<p>注意，一个被正确设计的DW/BI环境会权衡台前BI应用程序的工作以利于幕后ETL系统的工作。台前的工作必须有业务人员反复再三来完成，然而幕后工作由ETL人员一次性完成。</p>
+<h3 id="前端餐厅中的数据呈现和BI"><a href="#前端餐厅中的数据呈现和BI" class="headerlink" title="前端餐厅中的数据呈现和BI"></a>前端餐厅中的数据呈现和BI</h3><p>餐馆通过基于四个不同的质量被打分：</p>
+<ul>
+<li>食物（质量、味道、卖相）</li>
+<li>装饰（吸引人、舒适的环境）</li>
+<li>服务（及时配餐、贴心的后勤人员、以及按顺序配送食物）</li>
+<li>费用</li>
+</ul>
+<h1 id="其它DW-BI架构"><a href="#其它DW-BI架构" class="headerlink" title="其它DW/BI架构"></a>其它DW/BI架构</h1><h2 id="独立的数据集市架构"><a href="#独立的数据集市架构" class="headerlink" title="独立的数据集市架构"></a>独立的数据集市架构</h2><h2 id="中心辐射型公司信息工厂的Inmon架构"><a href="#中心辐射型公司信息工厂的Inmon架构" class="headerlink" title="中心辐射型公司信息工厂的Inmon架构"></a>中心辐射型公司信息工厂的Inmon架构</h2><h2 id="混合了中心辐射型和Kimbal的架构"><a href="#混合了中心辐射型和Kimbal的架构" class="headerlink" title="混合了中心辐射型和Kimbal的架构"></a>混合了中心辐射型和Kimbal的架构</h2><h1 id="维度建模的不实神话"><a href="#维度建模的不实神话" class="headerlink" title="维度建模的不实神话"></a>维度建模的不实神话</h1><h2 id="不实神话1：维度模型只针对汇总数据"><a href="#不实神话1：维度模型只针对汇总数据" class="headerlink" title="不实神话1：维度模型只针对汇总数据"></a>不实神话1：维度模型只针对汇总数据</h2><h2 id="不实神话2：维度模型是属于部门的，而不是企业的"><a href="#不实神话2：维度模型是属于部门的，而不是企业的" class="headerlink" title="不实神话2：维度模型是属于部门的，而不是企业的"></a>不实神话2：维度模型是属于部门的，而不是企业的</h2><h2 id="不实神话3：维度模型是不可伸缩的"><a href="#不实神话3：维度模型是不可伸缩的" class="headerlink" title="不实神话3：维度模型是不可伸缩的"></a>不实神话3：维度模型是不可伸缩的</h2><h2 id="不实神话4："><a href="#不实神话4：" class="headerlink" title="不实神话4："></a>不实神话4：</h2><h2 id="不实神话5："><a href="#不实神话5：" class="headerlink" title="不实神话5："></a>不实神话5：</h2><h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><ol>
+<li><a target="_blank" rel="noopener" href="https://www.kimballgroup.com/data-warehouse-business-intelligence-resources/kimball-techniques/dimensional-modeling-techniques/">https://www.kimballgroup.com/data-warehouse-business-intelligence-resources/kimball-techniques/dimensional-modeling-techniques/</a></li>
+</ol>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/" rel="tag"># 学习笔记</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/12/17/Python-How-to-get-milliseconds-represented-by-datetime/" rel="prev" title="Python：如何获取时间对象所表示的毫秒数">
+      <i class="fa fa-chevron-left"></i> Python：如何获取时间对象所表示的毫秒数
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+        </div>
+        
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">JT Li</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="Total Visitors">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="Total Views">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="//cdn.jsdelivr.net/npm/animejs@3.2.0/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1.6.2/dist/gitalk.css">
+
+<script>
+NexT.utils.loadComments('#gitalk-container', () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1.6.2/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : 'c94aa78cf2eda71757bf',
+      clientSecret: '01e1353b3f8eac54aafb1224c784b7af0305ce8c',
+      repo        : 'jtLiBrain.github.io',
+      owner       : 'jtLiBrain',
+      admin       : ['jtLiBrain'],
+      id          : 'cf275407d7fa026fd9099ce5e6db4c5d',
+        language: 'en',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+</body>
+</html>
