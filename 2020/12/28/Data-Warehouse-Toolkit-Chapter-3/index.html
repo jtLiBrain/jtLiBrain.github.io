@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.0.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.14.0/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css">
+
+<script class="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"jtlibrain.github.io","root":"/","scheme":"Gemini","version":"8.0.0-rc.5","exturl":false,"sidebar":{"position":"left","display":"hide","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false};
+  </script>
+
+  <meta name="description" content="略">
+<meta property="og:type" content="article">
+<meta property="og:title" content="《Data Warehouse Toolkit》：第三章，零售销售">
+<meta property="og:url" content="https://jtlibrain.github.io/2020/12/28/Data-Warehouse-Toolkit-Chapter-3/index.html">
+<meta property="og:site_name" content="jtLiBrain">
+<meta property="og:description" content="略">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://jtlibrain.github.io/images/datawarehouse/3-3.svg">
+<meta property="og:image" content="https://jtlibrain.github.io/images/datawarehouse/3-11.svg">
+<meta property="og:image" content="https://jtlibrain.github.io/images/datawarehouse/3-12.svg">
+<meta property="og:image" content="https://jtlibrain.github.io/images/datawarehouse/3-14.svg">
+<meta property="og:image" content="https://jtlibrain.github.io/images/datawarehouse/3-16.svg">
+<meta property="article:published_time" content="2020-12-28T12:59:30.000Z">
+<meta property="article:modified_time" content="2021-01-10T15:35:34.352Z">
+<meta property="article:author" content="JT Li">
+<meta property="article:tag" content="学习笔记">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://jtlibrain.github.io/images/datawarehouse/3-3.svg">
+
+<link rel="canonical" href="https://jtlibrain.github.io/2020/12/28/Data-Warehouse-Toolkit-Chapter-3/">
+
+
+<script class="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>《Data Warehouse Toolkit》：第三章，零售销售 | jtLiBrain</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  body { margin-top: 2rem; }
+
+  .use-motion .menu-item,
+  .use-motion .sidebar,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header {
+    visibility: visible;
+  }
+
+  .use-motion .header,
+  .use-motion .site-brand-container .toggle,
+  .use-motion .footer { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle,
+  .use-motion .custom-logo-image {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line {
+    transform: scaleX(1);
+  }
+
+  .search-pop-overlay, .sidebar-nav { display: none; }
+  .sidebar-panel { display: block; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <main class="main">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+        <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">jtLiBrain</h1>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">任何伟大的事都不会一蹴而就，三分智慧，七分韧性</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <section class="post-toc-wrap sidebar-panel">
+          <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%9B%9B%E6%AD%A5%E7%BB%B4%E5%BA%A6%E5%BB%BA%E6%A8%A1%E6%B5%81%E7%A8%8B"><span class="nav-number">1.</span> <span class="nav-text">四步维度建模流程</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AC%AC1%E6%AD%A5%EF%BC%9A%E9%80%89%E6%8B%A9%E4%B8%9A%E5%8A%A1%E6%B5%81%E7%A8%8B"><span class="nav-number">1.1.</span> <span class="nav-text">第1步：选择业务流程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AC%AC2%E6%AD%A5%EF%BC%9A%E5%A3%B0%E6%98%8E%E7%B2%92%E5%BA%A6"><span class="nav-number">1.2.</span> <span class="nav-text">第2步：声明粒度</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AC%AC3%E6%AD%A5%EF%BC%9A%E7%A1%AE%E5%AE%9A%E7%BB%B4%E5%BA%A6"><span class="nav-number">1.3.</span> <span class="nav-text">第3步：确定维度</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AC%AC4%E6%AD%A5%EF%BC%9A%E7%A1%AE%E5%AE%9A%E4%BA%8B%E5%AE%9E"><span class="nav-number">1.4.</span> <span class="nav-text">第4步：确定事实</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%94%80%E5%94%AE%E6%A1%88%E4%BE%8B%E7%A0%94%E7%A9%B6"><span class="nav-number">2.</span> <span class="nav-text">销售案例研究</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AC%AC1%E6%AD%A5%EF%BC%9A%E9%80%89%E6%8B%A9%E4%B8%9A%E5%8A%A1%E6%B5%81%E7%A8%8B-1"><span class="nav-number">2.1.</span> <span class="nav-text">第1步：选择业务流程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AC%AC2%E6%AD%A5%EF%BC%9A%E5%A3%B0%E6%98%8E%E7%B2%92%E5%BA%A6-1"><span class="nav-number">2.2.</span> <span class="nav-text">第2步：声明粒度</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AC%AC3%E6%AD%A5%EF%BC%9A%E7%A1%AE%E5%AE%9A%E7%BB%B4%E5%BA%A6-1"><span class="nav-number">2.3.</span> <span class="nav-text">第3步：确定维度</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AC%AC4%E6%AD%A5%EF%BC%9A%E7%A1%AE%E5%AE%9A%E4%BA%8B%E5%AE%9E-1"><span class="nav-number">2.4.</span> <span class="nav-text">第4步：确定事实</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%A1%8D%E7%94%9F%E4%BA%8B%E5%AE%9E"><span class="nav-number">2.4.1.</span> <span class="nav-text">衍生事实</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%9D%9E%E5%8F%AF%E5%8A%A0%E4%BA%8B%E5%AE%9E"><span class="nav-number">2.4.2.</span> <span class="nav-text">非可加事实</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BA%8B%E5%8A%A1%E4%BA%8B%E5%AE%9E%E8%A1%A8"><span class="nav-number">2.4.3.</span> <span class="nav-text">事务事实表</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%BB%B4%E5%BA%A6%E8%A1%A8%E7%BB%86%E8%8A%82"><span class="nav-number">3.</span> <span class="nav-text">维度表细节</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%97%A5%E6%9C%9F%E7%BB%B4%E5%BA%A6"><span class="nav-number">3.1.</span> <span class="nav-text">日期维度</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%A0%87%E8%AE%B0%E5%92%8C%E6%8C%87%E7%A4%BA%E7%AC%A6%E4%BD%9C%E4%B8%BA%E6%96%87%E6%9C%AC%E5%B1%9E%E6%80%A7"><span class="nav-number">3.1.1.</span> <span class="nav-text">标记和指示符作为文本属性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%80%E5%A4%A9%E5%BD%93%E4%B8%AD%E7%9A%84%E6%97%B6%E9%97%B4%E6%98%AF%E4%BD%9C%E4%B8%BA%E7%BB%B4%E5%BA%A6%E8%BF%98%E6%98%AF%E4%BD%9C%E4%B8%BA%E4%BA%8B%E5%AE%9E"><span class="nav-number">3.1.2.</span> <span class="nav-text">一天当中的时间是作为维度还是作为事实</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%95%86%E5%93%81%E7%BB%B4%E5%BA%A6"><span class="nav-number">3.2.</span> <span class="nav-text">商品维度</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%89%81%E5%B9%B3%E7%9A%84%E5%A4%9A%E5%AF%B9%E4%B8%80%E5%B1%82%E7%BA%A7%E7%BB%93%E6%9E%84"><span class="nav-number">3.2.1.</span> <span class="nav-text">扁平的多对一层级结构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B8%A6%E6%9C%89%E5%86%85%E5%9C%A8%E5%90%AB%E4%B9%89%E7%9A%84%E5%B1%9E%E6%80%A7"><span class="nav-number">3.2.2.</span> <span class="nav-text">带有内在含义的属性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%95%B0%E5%80%BC%E4%BD%9C%E4%B8%BA%E5%B1%9E%E6%80%A7%E8%BF%98%E6%98%AF%E4%BD%9C%E4%B8%BA%E4%BA%8B%E5%AE%9E"><span class="nav-number">3.2.3.</span> <span class="nav-text">数值作为属性还是作为事实</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%9C%A8%E7%BB%B4%E5%BA%A6%E5%B1%9E%E6%80%A7%E4%B8%8A%E8%BF%9B%E8%A1%8C%E4%B8%8B%E9%92%BB"><span class="nav-number">3.2.4.</span> <span class="nav-text">在维度属性上进行下钻</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BA%97%E9%93%BA%E7%BB%B4%E5%BA%A6"><span class="nav-number">3.3.</span> <span class="nav-text">店铺维度</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BB%B4%E5%BA%A6%E8%A1%A8%E4%B8%AD%E5%A4%9A%E4%B8%AA%E5%B1%82%E7%BA%A7"><span class="nav-number">3.3.1.</span> <span class="nav-text">维度表中多个层级</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BB%B4%E5%BA%A6%E8%A1%A8%E4%B8%AD%E7%9A%84%E6%97%A5%E6%9C%9F"><span class="nav-number">3.3.2.</span> <span class="nav-text">维度表中的日期</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BF%83%E9%94%80%E7%BB%B4%E5%BA%A6"><span class="nav-number">3.4.</span> <span class="nav-text">促销维度</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%A9%BA%E7%9A%84%E5%A4%96%E9%94%AE%E3%80%81%E5%B1%9E%E6%80%A7%E3%80%81%E4%BA%8B%E5%AE%9E"><span class="nav-number">3.4.1.</span> <span class="nav-text">空的外键、属性、事实</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%B6%E4%BB%96%E7%9A%84%E9%9B%B6%E5%94%AE%E9%94%80%E5%94%AE%E4%B8%AD%E7%9A%84%E7%BB%B4%E5%BA%A6"><span class="nav-number">3.5.</span> <span class="nav-text">其他的零售销售中的维度</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%92%88%E5%AF%B9%E4%BA%A4%E6%98%93%E7%BC%96%E5%8F%B7%E7%9A%84%E9%80%80%E5%8C%96%E7%BB%B4%E5%BA%A6"><span class="nav-number">3.6.</span> <span class="nav-text">针对交易编号的退化维度</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%9B%B6%E5%94%AE%E6%A8%A1%E5%9E%8B%E5%AE%9E%E6%88%98"><span class="nav-number">4.</span> <span class="nav-text">零售模型实战</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%9B%B6%E5%94%AE%E6%A8%A1%E5%9E%8B%E7%9A%84%E6%89%A9%E5%B1%95%E6%80%A7"><span class="nav-number">5.</span> <span class="nav-text">零售模型的扩展性</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%97%A0%E4%BA%8B%E5%AE%9E%E4%BA%8B%E5%AE%9E%E8%A1%A8"><span class="nav-number">6.</span> <span class="nav-text">无事实事实表</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%BB%B4%E5%BA%A6%E8%A1%A8%E5%92%8C%E4%BA%8B%E5%AE%9E%E8%A1%A8%E4%B8%AD%E7%9A%84%E9%94%AE"><span class="nav-number">7.</span> <span class="nav-text">维度表和事实表中的键</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BB%B4%E5%BA%A6%E8%A1%A8%E4%B8%AD%E7%9A%84%E4%BB%A3%E7%90%86%E9%94%AE"><span class="nav-number">7.1.</span> <span class="nav-text">维度表中的代理键</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BB%B4%E5%BA%A6%E7%9A%84%E8%87%AA%E7%84%B6%E9%94%AE%E5%92%8C%E8%80%90%E7%94%A8%E8%B6%85%E8%87%AA%E7%84%B6%E9%94%AE"><span class="nav-number">7.2.</span> <span class="nav-text">维度的自然键和耐用超自然键</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%80%80%E5%8C%96%E7%BB%B4%E5%BA%A6%E4%B8%AD%E7%9A%84%E4%BB%A3%E7%90%86%E9%94%AE"><span class="nav-number">7.3.</span> <span class="nav-text">退化维度中的代理键</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%97%A5%E6%9C%9F%E7%BB%B4%E5%BA%A6%E4%B8%AD%E7%9A%84%E5%B7%A7%E5%A6%99%E9%94%AE"><span class="nav-number">7.4.</span> <span class="nav-text">日期维度中的巧妙键</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8B%E5%AE%9E%E8%A1%A8%E4%B8%AD%E7%9A%84%E4%BB%A3%E7%90%86%E9%94%AE"><span class="nav-number">7.5.</span> <span class="nav-text">事实表中的代理键</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%8A%B5%E5%BE%A1%E8%A7%84%E8%8C%83%E5%8C%96"><span class="nav-number">8.</span> <span class="nav-text">抵御规范化</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8%E8%A7%84%E8%8C%83%E5%8C%96%E7%BB%B4%E5%BA%A6%E7%9A%84%E9%9B%AA%E8%8A%B1%E6%A8%A1%E5%9E%8B"><span class="nav-number">8.1.</span> <span class="nav-text">使用规范化维度的雪花模型</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%94%AF%E6%9E%B6"><span class="nav-number">8.2.</span> <span class="nav-text">支架</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9C%89%E5%A4%AA%E5%A4%9A%E7%BB%B4%E8%A1%A8%E7%9A%84%E4%BA%8B%E5%AE%9E%E8%A1%A8%E5%B0%B1%E5%83%8F%E5%A4%9A%E8%B6%B3%E8%9C%88%E8%9A%A3"><span class="nav-number">8.3.</span> <span class="nav-text">有太多维表的事实表就像多足蜈蚣</span></a></li></ol></li></ol></div>
+      </section>
+      <!--/noindex-->
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">JT Li</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">20</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">9</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="mailto:jtli.brain@hotmail.com" title="E-Mail → mailto:jtli.brain@hotmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </section>
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </header>
+
+      
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div id="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+      <div class="main-inner">
+        
+
+        <div class="content post posts-expand">
+          
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://jtlibrain.github.io/2020/12/28/Data-Warehouse-Toolkit-Chapter-3/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="JT Li">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="jtLiBrain">
+    </span>
+
+    
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          《Data Warehouse Toolkit》：第三章，零售销售
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2020-12-28 20:59:30" itemprop="dateCreated datePublished" datetime="2020-12-28T20:59:30+08:00">2020-12-28</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2021-01-10 23:35:34" itemprop="dateModified" datetime="2021-01-10T23:35:34+08:00">2021-01-10</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%95%B0%E6%8D%AE%E4%BB%93%E5%BA%93/" itemprop="url" rel="index"><span itemprop="name">数据仓库</span></a>
+                </span>
+                  , 
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%95%B0%E6%8D%AE%E4%BB%93%E5%BA%93/%E3%80%8AData-Warehouse-Toolkit%E3%80%8B/" itemprop="url" rel="index"><span itemprop="name">《Data Warehouse Toolkit》</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="Views" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">Views: </span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p>略</p>
+<a id="more"></a>
+
+<h1 id="四步维度建模流程"><a href="#四步维度建模流程" class="headerlink" title="四步维度建模流程"></a>四步维度建模流程</h1><h2 id="第1步：选择业务流程"><a href="#第1步：选择业务流程" class="headerlink" title="第1步：选择业务流程"></a>第1步：选择业务流程</h2><h2 id="第2步：声明粒度"><a href="#第2步：声明粒度" class="headerlink" title="第2步：声明粒度"></a>第2步：声明粒度</h2><h2 id="第3步：确定维度"><a href="#第3步：确定维度" class="headerlink" title="第3步：确定维度"></a>第3步：确定维度</h2><h2 id="第4步：确定事实"><a href="#第4步：确定事实" class="headerlink" title="第4步：确定事实"></a>第4步：确定事实</h2><p>通过回答问题“流程中测量什么？”来确定事实。业务人员对分析这些表现指标是非常有兴趣的。所有设计当中的候选事实都必须符合第2步中定义的粒度。那些很明显属于不同粒度的事实必须放在不同事实表中。典型的事实是数值可加的数字，例如订购的数量或者美元的花销。</p>
+<p>深入数据而不面谈业务人员好像没有那么可怕；然而，数据不能替代业务人员的输入。不幸的是，很多组织都尝试过这条<strong>阻力最小的道路</strong>的数据驱动方案，不过成效有效。</p>
+<h1 id="销售案例研究"><a href="#销售案例研究" class="headerlink" title="销售案例研究"></a>销售案例研究</h1><p>数据在基础杂货店里的几个有趣的地方被收集。其中最有用的数据是在顾客购买商品时在收银台被收集的。在收银台，零售终端（POS）系统扫描商品的条形码，计量顾客取走的商品。其他数据在店铺的后门</p>
+<h2 id="第1步：选择业务流程-1"><a href="#第1步：选择业务流程-1" class="headerlink" title="第1步：选择业务流程"></a>第1步：选择业务流程</h2><h2 id="第2步：声明粒度-1"><a href="#第2步：声明粒度-1" class="headerlink" title="第2步：声明粒度"></a>第2步：声明粒度</h2><h2 id="第3步：确定维度-1"><a href="#第3步：确定维度-1" class="headerlink" title="第3步：确定维度"></a>第3步：确定维度</h2><h2 id="第4步：确定事实-1"><a href="#第4步：确定事实-1" class="headerlink" title="第4步：确定事实"></a>第4步：确定事实</h2><img src="/images/datawarehouse/3-3.svg" style="zoom:70%;" />
+
+<h3 id="衍生事实"><a href="#衍生事实" class="headerlink" title="衍生事实"></a>衍生事实</h3><p>通过从扩展销售金额中减去扩展成本金额可以计算出来总利润，或者收益。尽管是被计算出来的，总利润是可以在所有维度上完全可加的；你可以计算在任意天数的内的任意店铺组合的任意所售产品组合的总利润。维度建模者有时会问是否被计算的衍生事实应该被存储到数据库中。我们一般推荐要将其实际地进行存储。因为总利润可以从一条事实表中的行中相临近的数据计算而来，所有有些人会认为应该在视图中执行这样的计算。如果所有的用户都通过视图来访问该数据，而不会有使用即席查询工具的用户偷偷绕过视图而直接使用物理表的话这也是一个合理的方案。然而，有时非可加度量，例如百分比或比率，是必须在BI应用中计算的，因为这类计算不能被预计算出来存储到事实表中的。</p>
+<h3 id="非可加事实"><a href="#非可加事实" class="headerlink" title="非可加事实"></a>非可加事实</h3><p>毛利除以扩展销售收入就是毛利率。毛利率是非可加的事实，因为不能沿着任何维度对它进行汇总。通过分别计算收入和成本的合计值，然后相除可以计算任何产品、店铺、或天数内的毛利率。</p>
+<p><strong>注意</strong>，百分比和比率，例如毛利率，是非可加的。分子和分母应该被存储到事实表中。</p>
+<p>单价是另一个非可加的事实。不像事实表中的扩展的数量，对任何维度上对单价进行求和都是无意义的。在有些情况下，一个基本非可加事实，例如温度，是由源系统所提供的。</p>
+<h3 id="事务事实表"><a href="#事务事实表" class="headerlink" title="事务事实表"></a>事务事实表</h3><p>事务性的业务流程是最常见的。代表这类流程的事实表都有一些特性：</p>
+<ul>
+<li></li>
+<li></li>
+<li></li>
+<li></li>
+<li></li>
+</ul>
+<h1 id="维度表细节"><a href="#维度表细节" class="headerlink" title="维度表细节"></a>维度表细节</h1><h2 id="日期维度"><a href="#日期维度" class="headerlink" title="日期维度"></a>日期维度</h2><h3 id="标记和指示符作为文本属性"><a href="#标记和指示符作为文本属性" class="headerlink" title="标记和指示符作为文本属性"></a>标记和指示符作为文本属性</h3><h3 id="一天当中的时间是作为维度还是作为事实"><a href="#一天当中的时间是作为维度还是作为事实" class="headerlink" title="一天当中的时间是作为维度还是作为事实"></a>一天当中的时间是作为维度还是作为事实</h3><h2 id="商品维度"><a href="#商品维度" class="headerlink" title="商品维度"></a>商品维度</h2><p>商品维度描述杂货店中的每个SKU。</p>
+<h3 id="扁平的多对一层级结构"><a href="#扁平的多对一层级结构" class="headerlink" title="扁平的多对一层级结构"></a>扁平的多对一层级结构</h3><p>对于每个SKU，其所有的商品层级都定义好了。有些属性是唯一的，例如SKU描述。这个例子中，在SUK描述这一列中有300,000个不同的值。另一个极端，部门描述可能只有50个不同的取值。这样的话，部门描述中的每个取值平均会重复6,000次。这是完全可以接受的！不需要将这些被重复的值单独抽取到第二个规范化的表以节省空间。</p>
+<p>商品维度表中通常会有不只一个显示的层级。</p>
+<h3 id="带有内在含义的属性"><a href="#带有内在含义的属性" class="headerlink" title="带有内在含义的属性"></a>带有内在含义的属性</h3><p>操作商品码（维度表中NK符号所表示的自然键）有内在的含义，其中码的不同部分代表着商品的重要特性。这种情况下，这个复合属性应该被作为整体保留下来，并且将其拆分为多个部分，每个部分作为单独的属性来处理。例如，如果操作码的第5个到第9个字符代表的是厂商，那么厂商的名字应该作为维度表的属性被保存。</p>
+<h3 id="数值作为属性还是作为事实"><a href="#数值作为属性还是作为事实" class="headerlink" title="数值作为属性还是作为事实"></a>数值作为属性还是作为事实</h3><p>一个典型的例子是：商品的标准定价。这肯定是数值，所以第一直觉是将其放到事实表中。但是，一般标准价格很少变化，不像大部分事实它们在每个测度事件上的值都不同。</p>
+<p>如果数值主要用于计算的目的，那么它可能属于事实表。或者，如果标准价格主要用于价格差异分析，。如果稳定的数值主要用于过滤和分组，那么它应该被当成商品维度属性。</p>
+<p>有时，数值充当计算和过滤/分组的功能。这时，应该将该值存储到事实表和维度表中。假定，事实表中的标准价格表示的是在销售事务发生时的值，而维度属性表示的是它当前的标准价格。</p>
+<h3 id="在维度属性上进行下钻"><a href="#在维度属性上进行下钻" class="headerlink" title="在维度属性上进行下钻"></a>在维度属性上进行下钻</h3><h2 id="店铺维度"><a href="#店铺维度" class="headerlink" title="店铺维度"></a>店铺维度</h2><h3 id="维度表中多个层级"><a href="#维度表中多个层级" class="headerlink" title="维度表中多个层级"></a>维度表中多个层级</h3><h3 id="维度表中的日期"><a href="#维度表中的日期" class="headerlink" title="维度表中的日期"></a>维度表中的日期</h3><h2 id="促销维度"><a href="#促销维度" class="headerlink" title="促销维度"></a>促销维度</h2><p>这种维度通常被称为因果维度，因为它描述的是造成商品销售中变化的因素。</p>
+<p>例如，在一次促销当中，大部分店铺会同时执行三种促销机制，但是有的店铺可能不安装收银处的通道终端显示器。这种情况，需要两条单独的促销条件行，一行是正常降价加上广告加上显示器，一行正常降价加上广告。</p>
+<p><img src="/images/datawarehouse/3-11.svg"></p>
+<p>从纯逻辑的角度来看，可以将这些促销的类似信息通过划分成独立的四种因果机制将它们记录到不同的维度中，而不是将它们组合到一个维度中。支持将四个维度放到一起的权衡有：</p>
+<ul>
+<li>如果这四种因果机制是高度相关的，那么这个合并的维度不会比任何一个单独的维度要大。</li>
+<li>合并的维度可以被高效浏览以查看不同的降价、广告、以及优惠券是如何被一同使用的。然而，这种浏览只能显示可能的促销组合。</li>
+</ul>
+<p>支持将四个维度独立到四个不同维度表中的权衡有：</p>
+<ul>
+<li>如果用户，独立的维度对于企业更好理解，</li>
+</ul>
+<h3 id="空的外键、属性、事实"><a href="#空的外键、属性、事实" class="headerlink" title="空的外键、属性、事实"></a>空的外键、属性、事实</h3><p>通常，很多销售事务中包含有没有进行促销的商品。顾客不会只在购物车中装促销的商品；顾客需要为购物车中有些商品支付全价！促销维度必须要包含一行（唯一键为0或-1）来识别这种不促销的条件，这样可以避免事实表中空的促销键。如果你将null放到事实表中声明为到维度表外键的列，就违反了参照完整性。除了参照完整性的警示，空值键对于使用方而言也是困惑的源头，因为它们不能在空值键上进行join。</p>
+<p>我们有时也遇到过空值的维度属性值。这通常发生在当一个维度行还没有被完全填充好、或者有些属性不适用于所有的维度行的时候。不管是那种情况，我们都建议使用描述行的字符串，例如Unknown or Not Applicable，来替换空值。</p>
+<p>最后，我们也会遇到事实表中度量是空的。我们通常会保留这些null值，这样它们可以在聚合函数中被正确的处理，例如，SUM、MIN、MAX、COUNT、AVG，这些函数针对null值都可以做出正确的事情。</p>
+<h2 id="其他的零售销售中的维度"><a href="#其他的零售销售中的维度" class="headerlink" title="其他的零售销售中的维度"></a>其他的零售销售中的维度</h2><p>在真实世界中，支付方式通常呈现出更为复杂的场景。如果在一次POS交易中支持多种支付方式，那么支付方式在声明的粒度上呈现出来的就不只一个值了。不要将所声明的粒度修改成不自然的粒度，例如POS交易中每个商品的每个支付方式一行；你可能要在单独的事实表中来捕获支付方式，粒度可以是每个交易一行（然后，不同的支付方式项作为不同的事实出现）或者每个交易的每种支付方式一行（这要求每个支付方式维度与每行进行关联）。</p>
+<h2 id="针对交易编号的退化维度"><a href="#针对交易编号的退化维度" class="headerlink" title="针对交易编号的退化维度"></a>针对交易编号的退化维度</h2><p>尽管POS交易编号看上去像事实表中维度键，这种本可能成为交易维度的描述性项被剥夺了。因为结果维度是空的，我们把POS交易编号成为退化维度。自然业务票据码，例如POS交易编号，置于事实表中而不用连接到维度表。退化维度经常出现在当事实表的粒度代表的着一次交易或一个交易行，因为退化维度表示了交易的唯一标识符。订单编号、发票号码、以及提单编号几乎总是以退化维度出现在维度建模中。</p>
+<p>退化维度在事实表主键中经常扮演的是不可或缺的角色。在我们的案例学习中，零售销售事实表的主键是由：退化POS交易编号和商品组件组成的，假设扫描的相同商品被归到一个记录行。</p>
+<p>注意，业务交易控制编码，例如订单编码、发票编码、以及提单编码通常会造成空的维度，这些编码一般会作为交易事实表的退化维度。退化维度是没有相应维度表的维度键。</p>
+<h1 id="零售模型实战"><a href="#零售模型实战" class="headerlink" title="零售模型实战"></a>零售模型实战</h1><p><img src="/images/datawarehouse/3-12.svg"></p>
+<h1 id="零售模型的扩展性"><a href="#零售模型的扩展性" class="headerlink" title="零售模型的扩展性"></a>零售模型的扩展性</h1><h1 id="无事实事实表"><a href="#无事实事实表" class="headerlink" title="无事实事实表"></a>无事实事实表</h1><img src="/images/datawarehouse/3-14.svg" style="zoom:80%;" />
+
+<h1 id="维度表和事实表中的键"><a href="#维度表和事实表中的键" class="headerlink" title="维度表和事实表中的键"></a>维度表和事实表中的键</h1><h2 id="维度表中的代理键"><a href="#维度表中的代理键" class="headerlink" title="维度表中的代理键"></a>维度表中的代理键</h2><p>维度表中唯一主键应该是代理键，而不应该依赖业务系统标识符(称为自然键)。代理键是根据需要按顺序分配到给维度的简单整数。第一条商品行被分配商品代理是1，下一条商品行被分配商品键2，依此类推。实际的代理键的值没有业务含义。代理键仅仅服务于连接维度表和事实表。</p>
+<p>使用代理键有几点优势：</p>
+<ul>
+<li>缓冲数据仓库免受业务变化影响：代理键可以让数仓团队来掌控DW/BI环境，而不受由于要生成、更新、删除、回收、以及再利用商品编码的业务规则所鞭打。很多组织当中，历史业务码（例如，不活跃的账号或很老的商品码）在一段时间蛰伏后会被重新分配。如果账号在12个月不活跃后被回收，业务系统。但是DW/BI系统会为数据保留很多年。代理键为数仓提供了一种机制来区分有着相同业务账号的两个不同实例。</li>
+<li>集成多个源系统：</li>
+<li>提高性能：</li>
+<li>处理null或未知的条件：如之前提到的，特定的代理键值用于记录可能没有业务码的维度条件，例如，No Promotion条件或匿名客户。尽管这些业务码缺失了，你也可以为它们分配一个代理键。</li>
+<li>支持对维度属性变更进行追踪：</li>
+</ul>
+<h2 id="维度的自然键和耐用超自然键"><a href="#维度的自然键和耐用超自然键" class="headerlink" title="维度的自然键和耐用超自然键"></a>维度的自然键和耐用超自然键</h2><h2 id="退化维度中的代理键"><a href="#退化维度中的代理键" class="headerlink" title="退化维度中的代理键"></a>退化维度中的代理键</h2><p>尽管代理键通常不会分配给退化维度，但每种情况都需要具体评估来决定是否需要这样做。</p>
+<ul>
+<li>如果业务控制的数码不能做到跨区域唯一，这时就需要利用代理键。例如，零售的POS系统可能分配的业务码不是跨店唯一的。</li>
+<li>当控制码到达最大值时，系统可能会回零，然后重新使用以前的控制码。</li>
+<li>最后，取决于BI工具的能力，你可能需要分配代理键在事务码上进行交叉探寻。</li>
+</ul>
+<h2 id="日期维度中的巧妙键"><a href="#日期维度中的巧妙键" class="headerlink" title="日期维度中的巧妙键"></a>日期维度中的巧妙键</h2><p>尽管yyyymmdd代表的整数是日期维度键最常用的方案，但是有些关系型数据库的优化器更喜欢是一个真正的日期类型列来进行分区。这时，优化器知道在3月1日和4月1日之间有31个值，而不是20130301和20130401之间的100个值。这种智能会影响优化器所选择的查询策略，进而进一步将其查询时间。如果优化器会结合日期类型智能，那么应该考虑日期类型的键。如果使用日期类型键的唯一原因只是简化DBA的工作，那么就没那么大吸引力了。</p>
+<h2 id="事实表中的代理键"><a href="#事实表中的代理键" class="headerlink" title="事实表中的代理键"></a>事实表中的代理键</h2><p>尽管我们坚定不移在维度表中使用代理键，但是我们很少要求在事实表中使用代理键。</p>
+<p>好处：</p>
+<ul>
+<li>迅速识别唯一性。</li>
+<li>回退或重新开始批量装载。</li>
+<li>使用insert+delete替代update。</li>
+<li>使用事实表中的代理键作为parent/child模型中的引用。</li>
+</ul>
+<h1 id="抵御规范化"><a href="#抵御规范化" class="headerlink" title="抵御规范化"></a>抵御规范化</h1><h2 id="使用规范化维度的雪花模型"><a href="#使用规范化维度的雪花模型" class="headerlink" title="使用规范化维度的雪花模型"></a>使用规范化维度的雪花模型</h2><p>维度表规范化被称为雪花化。</p>
+<p>雪花化湿维度建模的合理化延伸，然而，我们鼓励你抵御雪花模型，给出的两个主要设计驱动力：易用和性能。</p>
+<ul>
+<li>大量雪花化的表带来的是更加复杂的呈现。</li>
+</ul>
+<h2 id="支架"><a href="#支架" class="headerlink" title="支架"></a>支架</h2><p>尽管我们通常不建议雪花化，但是有些情况下允许创建支架维度，将其附着在，。在这个例子中，被移走的支架是一个从主维度中雪花化出来的日期维度。支架日期维度中的属性被陈属性地、唯一性地进行标记来区别于与业务流程相关的其他日期。该维度只用于支撑主维度表中的日期属性，如果业务想要对这个日期属性按照非标准的日历属性（如，按财务周期、业务日期指标、或节假日）进行过滤和分组。否则，你只需在商品维度上将日期属性作为标准的日期类型列就可以了。</p>
+<p><img src="/images/datawarehouse/3-16.svg"></p>
+<h2 id="有太多维表的事实表就像多足蜈蚣"><a href="#有太多维表的事实表就像多足蜈蚣" class="headerlink" title="有太多维表的事实表就像多足蜈蚣"></a>有太多维表的事实表就像多足蜈蚣</h2>
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/" rel="tag"><i class="fa fa-tag"></i> 学习笔记</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/12/20/Data-Warehouse-Toolkit-Chapter-1/" rel="prev" title="《Data Warehouse Toolkit》：第一章，数仓、商业智能与维度建模入门">
+      <i class="fa fa-chevron-left"></i> 《Data Warehouse Toolkit》：第一章，数仓、商业智能与维度建模入门
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/01/08/Flink-Stateful-Stream-Processing/" rel="next" title="Flink：有状态的流处理（译）">
+      Flink：有状态的流处理（译） <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+        </div>
+        
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">JT Li</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="Total Visitors">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="Total Views">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="//cdn.jsdelivr.net/npm/animejs@3.2.0/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1.6.2/dist/gitalk.css">
+
+<script>
+NexT.utils.loadComments('#gitalk-container', () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1.6.2/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : 'c94aa78cf2eda71757bf',
+      clientSecret: '01e1353b3f8eac54aafb1224c784b7af0305ce8c',
+      repo        : 'jtLiBrain.github.io',
+      owner       : 'jtLiBrain',
+      admin       : ['jtLiBrain'],
+      id          : 'cbfa7fd71466762bc62637a10c5c8ab0',
+        language: 'en',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+</body>
+</html>
