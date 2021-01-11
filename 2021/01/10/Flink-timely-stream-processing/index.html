@@ -31,8 +31,11 @@
 <meta property="og:description" content="及时流处理是状态流处理的延伸，状态流处理中的时间在计算当中扮演了某种作用。除此以外，情况还有：当你进行时间序列分析的时候、当你根据某时间周期(一般称为窗口)进行聚合的时候、或者当你进行事件处理中，事件发生的时间是比较关键的时候。 接下来的章节中，我们将着重于一些当你在使用及时Flink应用程序时需要考虑的话题。">
 <meta property="og:locale" content="en_US">
 <meta property="og:image" content="https://jtlibrain.github.io/images/flink/event_processing_time.svg">
+<meta property="og:image" content="https://jtlibrain.github.io/images/flink/stream_watermark_in_order.svg">
+<meta property="og:image" content="https://jtlibrain.github.io/images/flink/parallel_streams_watermarks.svg">
+<meta property="og:image" content="https://jtlibrain.github.io/images/flink/windows.svg">
 <meta property="article:published_time" content="2021-01-10T02:49:40.000Z">
-<meta property="article:modified_time" content="2021-01-10T15:27:50.857Z">
+<meta property="article:modified_time" content="2021-01-11T15:32:56.848Z">
 <meta property="article:author" content="JT Li">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="https://jtlibrain.github.io/images/flink/event_processing_time.svg">
@@ -184,7 +187,7 @@
 
       <!--noindex-->
       <section class="post-toc-wrap sidebar-panel">
-          <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%97%B6%E9%97%B4%E7%9A%84%E6%A6%82%E5%BF%B5%EF%BC%9A%E4%BA%8B%E4%BB%B6%E6%97%B6%E9%97%B4%E5%92%8C%E5%A4%84%E7%90%86%E4%BA%8B%E4%BB%B6"><span class="nav-number">1.</span> <span class="nav-text">时间的概念：事件时间和处理事件</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BA%8B%E4%BB%B6%E6%97%B6%E9%97%B4%E5%92%8C%E6%B0%B4%E5%8D%B0"><span class="nav-number">2.</span> <span class="nav-text">事件时间和水印</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%BF%9F%E5%88%B0"><span class="nav-number">3.</span> <span class="nav-text">迟到</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%AA%97%E5%8F%A3"><span class="nav-number">4.</span> <span class="nav-text">窗口</span></a></li></ol></div>
+          <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%97%B6%E9%97%B4%E7%9A%84%E6%A6%82%E5%BF%B5%EF%BC%9A%E4%BA%8B%E4%BB%B6%E6%97%B6%E9%97%B4%E5%92%8C%E5%A4%84%E7%90%86%E4%BA%8B%E4%BB%B6"><span class="nav-number">1.</span> <span class="nav-text">时间的概念：事件时间和处理事件</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BA%8B%E4%BB%B6%E6%97%B6%E9%97%B4%E5%92%8C%E6%B0%B4%E5%8D%B0"><span class="nav-number">2.</span> <span class="nav-text">事件时间和水印</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%B9%B6%E8%A1%8C%E6%B5%81%E4%B8%AD%E7%9A%84%E6%B0%B4%E5%8D%B0"><span class="nav-number">3.</span> <span class="nav-text">并行流中的水印</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%BF%9F%E5%88%B0"><span class="nav-number">4.</span> <span class="nav-text">迟到</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%AA%97%E5%8F%A3"><span class="nav-number">5.</span> <span class="nav-text">窗口</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%82%E8%80%83"><span class="nav-number">6.</span> <span class="nav-text">参考</span></a></li></ol></div>
       </section>
       <!--/noindex-->
 
@@ -277,10 +280,16 @@
                 <i class="far fa-calendar"></i>
               </span>
               <span class="post-meta-item-text">Posted on</span>
-              
 
-              <time title="Created: 2021-01-10 10:49:40 / Modified: 23:27:50" itemprop="dateCreated datePublished" datetime="2021-01-10T10:49:40+08:00">2021-01-10</time>
+              <time title="Created: 2021-01-10 10:49:40" itemprop="dateCreated datePublished" datetime="2021-01-10T10:49:40+08:00">2021-01-10</time>
             </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2021-01-11 23:32:56" itemprop="dateModified" datetime="2021-01-11T23:32:56+08:00">2021-01-11</time>
+              </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
                 <i class="far fa-folder"></i>
@@ -311,18 +320,94 @@
 <p>接下来的章节中，我们将着重于一些当你在使用及时Flink应用程序时需要考虑的话题。</p>
 <a id="more"></a>
 
-<h1 id="时间的概念：事件时间和处理事件"><a href="#时间的概念：事件时间和处理事件" class="headerlink" title="时间的概念：事件时间和处理事件"></a>时间的概念：事件时间和处理事件</h1><ul>
-<li><p>处理时间：处理时间指的是执行各自操作的机器的系统时间。</p>
+<h1 id="时间的概念：事件时间和处理事件"><a href="#时间的概念：事件时间和处理事件" class="headerlink" title="时间的概念：事件时间和处理事件"></a>时间的概念：事件时间和处理事件</h1><blockquote>
+<p>When referring to time in a streaming program (for example to define windows), one can refer to different notions of <em>time</em>:</p>
+</blockquote>
+<ul>
+<li><blockquote>
+<p><strong>Processing time:</strong> Processing time refers to the system time of the machine that is executing the respective operation.</p>
+</blockquote>
+<p>处理时间：处理时间指的是执行各自操作的机器的系统时间。</p>
+<blockquote>
+<p>When a streaming program runs on processing time, all time-based operations (like time windows) will use the system clock of the machines that run the respective operator. An hourly processing time window will include all records that arrived at a specific operator between the times when the system clock indicated the full hour. For example, if an application begins running at 9:15am, the first hourly processing time window will include events processed between 9:15am and 10:00am, the next window will include events processed between 10:00am and 11:00am, and so on.</p>
+</blockquote>
 <p>按小时处理的时间窗口将包含在系统时钟所指示整小时时间之间到达特定算子的所有记录。级例如，如果一个应用在上午9:15开始运行，那么第一个按小时处理的时间窗口会包含9:15am和10:00am之间被处理的事件，下一个窗口会包含10:00am和11:00am之间被处理的时间，依此类推。</p>
+<blockquote>
+<p>Processing time is the simplest notion of time and requires no coordination between streams and machines. It provides the best performance and the lowest latency. However, in distributed and asynchronous environments processing time does not provide determinism, because it is susceptible to the speed at which records arrive in the system (for example from the message queue), to the speed at which the records flow between operators inside the system, and to outages (scheduled, or otherwise).</p>
+</blockquote>
 <p>处理时间是最简单的时间概念，不需要在流和机器之间进行协调。它提供了最佳的性能和最低的延迟。然而，在分布和异步的环境内，处理时间，因为它容易受到记录达到系统的速度、记录在系统内算子之间流转的速度、以及断电(计划的，或其它的)的影响。</p>
 </li>
-<li><p>事件时间：事件时间是每个事件在其生成设备所发生的时间。这个时间一般在进入到Flink前就嵌入在记录中了，并且这个事件时间戳可以从每个记录中提取出来。事件时间程序中必须指定如何生成<em>事件时间的水印</em>，它是指示事件时间进展的一种机制。此处的水印机制在后面的章节中有描述。</p>
+<li><blockquote>
+<p><strong>Event time:</strong> Event time is the time that each individual event occurred on its producing device. This time is typically embedded within the records before they enter Flink, and that <em>event timestamp</em> can be extracted from each record. In event time, the progress of time depends on the data, not on any wall clocks. Event time programs must specify how to generate <em>Event Time Watermarks</em>, which is the mechanism that signals progress in event time. This watermarking mechanism is described in a later section, <a target="_blank" rel="noopener" href="https://ci.apache.org/projects/flink/flink-docs-release-1.12/zh/concepts/timely-stream-processing.html#event-time-and-watermarks">below</a>.</p>
+</blockquote>
+<p>事件时间：事件时间是每个事件在其生成设备所发生的时间。这个时间一般在进入到Flink前就嵌入在记录中了，并且这个事件时间戳可以从每个记录中提取出来。事件时间程序中必须指定如何生成<em>事件时间的水印</em>，它是指示事件时间进展的一种机制。此处的水印机制在后面的章节中有描述。</p>
+<blockquote>
+<p>In a perfect world, event time processing would yield completely consistent and deterministic results, regardless of when events arrive, or their ordering. However, unless the events are known to arrive in-order (by timestamp), event time processing incurs some latency while waiting for out-of-order events. As it is only possible to wait for a finite period of time, this places a limit on how deterministic event time applications can be.</p>
+</blockquote>
 <p>在一个完美的世界中，事件时间的处理会产生完全一致的且确定的结果，不管事件到达的时间以及到达的顺序。然而，除非事件已知就是按顺序(通过时间戳)达到的，否则事件时间的处理会碰到由于延迟而等待并非按顺序到来的事件。因为只可能等待有限的一段时间，这就限定了事件时间的应用程序可以达到怎样的确定性。</p>
+<blockquote>
+<p>Assuming all of the data has arrived, event time operations will behave as expected, and produce correct and consistent results even when working with out-of-order or late events, or when reprocessing historic data. For example, an hourly event time window will contain all records that carry an event timestamp that falls into that hour, regardless of the order in which they arrive, or when they are processed. (See the section on <a target="_blank" rel="noopener" href="https://ci.apache.org/projects/flink/flink-docs-release-1.12/zh/concepts/timely-stream-processing.html#late-elements">late events</a> for more information.)</p>
+</blockquote>
 <p>假设所有数据都已经到达了，事件时间的操作都会如预期表现，产生正确且一致的结果事件，甚至当有乱序了的或迟到的事件，或当再次处理历史数据的时候。例如，按小时的事件时间窗口将包含携带的事件时间戳落在该小时内的所有记录，不管它们到达的顺序如何以及不管它们是在何时被处理的。(详细查看关于迟到事件的章节)</p>
-<p><img src="/images/flink/event_processing_time.svg"></p>
+<blockquote>
+<p>Note that sometimes when event time programs are processing live data in real-time, they will use some <em>processing time</em> operations in order to guarantee that they are progressing in a timely fashion.</p>
+</blockquote>
 </li>
 </ul>
-<h1 id="事件时间和水印"><a href="#事件时间和水印" class="headerlink" title="事件时间和水印"></a>事件时间和水印</h1><h1 id="迟到"><a href="#迟到" class="headerlink" title="迟到"></a>迟到</h1><h1 id="窗口"><a href="#窗口" class="headerlink" title="窗口"></a>窗口</h1>
+<p>  <img src="/images/flink/event_processing_time.svg"></p>
+<h1 id="事件时间和水印"><a href="#事件时间和水印" class="headerlink" title="事件时间和水印"></a>事件时间和水印</h1><blockquote>
+<p>A stream processor that supports <em>event time</em> needs a way to measure the progress of event time. For example, a window operator that builds hourly windows needs to be notified when event time has passed beyond the end of an hour, so that the operator can close the window in progress.</p>
+</blockquote>
+<p>支持事件时间的流处理器需要一种方式来衡量事件时间的进展。例如，一个创建小时级别窗口的window算子需要在事件时间越过小时结尾处的时候被告知，这样该算子可以关闭还在进行中的窗口。</p>
+<blockquote>
+<p><em>Event time</em> can progress independently of <em>processing time</em> (measured by wall clocks). For example, in one program the current <em>event time</em> of an operator may trail slightly behind the <em>processing time</em> (accounting for a delay in receiving the events), while both proceed at the same speed. On the other hand, another streaming program might progress through weeks of event time with only a few seconds of processing, by fast-forwarding through some historic data already buffered in a Kafka topic (or another message queue).</p>
+</blockquote>
+<p>事件时间可以独立于处理时间(由挂钟衡量的)之外进行。例如，在一个程序中，算子中的当前事件时间可能会略微落后于处理时间（说明接收时间存在延迟），然而两者是按照同样的速度进行的。换句话说，另一个streaming程序通过已经缓存在Kafka主题(或其它消息队列)中的历史数据可以用几秒的处理时间来处理几周的事件时间。</p>
+<blockquote>
+<p>The mechanism in Flink to measure progress in event time is <strong>watermarks</strong>. Watermarks flow as part of the data stream and carry a timestamp <em>t</em>. A <em>Watermark(t)</em> declares that event time has reached time <em>t</em> in that stream, meaning that there should be no more elements from the stream with a timestamp <em>t’ &lt;= t</em> (i.e. events with timestamps older or equal to the watermark).</p>
+</blockquote>
+<p>Flink中用来衡量事件时间的进展的机制是水印。水印作为数据流的一部分进行流转，并且携带着时间戳t。水印(t)说明的是在该数据流中事件时间已经到时间<em>t</em>了，这意味着数据流中不应该再有时间戳 <em>t’ &lt;= t</em>的元素了(即，时间戳早于或等于该水印的事件)。</p>
+<blockquote>
+<p>The figure below shows a stream of events with (logical) timestamps, and watermarks flowing inline. In this example the events are in order (with respect to their timestamps), meaning that the watermarks are simply periodic markers in the stream.</p>
+</blockquote>
+<p>下图展示了一个数据流，流中有带有(逻辑)时间戳的事件和水印，它们内连在一起流动。在这个例子中，事件是按顺序的(相对于它们的时间戳)，这意味着水印只是这个数据流中简单周期性的标记。</p>
+<p><img src="/images/flink/stream_watermark_in_order.svg"></p>
+<blockquote>
+<p>Note that event time is inherited by a freshly created stream element (or elements) from either the event that produced them or from watermark that triggered creation of those elements.</p>
+</blockquote>
+<h1 id="并行流中的水印"><a href="#并行流中的水印" class="headerlink" title="并行流中的水印"></a>并行流中的水印</h1><blockquote>
+<p>Watermarks are generated at, or directly after, source functions. Each parallel subtask of a source function usually generates its watermarks independently. These watermarks define the event time at that particular parallel source.</p>
+</blockquote>
+<blockquote>
+<p>As the watermarks flow through the streaming program, they advance the event time at the operators where they arrive. Whenever an operator advances its event time, it generates a new watermark downstream for its successor operators.</p>
+</blockquote>
+<blockquote>
+<p>Some operators consume multiple input streams; a union, for example, or operators following a <em>keyBy(…)</em> or <em>partition(…)</em> function. Such an operator’s current event time is the minimum of its input streams’ event times. As its input streams update their event times, so does the operator.</p>
+</blockquote>
+<blockquote>
+<p>The figure below shows an example of events and watermarks flowing through parallel streams, and operators tracking event time.</p>
+</blockquote>
+<p><img src="/images/flink/parallel_streams_watermarks.svg"></p>
+<h1 id="迟到"><a href="#迟到" class="headerlink" title="迟到"></a>迟到</h1><blockquote>
+<p>It is possible that certain elements will violate the watermark condition, meaning that even after the <em>Watermark(t)</em> has occurred, more elements with timestamp <em>t’ &lt;= t</em> will occur. In fact, in many real world setups, certain elements can be arbitrarily delayed, making it impossible to specify a time by which all elements of a certain event timestamp will have occurred. Furthermore, even if the lateness can be bounded, delaying the watermarks by too much is often not desirable, because it causes too much delay in the evaluation of event time windows.</p>
+</blockquote>
+<blockquote>
+<p>For this reason, streaming programs may explicitly expect some <em>late</em> elements. Late elements are elements that arrive after the system’s event time clock (as signaled by the watermarks) has already passed the time of the late element’s timestamp. See <a target="_blank" rel="noopener" href="https://ci.apache.org/projects/flink/flink-docs-release-1.12/zh/dev/stream/operators/windows.html#allowed-lateness">Allowed Lateness</a> for more information on how to work with late elements in event time windows.</p>
+</blockquote>
+<h1 id="窗口"><a href="#窗口" class="headerlink" title="窗口"></a>窗口</h1><blockquote>
+<p>Aggregating events (e.g., counts, sums) works differently on streams than in batch processing. For example, it is impossible to count all elements in a stream, because streams are in general infinite (unbounded). Instead, aggregates on streams (counts, sums, etc), are scoped by <strong>windows</strong>, such as <em>“count over the last 5 minutes”</em>, or <em>“sum of the last 100 elements”</em>.</p>
+</blockquote>
+<blockquote>
+<p>Windows can be <em>time driven</em> (example: every 30 seconds) or <em>data driven</em> (example: every 100 elements). One typically distinguishes different types of windows, such as <em>tumbling windows</em> (no overlap), <em>sliding windows</em> (with overlap), and <em>session windows</em> (punctuated by a gap of inactivity).</p>
+</blockquote>
+<p><img src="/images/flink/windows.svg"></p>
+<blockquote>
+<p>Please check out this <a target="_blank" rel="noopener" href="https://flink.apache.org/news/2015/12/04/Introducing-windows.html">blog post</a> for additional examples of windows or take a look a <a target="_blank" rel="noopener" href="https://ci.apache.org/projects/flink/flink-docs-release-1.12/zh/dev/stream/operators/windows.html">window documentation</a> of the DataStream API.</p>
+</blockquote>
+<h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><ol>
+<li><a target="_blank" rel="noopener" href="https://ci.apache.org/projects/flink/flink-docs-release-1.12/zh/concepts/timely-stream-processing.html">https://ci.apache.org/projects/flink/flink-docs-release-1.12/zh/concepts/timely-stream-processing.html</a></li>
+</ol>
+
     </div>
 
     
