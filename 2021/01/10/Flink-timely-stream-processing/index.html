@@ -35,7 +35,7 @@
 <meta property="og:image" content="https://jtlibrain.github.io/images/flink/parallel_streams_watermarks.svg">
 <meta property="og:image" content="https://jtlibrain.github.io/images/flink/windows.svg">
 <meta property="article:published_time" content="2021-01-10T02:49:40.000Z">
-<meta property="article:modified_time" content="2021-01-11T15:32:56.848Z">
+<meta property="article:modified_time" content="2021-01-11T16:13:40.969Z">
 <meta property="article:author" content="JT Li">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="https://jtlibrain.github.io/images/flink/event_processing_time.svg">
@@ -288,7 +288,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2021-01-11 23:32:56" itemprop="dateModified" datetime="2021-01-11T23:32:56+08:00">2021-01-11</time>
+                <time title="Modified: 2021-01-12 00:13:40" itemprop="dateModified" datetime="2021-01-12T00:13:40+08:00">2021-01-12</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -378,15 +378,19 @@
 <h1 id="并行流中的水印"><a href="#并行流中的水印" class="headerlink" title="并行流中的水印"></a>并行流中的水印</h1><blockquote>
 <p>Watermarks are generated at, or directly after, source functions. Each parallel subtask of a source function usually generates its watermarks independently. These watermarks define the event time at that particular parallel source.</p>
 </blockquote>
+<p>水印产生在或紧跟在source函数。source函数的每个并行子任务一般都单独生成自己的水印。</p>
 <blockquote>
 <p>As the watermarks flow through the streaming program, they advance the event time at the operators where they arrive. Whenever an operator advances its event time, it generates a new watermark downstream for its successor operators.</p>
 </blockquote>
+<p>当水印流经streaming程序时，它们会推进其所到达的算子处的事件时间。每当一个算子推进了其事件时间，它会为其下游算子生成一个新的水印。</p>
 <blockquote>
 <p>Some operators consume multiple input streams; a union, for example, or operators following a <em>keyBy(…)</em> or <em>partition(…)</em> function. Such an operator’s current event time is the minimum of its input streams’ event times. As its input streams update their event times, so does the operator.</p>
 </blockquote>
+<p>有些算子接收多个输入流，例如union、keyBy(…)之后的算子、或partition(…)函数。这些算子当前的事件时间是其输入流中事件时间中最小的那一个。当其输入流更新了事件时间，算子也发相应更新。</p>
 <blockquote>
 <p>The figure below shows an example of events and watermarks flowing through parallel streams, and operators tracking event time.</p>
 </blockquote>
+<p>下图展示的例子中，事件和水印在并行的流之间流动，算子记录事件时间。</p>
 <p><img src="/images/flink/parallel_streams_watermarks.svg"></p>
 <h1 id="迟到"><a href="#迟到" class="headerlink" title="迟到"></a>迟到</h1><blockquote>
 <p>It is possible that certain elements will violate the watermark condition, meaning that even after the <em>Watermark(t)</em> has occurred, more elements with timestamp <em>t’ &lt;= t</em> will occur. In fact, in many real world setups, certain elements can be arbitrarily delayed, making it impossible to specify a time by which all elements of a certain event timestamp will have occurred. Furthermore, even if the lateness can be bounded, delaying the watermarks by too much is often not desirable, because it causes too much delay in the evaluation of event time windows.</p>
