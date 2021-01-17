@@ -32,7 +32,7 @@
 <meta property="og:locale" content="en_US">
 <meta property="og:image" content="https://jtlibrain.github.io/images/flink/window-assigners.svg">
 <meta property="article:published_time" content="2021-01-16T09:22:07.000Z">
-<meta property="article:modified_time" content="2021-01-16T15:33:09.837Z">
+<meta property="article:modified_time" content="2021-01-17T02:39:07.146Z">
 <meta property="article:author" content="JT Li">
 <meta property="article:tag" content="学习笔记">
 <meta name="twitter:card" content="summary">
@@ -278,10 +278,16 @@
                 <i class="far fa-calendar"></i>
               </span>
               <span class="post-meta-item-text">Posted on</span>
-              
 
-              <time title="Created: 2021-01-16 17:22:07 / Modified: 23:33:09" itemprop="dateCreated datePublished" datetime="2021-01-16T17:22:07+08:00">2021-01-16</time>
+              <time title="Created: 2021-01-16 17:22:07" itemprop="dateCreated datePublished" datetime="2021-01-16T17:22:07+08:00">2021-01-16</time>
             </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2021-01-17 10:39:07" itemprop="dateModified" datetime="2021-01-17T10:39:07+08:00">2021-01-17</time>
+              </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
                 <i class="far fa-folder"></i>
@@ -319,7 +325,7 @@
 <li>考虑到输出结果的准确性，需要缓存一段时间的数据，缓存自然就带来了延迟输出的问题；</li>
 <li>需要一种策略来决定什么时候不再等具有某一时间戳的事件了，从而为该时间戳输出结果，这便是水印的作用。</li>
 </ol>
-<p>Watermark(t)表示的是时间戳 <em>t</em> 的水印，它表示该水印出现以后，系统就不再等待事件时间小于或等于t的事件了。例如，当时间戳t=2或更大事件戳的水印出现后，事件流的排序器应停止等待，并输出 2 作为已经排序好的流。</p>
+<p>Watermark(t)表示的是时间戳 <em>t</em> 的水印，它表示该水印出现以后，系统就不再等待事件时间小于或等于t的事件了。例如，当时间戳t=2或更大时间戳的水印出现后，事件流的排序器应停止等待，并输出 2 作为已经排序好的流。</p>
 <h2 id="窗口"><a href="#窗口" class="headerlink" title="窗口"></a>窗口</h2><h3 id="代码范式"><a href="#代码范式" class="headerlink" title="代码范式"></a>代码范式</h3><p>用 Flink 计算窗口分析取决于两个主要的抽象操作：</p>
 <ol>
 <li><strong><em>Window Assigners</em></strong>，将事件分配给窗口（根据需要创建新的窗口对象）；</li>
