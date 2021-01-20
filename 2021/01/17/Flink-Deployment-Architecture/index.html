@@ -33,7 +33,7 @@
 <meta property="og:image" content="https://jtlibrain.github.io/images/flink/cluster-components.svg">
 <meta property="og:image" content="https://jtlibrain.github.io/images/flink/deployment_modes.svg">
 <meta property="article:published_time" content="2021-01-17T09:07:18.000Z">
-<meta property="article:modified_time" content="2021-01-19T14:33:34.756Z">
+<meta property="article:modified_time" content="2021-01-20T15:30:50.547Z">
 <meta property="article:author" content="JT Li">
 <meta property="article:tag" content="学习笔记">
 <meta name="twitter:card" content="summary">
@@ -186,7 +186,7 @@
 
       <!--noindex-->
       <section class="post-toc-wrap sidebar-panel">
-          <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%9B%86%E7%BE%A4%E7%BB%84%E4%BB%B6"><span class="nav-number">1.</span> <span class="nav-text">集群组件</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Flink%E5%AE%A2%E6%88%B7%E7%AB%AF"><span class="nav-number">1.1.</span> <span class="nav-text">Flink客户端</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#JobManager"><span class="nav-number">1.2.</span> <span class="nav-text">JobManager</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Application%E6%A8%A1%E5%BC%8F"><span class="nav-number">1.2.1.</span> <span class="nav-text">Application模式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Per-Job%E6%A8%A1%E5%BC%8F"><span class="nav-number">1.2.2.</span> <span class="nav-text">Per-Job模式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Session%E6%A8%A1%E5%BC%8F"><span class="nav-number">1.2.3.</span> <span class="nav-text">Session模式</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#TaskManager"><span class="nav-number">1.3.</span> <span class="nav-text">TaskManager</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%A4%96%E9%83%A8%E7%BB%84%E4%BB%B6"><span class="nav-number">1.4.</span> <span class="nav-text">外部组件</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Resource-Provider"><span class="nav-number">1.4.1.</span> <span class="nav-text">Resource Provider</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#High-Availability-Service-Provider"><span class="nav-number">1.4.2.</span> <span class="nav-text">High Availability Service Provider</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#File-Storage-and-Persistency"><span class="nav-number">1.4.3.</span> <span class="nav-text">File Storage and Persistency</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Metrics-Storage"><span class="nav-number">1.4.4.</span> <span class="nav-text">Metrics Storage</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%BA%94%E7%94%A8%E5%B1%82%E7%9A%84%E6%95%B0%E6%8D%AE%E6%BA%90%E5%92%8Csink"><span class="nav-number">1.4.5.</span> <span class="nav-text">应用层的数据源和sink</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%8F%90%E4%BA%A4%E6%A8%A1%E5%BC%8F"><span class="nav-number">2.</span> <span class="nav-text">提交模式</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Application%E6%A8%A1%E5%BC%8F-1"><span class="nav-number">2.1.</span> <span class="nav-text">Application模式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Per-Job%E6%A8%A1%E5%BC%8F-1"><span class="nav-number">2.2.</span> <span class="nav-text">Per-Job模式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Session%E6%A8%A1%E5%BC%8F-1"><span class="nav-number">2.3.</span> <span class="nav-text">Session模式</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%B5%84%E6%BA%90%E6%8F%90%E4%BE%9B%E8%80%85"><span class="nav-number">3.</span> <span class="nav-text">资源提供者</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Standalone"><span class="nav-number">3.1.</span> <span class="nav-text">Standalone</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8E%9F%E7%94%9FFlink"><span class="nav-number">3.1.1.</span> <span class="nav-text">原生Flink</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Application%E6%A8%A1%E5%BC%8F-2"><span class="nav-number">3.1.1.1.</span> <span class="nav-text">Application模式</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E6%9C%AC%E5%9C%B0%E8%BF%90%E8%A1%8C"><span class="nav-number">3.1.1.1.1.</span> <span class="nav-text">本地运行</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Per-Job%E6%A8%A1%E5%BC%8F-2"><span class="nav-number">3.1.1.2.</span> <span class="nav-text">Per-Job模式</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Session%E6%A8%A1%E5%BC%8F-2"><span class="nav-number">3.1.1.3.</span> <span class="nav-text">Session模式</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E6%9C%AC%E5%9C%B0%E8%BF%90%E8%A1%8C-1"><span class="nav-number">3.1.1.3.1.</span> <span class="nav-text">本地运行</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Docker"><span class="nav-number">3.1.2.</span> <span class="nav-text">Docker</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Kubernetes"><span class="nav-number">3.1.3.</span> <span class="nav-text">Kubernetes</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#YARN"><span class="nav-number">3.2.</span> <span class="nav-text">YARN</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Application%E6%A8%A1%E5%BC%8F-3"><span class="nav-number">3.2.1.</span> <span class="nav-text">Application模式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Per-Job%E6%A8%A1%E5%BC%8F-3"><span class="nav-number">3.2.2.</span> <span class="nav-text">Per-Job模式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Session%E6%A8%A1%E5%BC%8F-3"><span class="nav-number">3.2.3.</span> <span class="nav-text">Session模式</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Mesos"><span class="nav-number">3.3.</span> <span class="nav-text">Mesos</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Native-Kubernetes"><span class="nav-number">3.4.</span> <span class="nav-text">Native Kubernetes</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%82%E8%80%83"><span class="nav-number">4.</span> <span class="nav-text">参考</span></a></li></ol></div>
+          <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%9B%86%E7%BE%A4%E7%BB%84%E4%BB%B6"><span class="nav-number">1.</span> <span class="nav-text">集群组件</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Flink%E5%AE%A2%E6%88%B7%E7%AB%AF"><span class="nav-number">1.1.</span> <span class="nav-text">Flink客户端</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#JobManager"><span class="nav-number">1.2.</span> <span class="nav-text">JobManager</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Application%E6%A8%A1%E5%BC%8F"><span class="nav-number">1.2.1.</span> <span class="nav-text">Application模式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Per-Job%E6%A8%A1%E5%BC%8F"><span class="nav-number">1.2.2.</span> <span class="nav-text">Per-Job模式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Session%E6%A8%A1%E5%BC%8F"><span class="nav-number">1.2.3.</span> <span class="nav-text">Session模式</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#TaskManager"><span class="nav-number">1.3.</span> <span class="nav-text">TaskManager</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%A4%96%E9%83%A8%E7%BB%84%E4%BB%B6"><span class="nav-number">1.4.</span> <span class="nav-text">外部组件</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Resource-Provider"><span class="nav-number">1.4.1.</span> <span class="nav-text">Resource Provider</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#High-Availability-Service-Provider"><span class="nav-number">1.4.2.</span> <span class="nav-text">High Availability Service Provider</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#File-Storage-and-Persistency"><span class="nav-number">1.4.3.</span> <span class="nav-text">File Storage and Persistency</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Metrics-Storage"><span class="nav-number">1.4.4.</span> <span class="nav-text">Metrics Storage</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%BA%94%E7%94%A8%E5%B1%82%E7%9A%84%E6%95%B0%E6%8D%AE%E6%BA%90%E5%92%8Csink"><span class="nav-number">1.4.5.</span> <span class="nav-text">应用层的数据源和sink</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%8F%90%E4%BA%A4%E6%A8%A1%E5%BC%8F"><span class="nav-number">2.</span> <span class="nav-text">提交模式</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Application%E6%A8%A1%E5%BC%8F-1"><span class="nav-number">2.1.</span> <span class="nav-text">Application模式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Per-Job%E6%A8%A1%E5%BC%8F-1"><span class="nav-number">2.2.</span> <span class="nav-text">Per-Job模式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Session%E6%A8%A1%E5%BC%8F-1"><span class="nav-number">2.3.</span> <span class="nav-text">Session模式</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%83%A8%E7%BD%B2%E7%A4%BA%E4%BE%8B"><span class="nav-number">3.</span> <span class="nav-text">部署示例</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Standalone"><span class="nav-number">3.1.</span> <span class="nav-text">Standalone</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Application%E6%A8%A1%E5%BC%8F-2"><span class="nav-number">3.1.1.</span> <span class="nav-text">Application模式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Per-Job%E6%A8%A1%E5%BC%8F-2"><span class="nav-number">3.1.2.</span> <span class="nav-text">Per-Job模式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Session%E6%A8%A1%E5%BC%8F-2"><span class="nav-number">3.1.3.</span> <span class="nav-text">Session模式</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#YARN"><span class="nav-number">3.2.</span> <span class="nav-text">YARN</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Application%E6%A8%A1%E5%BC%8F-3"><span class="nav-number">3.2.1.</span> <span class="nav-text">Application模式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Per-Job%E6%A8%A1%E5%BC%8F-3"><span class="nav-number">3.2.2.</span> <span class="nav-text">Per-Job模式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Session%E6%A8%A1%E5%BC%8F-3"><span class="nav-number">3.2.3.</span> <span class="nav-text">Session模式</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Mesos"><span class="nav-number">3.3.</span> <span class="nav-text">Mesos</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Native-Kubernetes"><span class="nav-number">3.4.</span> <span class="nav-text">Native Kubernetes</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%82%E8%80%83"><span class="nav-number">4.</span> <span class="nav-text">参考</span></a></li></ol></div>
       </section>
       <!--/noindex-->
 
@@ -287,7 +287,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2021-01-19 22:33:34" itemprop="dateModified" datetime="2021-01-19T22:33:34+08:00">2021-01-19</time>
+                <time title="Modified: 2021-01-20 23:30:50" itemprop="dateModified" datetime="2021-01-20T23:30:50+08:00">2021-01-20</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -328,23 +328,8 @@
 <li>Session模式</li>
 </ul>
 <h3 id="Application模式"><a href="#Application模式" class="headerlink" title="Application模式"></a>Application模式</h3><p>每个应用程序单独运行一个集群，即一个应用就是一个集群。作业的main()在JobManager上执行，而不是客户端上运行。不需要事先启动一个Flink集群，然后再向集群提交作业；相反，将应用程序的业务逻辑和其依赖打包到一个可执行的作业JAR，集群的入口（ApplicationClusterEntryPoint）负责调用main()方法来获取JobGraph。</p>
-<p>注意这种模式与Spark的client模式是不同的，准确的说Spark不提供类似的模式，在提交Spark应用程序之前，必须准备好相应的</p>
-<p><strong>Resource Manager：</strong></p>
-<ul>
-<li>Standalone</li>
-</ul>
 <h3 id="Per-Job模式"><a href="#Per-Job模式" class="headerlink" title="Per-Job模式"></a>Per-Job模式</h3><p>每个作业单独运行一个集群。作业的main()在创建集群之前运行。在这种模式下，客户端首先从集群管理器请求资源启动 JobManager，然后将作业提交给在这个进程中运行的 Dispatcher。然后根据作业的资源请求惰性的分配 TaskManager。一旦作业完成，Flink Job 集群将被拆除。</p>
-<p><strong>Resource Manager：</strong></p>
-<ul>
-<li>Standalone不支持该模式</li>
-<li>YARN</li>
-<li>Kubernetes</li>
-</ul>
 <h3 id="Session模式"><a href="#Session模式" class="headerlink" title="Session模式"></a>Session模式</h3><p>一个JobManager实例管理多个作业，这些作业共享同一套TaskManager组成的继承。</p>
-<p><strong>Resource Manager：</strong></p>
-<ul>
-<li>Standalone</li>
-</ul>
 <h2 id="TaskManager"><a href="#TaskManager" class="headerlink" title="TaskManager"></a>TaskManager</h2><p>TaskManager负责执行Flink作业。</p>
 <h2 id="外部组件"><a href="#外部组件" class="headerlink" title="外部组件"></a>外部组件</h2><h3 id="Resource-Provider"><a href="#Resource-Provider" class="headerlink" title="Resource Provider"></a>Resource Provider</h3><p>Flink可以通过不同的资源提供框架进行部署，例如Kubernetes、YARN或Mesos。</p>
 <h3 id="High-Availability-Service-Provider"><a href="#High-Availability-Service-Provider" class="headerlink" title="High Availability Service Provider"></a>High Availability Service Provider</h3><h3 id="File-Storage-and-Persistency"><a href="#File-Storage-and-Persistency" class="headerlink" title="File Storage and Persistency"></a>File Storage and Persistency</h3><h3 id="Metrics-Storage"><a href="#Metrics-Storage" class="headerlink" title="Metrics Storage"></a>Metrics Storage</h3><h3 id="应用层的数据源和sink"><a href="#应用层的数据源和sink" class="headerlink" title="应用层的数据源和sink"></a>应用层的数据源和sink</h3><h1 id="提交模式"><a href="#提交模式" class="headerlink" title="提交模式"></a>提交模式</h1><p><img src="/images/flink/deployment_modes.svg"></p>
@@ -357,7 +342,43 @@
 <p>对比Per-Job模型，Application模式允许提交包含多个作业的应用。作业执行的顺序不受部署模式的影响，但会受到用于启动作业的调用影响。使用execute()方法（阻塞的）进行设置顺序，它会将“下一个”作业的执行拖延到“当前”作业完成。使用executeAsync()方法（非阻塞的）会造成“下一个”作业会在“这个”作业完成之前被启动。</p>
 <h2 id="Per-Job模式-1"><a href="#Per-Job模式-1" class="headerlink" title="Per-Job模式"></a>Per-Job模式</h2><p>旨在提供更好的资源隔离保障，Per-Job模式利用可用的资源提供框架（例如，YARN、Kubernetes）为每个提交的作业启动一个集群。集群只对该作业可用。当作业结束时，集群也会结束、任何lingering资源（例如，文件、等）也会被清理。它提供了更好的资源隔离，因为一个行为可疑的作业只会弄垮它自己TaskManager。另外，它将记账的负担分散到了多个JobManager，因为每个Job都有一个JobManager。<font color="red">基于这些原因，Per-Job资源分配模式是很多生产环境的首选模式。</font></p>
 <h2 id="Session模式-1"><a href="#Session模式-1" class="headerlink" title="Session模式"></a>Session模式</h2><p>Session模式假设有一个已经在运行的Flink集群，使用该集群的资源来执行执行的应用。同一个集群中执行的应用使用的同样的资源，因为就会对资源进行竞争。其优势是，。但是，如果其中有一个作业胡作非为或者搞垮了TaskManager，那么运行在那个TaskManager上的所有作业都会受到影响。另外，使用一个集群运行多个作业这意味着JobManager更大的负载，它负责对集群中的所有作业进行记账。</p>
-<h1 id="资源提供者"><a href="#资源提供者" class="headerlink" title="资源提供者"></a>资源提供者</h1><h2 id="Standalone"><a href="#Standalone" class="headerlink" title="Standalone"></a>Standalone</h2><h3 id="原生Flink"><a href="#原生Flink" class="headerlink" title="原生Flink"></a>原生Flink</h3><h4 id="Application模式-2"><a href="#Application模式-2" class="headerlink" title="Application模式"></a>Application模式</h4><h5 id="本地运行"><a href="#本地运行" class="headerlink" title="本地运行"></a>本地运行</h5><p>第1步：准备应用程序jar</p>
+<h1 id="部署示例"><a href="#部署示例" class="headerlink" title="部署示例"></a>部署示例</h1><p>下表给出了各个资源调度平台对于Flink三种提交模式的支持情况：</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Application模式</th>
+<th>Per-Job模式</th>
+<th>Session模式</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Standalone</td>
+<td>✅</td>
+<td>❌</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>YARN</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>Mesos</td>
+<td>❌</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>Kubernetes</td>
+<td>✅</td>
+<td>❌</td>
+<td>✅</td>
+</tr>
+</tbody></table>
+<h2 id="Standalone"><a href="#Standalone" class="headerlink" title="Standalone"></a>Standalone</h2><p>本篇旨在本地环境快速搭建Flink Standalone集群，从而快速一探究竟；关于如何在多设备上搭建分布式Standalone集群、以及docker和kubernetes部署，可以参考官方相关文档。</p>
+<h3 id="Application模式-2"><a href="#Application模式-2" class="headerlink" title="Application模式"></a>Application模式</h3><p>第1步：准备应用程序jar</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ cp ./examples/streaming/TopSpeedWindowing.jar lib/</span><br></pre></td></tr></table></figure>
 
 <p>第2步：提交作业启动JobManager</p>
@@ -376,8 +397,8 @@
 <p>第6步：停止集群</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ ./bin/taskmanager.sh stop-all</span><br><span class="line">$ ./bin/standalone-job.sh stop</span><br></pre></td></tr></table></figure>
 
-<h4 id="Per-Job模式-2"><a href="#Per-Job模式-2" class="headerlink" title="Per-Job模式"></a>Per-Job模式</h4><p>Standalone集群不支持Per-Job</p>
-<h4 id="Session模式-2"><a href="#Session模式-2" class="headerlink" title="Session模式"></a>Session模式</h4><h5 id="本地运行-1"><a href="#本地运行-1" class="headerlink" title="本地运行"></a>本地运行</h5><p>第1步：进行如下配置，conf/workers中有两行，意味着我们要在本地启动两个TaskManager</p>
+<h3 id="Per-Job模式-2"><a href="#Per-Job模式-2" class="headerlink" title="Per-Job模式"></a>Per-Job模式</h3><p>Standalone集群不支持Per-Job</p>
+<h3 id="Session模式-2"><a href="#Session模式-2" class="headerlink" title="Session模式"></a>Session模式</h3><p>第1步：进行如下配置，conf/workers中有两行，意味着我们要在本地启动两个TaskManager</p>
 <p>conf/masters</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">localhost</span><br></pre></td></tr></table></figure>
 
@@ -393,7 +414,7 @@
 <p>TaskManagerRunner</p>
 <p>TaskManagerRunner</p>
 </blockquote>
-<p>第4步：使用<a target="_blank" rel="noopener" href="http://localhost:8081/">localhost:8081</a>查看Flink Web UI，通过UI我们可以看到，<font color="blue"><strong>Jobs - Running Jobs</strong></font>页面没有在运行的作业，<font color="blue"><strong>Task Managers</strong></font>页面中的每个TaskManager行中的All Slots和Free Slots值是相等的。</p>
+<p>第4步：使用<a target="_blank" rel="noopener" href="http://localhost:8081/">localhost:8081</a>查看Flink Web UI，通过UI我们可以看到，<font color="blue">Jobs - Running Jobs</font>页面没有在运行的作业，<font color="blue">Task Managers</font>页面中的每个TaskManager行中的All Slots和Free Slots值是相等的。</p>
 <p>第5步：向Flink集群提交作业</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ ./bin/flink run ./examples/streaming/TopSpeedWindowing.jar</span><br></pre></td></tr></table></figure>
 
@@ -404,45 +425,89 @@
 <p>TaskManagerRunner</p>
 <p>TaskManagerRunner</p>
 </blockquote>
-<p>通过Web UI界面我们可以看到<font color="blue"><strong>Jobs - Running Jobs</strong></font>页面有一个在运行的作业，<font color="blue"><strong>Task Managers</strong></font>页面中的有一行的Free Slots值为0。</p>
-<p>第6步：重复【第5步】，我们再提交一个作业，同样进行【第5步】的观察，这时Flink集群的Slots被全部占用了。</p>
+<p>通过Web UI界面我们可以看到<font color="blue">Jobs - Running Jobs</font>页面有一个在运行的作业，<font color="blue">Task Managers</font>页面中的有一行的Free Slots值为0。</p>
+<p>第6步：重复【第5步】，我们再提交一个作业，同样进行观察，这时Flink集群的Slots被全部占用了，并且多了一个CliFrontend进程。</p>
+<blockquote>
+<p>CliFrontend</p>
+<p>CliFrontend</p>
+<p>StandaloneSessionClusterEntrypoint</p>
+<p>TaskManagerRunner</p>
+<p>TaskManagerRunner</p>
+</blockquote>
 <p>第7步：停止集群</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ ./bin/stop-cluster.sh</span><br></pre></td></tr></table></figure>
 
-<h3 id="Docker"><a href="#Docker" class="headerlink" title="Docker"></a>Docker</h3><p>TODO</p>
-<h3 id="Kubernetes"><a href="#Kubernetes" class="headerlink" title="Kubernetes"></a>Kubernetes</h3><p>TODO</p>
+
+
 <h2 id="YARN"><a href="#YARN" class="headerlink" title="YARN"></a>YARN</h2><h3 id="Application模式-3"><a href="#Application模式-3" class="headerlink" title="Application模式"></a>Application模式</h3><p>第1步：相关配置</p>
-<p>TODO</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ <span class="built_in">export</span> HADOOP_CLASSPATH=`hadoop classpath`</span><br></pre></td></tr></table></figure>
+
 <p>第2步：提交作业启动集群</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ ./bin/flink run-application -t yarn-application ./examples/streaming/TopSpeedWindowing.jar</span><br></pre></td></tr></table></figure>
 
 <p>第3步：查看Flink Web UI、YARN ResourceManager UI</p>
 <p>TODO</p>
-<p>第4步：使用<code>jps</code>查看YARN节点上的Flink进程</p>
-<p>TODO</p>
+<p>第4步：使用<code>jps</code>查看YARN各个节点上的Flink进程</p>
+<p>集群某个节点A</p>
+<blockquote>
+<p>YarnApplicationClusterEntryPoint</p>
+</blockquote>
+<p>集群某个节点B</p>
+<blockquote>
+<p>YarnTaskExecutorRunner</p>
+</blockquote>
 <h3 id="Per-Job模式-3"><a href="#Per-Job模式-3" class="headerlink" title="Per-Job模式"></a>Per-Job模式</h3><p>第1步：相关配置</p>
-<p>TODO</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ <span class="built_in">export</span> HADOOP_CLASSPATH=`hadoop classpath`</span><br></pre></td></tr></table></figure>
+
 <p>第2步：提交作业启动集群</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./bin/flink run -t yarn-per-job --detached ./examples/streaming/TopSpeedWindowing.jar</span><br></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ ./bin/flink run -t yarn-per-job --detached ./examples/streaming/TopSpeedWindowing.jar</span><br></pre></td></tr></table></figure>
 
 <p>第3步：查看Flink Web UI、YARN ResourceManager UI</p>
 <p>TODO</p>
 <p>第4步：使用<code>jps</code>查看YARN节点上的Flink进程</p>
-<p>TODO</p>
+<p>集群某个节点A</p>
+<blockquote>
+<p>YarnJobClusterEntrypoint</p>
+</blockquote>
+<p>集群某个节点B</p>
+<blockquote>
+<p>YarnTaskExecutorRunner</p>
+</blockquote>
 <h3 id="Session模式-3"><a href="#Session模式-3" class="headerlink" title="Session模式"></a>Session模式</h3><p>第1步：相关配置</p>
-<p>TODO</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ <span class="built_in">export</span> HADOOP_CLASSPATH=`hadoop classpath`</span><br></pre></td></tr></table></figure>
+
 <p>第2步：启动集群</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ ./bin/yarn-session.sh --detached</span><br></pre></td></tr></table></figure>
 
 <p>第3步：查看Flink Web UI、YARN ResourceManager UI</p>
 <p>TODO</p>
-<p>第4步：使用<code>jps</code>查看YARN节点上的Flink进程</p>
-<p>TODO</p>
+<p>第4步：使用<code>jps</code>查看YARN各个节点上的Flink进程</p>
+<p>提交节点</p>
+<blockquote>
+<p>CliFrontend</p>
+</blockquote>
+<p>集群某个节点A</p>
+<blockquote>
+<p>YarnSessionClusterEntrypoint</p>
+</blockquote>
 <p>第5步：提交作业</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ ./bin/flink run ./examples/streaming/TopSpeedWindowing.jar</span><br><span class="line">或</span><br><span class="line">$ ./bin/flink run -t yarn-session -Dyarn.application.id=application_XXXX_YY ./examples/streaming/TopSpeedWindowing.jar</span><br></pre></td></tr></table></figure>
 
-
-
+<p>第6步：使用<code>jps</code>查看YARN各个节点上的Flink进程</p>
+<p>提交节点</p>
+<blockquote>
+<p>CliFrontend</p>
+</blockquote>
+<p>集群某个节点A</p>
+<blockquote>
+<p>YarnSessionClusterEntrypoint</p>
+</blockquote>
+<p>集群某个节点B</p>
+<blockquote>
+<p>YarnTaskExecutorRunner</p>
+</blockquote>
+<p>第7步：重复【第5步】，我们再提交一个作业，同样进行观察</p>
+<p>TODO</p>
 <h2 id="Mesos"><a href="#Mesos" class="headerlink" title="Mesos"></a>Mesos</h2><p>TODO</p>
 <h2 id="Native-Kubernetes"><a href="#Native-Kubernetes" class="headerlink" title="Native Kubernetes"></a>Native Kubernetes</h2><p>TODO</p>
 <h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><p>注意，官方中文文档和英文文档内容并不是一致的，如resource-providers/standalone的中/英文文档介绍的内容是不大一致的。</p>
