@@ -2822,3 +2822,29 @@ mjx-container[display="true"] + br {
     margin: 8px 0 0;
   }
 }
+tbody tr:nth-of-type(odd) {
+  background: initial;
+}
+tbody tr:hover {
+  background: var(--table-row-hover-bg-color);
+}
+caption,
+th,
+td {
+  font-weight: normal;
+  padding: 8px;
+  vertical-align: middle;
+}
+th,
+td {
+  border: 1px solid #ddd;
+  border-bottom: 1px solid #ddd;
+}
+th {
+  font-weight: 700;
+  padding-bottom: 10px;
+  background-color: var(--table-row-odd-bg-color);
+}
+td {
+  border-bottom-width: 1px;
+}
