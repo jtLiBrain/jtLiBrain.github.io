@@ -2838,7 +2838,7 @@ td {
 th,
 td {
   border: 1px solid #ddd;
-  border-bottom: 1px solid #ddd;
+  border-bottom: 2px solid #ddd;
 }
 th {
   font-weight: 700;
