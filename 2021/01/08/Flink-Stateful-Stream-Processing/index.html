@@ -23,19 +23,24 @@
     var CONFIG = {"hostname":"jtlibrain.github.io","root":"/","scheme":"Gemini","version":"8.0.0-rc.5","exturl":false,"sidebar":{"position":"left","display":"hide","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false};
   </script>
 
-  <meta name="description" content="（略）">
+  <meta name="description" content="本篇是对官网 Stateful Stream Processing、Fault_Tolerance、Learn Flink 三篇文章中有关状态管理的内容进行的再整理。">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Flink：有状态的流处理（译）">
+<meta property="og:title" content="Flink入门系列3：状态管理">
 <meta property="og:url" content="https://jtlibrain.github.io/2021/01/08/Flink-Stateful-Stream-Processing/index.html">
 <meta property="og:site_name" content="jtLiBrain">
-<meta property="og:description" content="（略）">
+<meta property="og:description" content="本篇是对官网 Stateful Stream Processing、Fault_Tolerance、Learn Flink 三篇文章中有关状态管理的内容进行的再整理。">
 <meta property="og:locale" content="en_US">
-<meta property="og:image" content="https://jtlibrain.github.io/images/flink/barrier.svg">
+<meta property="og:image" content="https://jtlibrain.github.io/images/flink/local-state.png">
+<meta property="og:image" content="https://jtlibrain.github.io/images/flink/state_partitioning.svg">
+<meta property="og:image" content="https://jtlibrain.github.io/images/flink/stream_barriers.svg">
+<meta property="og:image" content="https://jtlibrain.github.io/images/flink/checkpointing.svg">
+<meta property="og:image" content="https://jtlibrain.github.io/images/flink/stream_aligning.svg">
 <meta property="article:published_time" content="2021-01-08T13:45:29.000Z">
-<meta property="article:modified_time" content="2021-01-10T03:17:27.333Z">
+<meta property="article:modified_time" content="2021-01-29T13:49:33.916Z">
 <meta property="article:author" content="JT Li">
+<meta property="article:tag" content="Flink入门系列">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://jtlibrain.github.io/images/flink/barrier.svg">
+<meta name="twitter:image" content="https://jtlibrain.github.io/images/flink/local-state.png">
 
 <link rel="canonical" href="https://jtlibrain.github.io/2021/01/08/Flink-Stateful-Stream-Processing/">
 
@@ -50,7 +55,7 @@
   };
 </script>
 
-  <title>Flink：有状态的流处理（译） | jtLiBrain</title>
+  <title>Flink入门系列3：状态管理 | jtLiBrain</title>
   
 
 
@@ -184,7 +189,7 @@
 
       <!--noindex-->
       <section class="post-toc-wrap sidebar-panel">
-          <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%8A%B6%E6%80%81%E7%9A%84%E6%8C%81%E4%B9%85%E5%8C%96"><span class="nav-number">1.</span> <span class="nav-text">状态的持久化</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%A3%80%E6%9F%A5%E7%82%B9"><span class="nav-number">1.1.</span> <span class="nav-text">检查点</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B1%8F%E9%9A%9C"><span class="nav-number">1.1.1.</span> <span class="nav-text">屏障</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AF%B9%E7%AE%97%E5%AD%90%E7%8A%B6%E6%80%81%E8%BF%9B%E8%A1%8C%E5%BF%AB%E7%85%A7"><span class="nav-number">1.1.2.</span> <span class="nav-text">对算子状态进行快照</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%81%A2%E5%A4%8D"><span class="nav-number">1.1.3.</span> <span class="nav-text">恢复</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%8A%B6%E6%80%81%E5%90%8E%E7%AB%AF"><span class="nav-number">1.2.</span> <span class="nav-text">状态后端</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BF%9D%E5%AD%98%E7%82%B9"><span class="nav-number">1.3.</span> <span class="nav-text">保存点</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%B2%BE%E7%A1%AE%E4%B8%80%E6%AC%A1-VS-%E8%87%B3%E5%B0%91%E4%B8%80%E6%AC%A1"><span class="nav-number">1.4.</span> <span class="nav-text">精确一次 VS 至少一次</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%89%B9%E5%A4%84%E7%90%86%E7%A8%8B%E5%BA%8F%E4%B8%AD%E7%9A%84%E7%8A%B6%E6%80%81%E5%92%8C%E5%AE%B9%E9%94%99"><span class="nav-number">2.</span> <span class="nav-text">批处理程序中的状态和容错</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%82%E8%80%83"><span class="nav-number">3.</span> <span class="nav-text">参考</span></a></li></ol></div>
+          <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E7%8A%B6%E6%80%81"><span class="nav-number">1.</span> <span class="nav-text">什么是状态</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Keyed-State"><span class="nav-number">2.</span> <span class="nav-text">Keyed State</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%8A%B6%E6%80%81%E7%9A%84%E6%8C%81%E4%B9%85%E5%8C%96"><span class="nav-number">3.</span> <span class="nav-text">状态的持久化</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%86%E7%95%8C%E7%BA%BF-Barrier"><span class="nav-number">3.1.</span> <span class="nav-text">分界线(Barrier)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AF%B9%E7%AE%97%E5%AD%90%E7%8A%B6%E6%80%81%E8%BF%9B%E8%A1%8C%E5%BF%AB%E7%85%A7-Snapshot"><span class="nav-number">3.2.</span> <span class="nav-text">对算子状态进行快照(Snapshot)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AF%B9%E9%BD%90"><span class="nav-number">3.3.</span> <span class="nav-text">对齐</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%81%A2%E5%A4%8D"><span class="nav-number">3.4.</span> <span class="nav-text">恢复</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%8A%B6%E6%80%81%E5%90%8E%E7%AB%AF-State-Backend"><span class="nav-number">3.5.</span> <span class="nav-text">状态后端(State Backend)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%B2%BE%E7%A1%AE%E4%B8%80%E6%AC%A1-VS-%E8%87%B3%E5%B0%91%E4%B8%80%E6%AC%A1"><span class="nav-number">3.6.</span> <span class="nav-text">精确一次 VS 至少一次</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%89%B9%E5%A4%84%E7%90%86%E7%A8%8B%E5%BA%8F%E4%B8%AD%E7%9A%84%E7%8A%B6%E6%80%81%E5%92%8C%E5%AE%B9%E9%94%99"><span class="nav-number">4.</span> <span class="nav-text">批处理程序中的状态和容错</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%82%E8%80%83"><span class="nav-number">5.</span> <span class="nav-text">参考</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%BB%B6%E4%BC%B8%E9%98%85%E8%AF%BB"><span class="nav-number">6.</span> <span class="nav-text">延伸阅读</span></a></li></ol></div>
       </section>
       <!--/noindex-->
 
@@ -268,7 +273,7 @@
     
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          Flink：有状态的流处理（译）
+          Flink入门系列3：状态管理
         </h1>
 
         <div class="post-meta">
@@ -285,7 +290,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2021-01-10 11:17:27" itemprop="dateModified" datetime="2021-01-10T11:17:27+08:00">2021-01-10</time>
+                <time title="Modified: 2021-01-29 21:49:33" itemprop="dateModified" datetime="2021-01-29T21:49:33+08:00">2021-01-29</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -313,14 +318,105 @@
     
     
     <div class="post-body" itemprop="articleBody">
-        <p>（略）</p>
+        <p>本篇是对官网 <a target="_blank" rel="noopener" href="https://ci.apache.org/projects/flink/flink-docs-release-1.12/concepts/stateful-stream-processing.html">Stateful Stream Processing</a>、<a target="_blank" rel="noopener" href="https://ci.apache.org/projects/flink/flink-docs-release-1.12/learn-flink/fault_tolerance.html">Fault_Tolerance</a>、<a target="_blank" rel="noopener" href="https://ci.apache.org/projects/flink/flink-docs-release-1.12/learn-flink/">Learn Flink</a> 三篇文章中有关状态管理的内容进行的再整理。</p>
 <a id="more"></a>
 
-<h1 id="状态的持久化"><a href="#状态的持久化" class="headerlink" title="状态的持久化"></a>状态的持久化</h1><h2 id="检查点"><a href="#检查点" class="headerlink" title="检查点"></a>检查点</h2><h3 id="屏障"><a href="#屏障" class="headerlink" title="屏障"></a>屏障</h3><p><img src="/images/flink/barrier.svg"></p>
-<h3 id="对算子状态进行快照"><a href="#对算子状态进行快照" class="headerlink" title="对算子状态进行快照"></a>对算子状态进行快照</h3><h3 id="恢复"><a href="#恢复" class="headerlink" title="恢复"></a>恢复</h3><h2 id="状态后端"><a href="#状态后端" class="headerlink" title="状态后端"></a>状态后端</h2><h2 id="保存点"><a href="#保存点" class="headerlink" title="保存点"></a>保存点</h2><p>保存点是手动触发的检查点，它对程序进行快照并将快照写入到状态后端。保存点依赖常规检查点机制来实现。</p>
-<p>保存点类似于检查点，不同的是保存点是有人来处罚的，并且当新的检查点完成后，保存点是不会自动过期的。</p>
-<h2 id="精确一次-VS-至少一次"><a href="#精确一次-VS-至少一次" class="headerlink" title="精确一次 VS 至少一次"></a>精确一次 VS 至少一次</h2><p>对齐的步骤可能会对streaming程序造成延迟。一般，这种额外的延迟近似有几毫秒，但是我们也观察到了有显著增长的异常延迟的情况。对于那些要求对所有数据都始终保持超低延迟的应用而言，Flink有一个开关可以控制在检查点时跳过流的对齐。一旦算子观察到来自每个输入流的检查点屏障还是会对检查点进行快照。</p>
-<p>当跳过对齐时，即使<em>检查点n</em>的有些屏障到达算子以后，该算子仍会继续地处理所有输入。这样的话，在<em>检查点n</em>的状态快照被获取之前，该算子还处理了属于<em>检查点n+1</em>的数据元素。在恢复的时候，因为它们也被包含在了<em>检查点n</em>的状态快照中，当作为<em>检查点n</em>之后的数据的一部分被重放时，这些记录就发生了重复。</p>
+<img src="/images/flink/local-state.png" style="zoom:80%;" />
+
+<h1 id="什么是状态"><a href="#什么是状态" class="headerlink" title="什么是状态"></a>什么是状态</h1><p>虽然很多数据流中的运算每次看到的仅仅是一个单独的事件（例如，事件parser），但有些运算会记录跨多个事件的信息（例如，窗口算子）。这样的运算被称为是<strong>有状态的</strong>。</p>
+<p>有状态的运算的几个示例：</p>
+<ul>
+<li>当应用程序查找某种事件模式的时候，状态会按顺序保存所有到目前为止所遇到的事件。</li>
+<li>当每分钟/小时/天进行聚合的时候，状态</li>
+<li></li>
+<li></li>
+</ul>
+<p>Flink需要感知到状态，以便利用checkpoint和savepoints使其能故障恢复。</p>
+<p>对状态的认识也允许对Flink应用重新进行规划，意味着Flink负责将状态分发给并行实例。</p>
+<p>可查询的状态允许你在Flink应用运行的时候，从Flink之外进行访问。</p>
+<p>在使用状态当中，</p>
+<h1 id="Keyed-State"><a href="#Keyed-State" class="headerlink" title="Keyed State"></a>Keyed State</h1><p>Keyed状态被保存在一个嵌入式的键/值数据库中。这种状态被分区、并和严格分发。因此，只有在keyed流上才可以访问到键/值状态（即，在keyed/partitioned数据交换之后），并且只能访问到与当前事件的key相关联的值。对流的键和状态进行对齐也保证了所有的状态更新都是本地运算，这样不需要事务开销就保证了一致性。对齐也让Flink透明地对状态重新分发以及调整流的分区。</p>
+<p><img src="/images/flink/state_partitioning.svg"></p>
+<p><em>Keyed State</em>被进一步组织到<em>Key Groups</em>（如上图，<code>ABY</code>构成一个Key Groups）。<em>Key Groups</em>是Flink分发<em>Keyed State</em>的原子单元；<em>Key Groups</em>与定义的最大并行度是一致的。执行的时候，keyed算子的每个并行实例会操作来自一个或多个Key Gruops中键。</p>
+<h1 id="状态的持久化"><a href="#状态的持久化" class="headerlink" title="状态的持久化"></a>状态的持久化</h1><ul>
+<li>快照(Snapshot)：是对全局一致性的Flink作业状态镜像的通用术语。一个快照包括：每个数据源中的指针位置（例如，文件或Kafka分区中的偏移量）、以及每个有状态的算子通过处理这些位置之前的事件所构造出来的状态的一份状态拷贝。通俗地讲就是：<code>每个数据源的指针位置</code> + <code>所有算子状态的一份拷贝</code>。</li>
+<li>检查点(Checkpoint)：是由 Flink 自动执行的快照，其目的是能够从故障中恢复。检查点可以是增量的，它是为了快速恢复所进行的优化。</li>
+<li>外部检查点(Externalized Checkpoint)：通常 checkpoints 是不需要由用户干预的。Flink 只保留作业运行时最近的 <em>n</em> 个 checkpoints(<em>n</em> 可配置)，并在作业被取消时将它们删除。但你可以配置将它们保留下来，这样，你可以手动从它们进行恢复。</li>
+<li>保存点(Savepoint)：出于某种运维的目的(例如有状态的重新部署/升级/缩放操作)，由用户手动(或 API 调用)触发的快照。Savepoints 始终是完整的，并且针对操作灵活性进行了优化。保存点技术是依赖检查点的技术直线的，使用了检查点的程序都能从保存点恢复执行。保存点类似于检查点，不同的是保存点是有人来处罚的，并且当有新的检查点完成后，保存点是不会自动过期的。</li>
+</ul>
+<p>Flink利用<strong>流重放</strong>和<strong>checkpoint</strong>实现容错。checkpoint在每个输入流中连同每个算子状态的某个特定的点。流式数据流可以从checkpoint进行恢复，通过恢复算子的状态并重放从checkpoint处的记录来保证一致。</p>
+<h2 id="分界线-Barrier"><a href="#分界线-Barrier" class="headerlink" title="分界线(Barrier)"></a>分界线(Barrier)</h2><p>Flink分布式快照技术中的关键元素是<em>流的分界线</em>。这些分界线被插入到数据流中，作为数据流的一部分与记录一起流动。分界线不会反超过记录，它们严格按序流动。分界线将数据流中记录分隔成两组记录：一组记录属于当前快照，一组记录属于下一个快照。每个分隔线都携带了它所对应快照的ID。属于不同快照的分界线可以同时出现在流中，这意味着不同的快照可以同时发生。</p>
+<img src="/images/flink/stream_barriers.svg" style="zoom:80%;" />
+
+<h2 id="对算子状态进行快照-Snapshot"><a href="#对算子状态进行快照-Snapshot" class="headerlink" title="对算子状态进行快照(Snapshot)"></a>对算子状态进行快照(Snapshot)</h2><p>检查点n所包含的状态是这样的：状态是每个算子由消费分界线n前面所有事件所造成的。它强调全局性，它包含作业图中每个有状态算子的状态，而不是其中部分算子的状态；同时它强调一致性，算子状态都是由各个算子分界线<font color="red"><strong>n</strong></font>前面的事件所造成的，不会包含分界线<font color="red"><strong>n</strong></font>之后事件所造成的状态。</p>
+<p>当TaskManager收到checkpoint协调器(它是JobManager中的一部分)的命令要开始快照的时候，它会让所有source记录下它们的偏移量、并让source向它们下游流中插入带有编号的分界线，并且这个偏移量会被发送给checkpoint协调器。</p>
+<p>这些分界线接着会流向下游，当作业图(job graph)中的某个中间算子从它的所有输入流中都接收到了对于快照n的分界线，它会记录下其状态，并对此刻的状态进行快照，然后向checkpoint协调器对快照n进行确认，最后再向它的输出流发送快照n的分界线。一旦sink算子(流式DAG的终点)从它的所有输入流中都接收到了对于快照n的分界线，它同样会向checkpoint协调器对快照n进行确认。当所有sink都确认了一个快照之后，就认为完成了这次快照。</p>
+<p>一旦快照n完成，作业就再也不会向source索要快照偏移量前面的记录了；因为此时，这些记录(以及由它们转换而来的派生记录)已经通过了整个数据流拓扑。</p>
+<p><img src="/images/flink/checkpointing.svg"></p>
+<p>结果快照包括了：</p>
+<ul>
+<li>对于每一个并行流的source，快照开始时的偏移量/位置；</li>
+<li>对于每一个算子，指向作为快照的一部分被存储的状态的指针；</li>
+</ul>
+<h2 id="对齐"><a href="#对齐" class="headerlink" title="对齐"></a>对齐</h2><p>有些算子接收多个输入流，这样的算子需要按快照分界线对输入流进行对齐。如下图显示的：</p>
+<ul>
+<li>当算子从其中一个输入流接收到了快照n的分界线，它将不能再往下处理该输入流的记录了，直到它从其它数据流中都收到了快照n的分界线。否则，会混合属于快照n和快照n+1的记录。</li>
+<li>报告了快照n分界线的输入流会被临时搁置。这些输入流中的记录不会被继续处理，但会被置于输入缓存中。</li>
+<li>一旦从最后一个输入流收到了分界线n，该算子会发送出所有等待输出的记录(注意，这部分输出是前面输入流中属于快照n的记录所产生的，而不是前面输入流中被缓存下来的数据所产生的)，然后也会发送快照n本身的分界线。</li>
+<li>在这之后，该算子恢复处理来自所有输入流的记录，优先处理输入缓冲中的记录，再处理输入流中的记录。</li>
+</ul>
+<p><img src="/images/flink/stream_aligning.svg"></p>
+<h2 id="恢复"><a href="#恢复" class="headerlink" title="恢复"></a>恢复</h2><p>这种机制下，进行恢复是很直接的：一旦发生故障，Flink选择最近一次完成的检查点k。然后，系统重新部署整个分布式数据流，将保存在检查点k的状态相应地分配给各个算子。source被置为从位置 <em>Sk</em>处读取。例如，在Kafka中，这意味着让消费者从偏移量<em>Sk</em>处开始拉取数据。</p>
+<p>如果状态是增量式进行快照的，那么算子会从最近一次完整快照开始，然后使用一系列的增量快照来更新状态。</p>
+<h2 id="状态后端-State-Backend"><a href="#状态后端-State-Backend" class="headerlink" title="状态后端(State Backend)"></a>状态后端(State Backend)</h2><p>由 Flink 管理的 Keyed State 是一种分片的键/值存储，Keyed state中的每个状态项(每个key都有一个状态项) 的运行时副本都保存在负责该键的 TaskManager 本地中。另外，Operator state 也保存在机器节点本地。Flink 定期获取所有状态的快照，并将这些快照复制到更具持久性的位置，例如分布式文件系统。</p>
+<p>如果发生故障，Flink 可以恢复应用程序的完整状态并继续处理，就如同没有出现过异常。</p>
+<p>Flink 所管理的状态存储在<em>状态后端</em> 中。键/值状态所存储的实际数据结构取决于所选择的状态后端。Flink 有两种 状态后端的实现：a) 一种基于 RocksDB 内嵌 key/value 存储将其工作状态保存在磁盘上的，b) 另一种基于堆的状态后端，将其工作状态保存在 Java 的堆内存中。这种基于堆的状态后端有两种类型：FsStateBackend，将其状态快照持久化到分布式文件系统；MemoryStateBackend，它使用 JobManager 的堆保存状态快照。</p>
+<p>当使用基于堆的状态后端保存状态时，访问和更新是在堆上读写对象。但是对于保存在 <code>RocksDBStateBackend</code> 中的对象，访问和更新会涉及到序列化和反序列化，所以会有更大的开销。但 RocksDB 的状态量仅受本地磁盘大小的限制。还要注意，只有 <code>RocksDBStateBackend</code> 能够进行增量快照，这对于具有大量变化缓慢状态的应用程序来说是大有裨益的。</p>
+<p>除了定义保存状态的数据结构，状态后端也实现了对任何时间点的键/值状态进行快照、以及将快照作为检查点进行保存的逻辑。所有这些状态后端都能够异步执行快照，这意味着它们可以在不妨碍正在进行的流处理的情况下执行快照。</p>
+<table>
+    <thead>
+        <tr>
+            <th>名称</th>
+            <th>运行时状态(Working State)的位置</th>
+            <th>状态备份(State Backup)的位置</th>
+            <th>快照</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td rowspan="2">RocksDBStateBackend</td>
+            <td>本地磁盘（tmp dir）</td>
+            <td>分布式文件系统</td>
+            <td>全量 / 增量</td>
+        </tr>
+        <tr>
+            <td colspan="3">• 支持大于内存大小的状态<br/>• 经验法则：比基于堆的后端慢10倍</td>
+        </tr>
+        <tr>
+            <td rowspan="2">FsStateBackend</td>
+            <td>JVM Heap</td>
+            <td>分布式文件系统</td>
+            <td>全量</td>
+        </tr>
+        <tr>
+            <td colspan="3">• 快速，需要大的堆内存<br/>• 受限制于 GC</td>
+        </tr>
+        <tr>
+            <td rowspan="2">MemoryStateBackend</td>
+            <td>JVM Heap</td>
+            <td>JobManager JVM Heap</td>
+            <td>全量</td>
+        </tr>
+        <tr>
+            <td colspan="3">适用于小状态（本地）的测试和实验</td>
+        </tr>
+    </tbody>
+</table>
+
+
+
+<h2 id="精确一次-VS-至少一次"><a href="#精确一次-VS-至少一次" class="headerlink" title="精确一次 VS 至少一次"></a>精确一次 VS 至少一次</h2><p>对齐的步骤可能会对streaming程序造成延迟。一般，这种额外的延迟近似有几毫秒，但是我们也观察到了会有延迟明显异常的情况。对于那些要求对所有数据都始终保持超低延迟的应用而言，Flink有一个开关可以控制在检查点当中跳过对流进行对齐。当一个算子观察到了来自每个输入流的检查点边界线的时候，还是会对获取检查点快照。</p>
+<p>如果跳过对齐，即使<em>检查点n</em>的有些边界线到达算子以后，该算子仍会继续地处理所有输入。这样的话，在<em>检查点n</em>的状态快照被获取之前，该算子还处理了属于<em>检查点n+1</em>的数据元素。在恢复的时候，因为它们也被包含在了<em>检查点n</em>的状态快照中，当作为<em>检查点n</em>之后的数据的一部分被重放时，这些记录就发生了重复。</p>
 <p>注意：对齐只发生在伴有多前置数据方的算子（例如，join）以及有多发送方（例如，在流重分区/shuffle之后）的算子上。因此，只使用了高度并行化的流运算（map()、flatMap()、filter()、…）的数据流即使在<em>至少一次</em>的模型下也可以保证<em>精确一次</em>。</p>
 <h1 id="批处理程序中的状态和容错"><a href="#批处理程序中的状态和容错" class="headerlink" title="批处理程序中的状态和容错"></a>批处理程序中的状态和容错</h1><p>Flink将批处理程序作为流式程序的特例（其中流是有界的，即有限数量的元素）来执行。Dataset被内部当作流数据处理。因此，上面的概念就像它们适用于流式程序一样也适用于批处理程序，几点例外：</p>
 <ul>
@@ -330,6 +426,13 @@
 </ul>
 <h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><ol>
 <li><a target="_blank" rel="noopener" href="https://ci.apache.org/projects/flink/flink-docs-release-1.12/zh/concepts/stateful-stream-processing.html">https://ci.apache.org/projects/flink/flink-docs-release-1.12/zh/concepts/stateful-stream-processing.html</a></li>
+<li><a target="_blank" rel="noopener" href="https://ci.apache.org/projects/flink/flink-docs-release-1.12/learn-flink/#stateful-stream-processing">https://ci.apache.org/projects/flink/flink-docs-release-1.12/learn-flink/#stateful-stream-processing</a></li>
+<li><a target="_blank" rel="noopener" href="https://ci.apache.org/projects/flink/flink-docs-release-1.12/zh/learn-flink/#%E6%9C%89%E7%8A%B6%E6%80%81%E6%B5%81%E5%A4%84%E7%90%86">https://ci.apache.org/projects/flink/flink-docs-release-1.12/zh/learn-flink/#%E6%9C%89%E7%8A%B6%E6%80%81%E6%B5%81%E5%A4%84%E7%90%86</a></li>
+<li><a target="_blank" rel="noopener" href="https://ci.apache.org/projects/flink/flink-docs-release-1.12/zh/learn-flink/fault_tolerance.html">https://ci.apache.org/projects/flink/flink-docs-release-1.12/zh/learn-flink/fault_tolerance.html</a></li>
+<li><a target="_blank" rel="noopener" href="https://ci.apache.org/projects/flink/flink-docs-release-1.12/learn-flink/fault_tolerance.html">https://ci.apache.org/projects/flink/flink-docs-release-1.12/learn-flink/fault_tolerance.html</a></li>
+</ol>
+<h1 id="延伸阅读"><a href="#延伸阅读" class="headerlink" title="延伸阅读"></a>延伸阅读</h1><ol>
+<li><a target="_blank" rel="noopener" href="https://ci.apache.org/projects/flink/flink-docs-release-1.12/dev/stream/state/state.html">https://ci.apache.org/projects/flink/flink-docs-release-1.12/dev/stream/state/state.html</a></li>
 </ol>
 
     </div>
@@ -339,6 +442,9 @@
     
 
       <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Flink%E5%85%A5%E9%97%A8%E7%B3%BB%E5%88%97/" rel="tag"><i class="fa fa-tag"></i> Flink入门系列</a>
+          </div>
 
         
 
