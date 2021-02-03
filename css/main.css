@@ -2848,3 +2848,6 @@ th {
 td {
   border-bottom-width: 1px;
 }
+.post-body a {
+  color: #337ab7;
+}
