@@ -2848,6 +2848,11 @@ th {
 td {
   border-bottom-width: 1px;
 }
-.post-body a {
+.post-body a[rel="noopener"] {
   color: #337ab7;
 }
+/*
+{
+  color: var(--link-color);
+}
+*/
