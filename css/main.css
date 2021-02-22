@@ -2851,6 +2851,9 @@ td {
 .post-body a[rel="noopener"] {
   color: #337ab7;
 }
+.post-body li p {
+  margin: 0 0 0 0;
+}
 /*
 {
   color: var(--link-color);
