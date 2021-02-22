@@ -23,21 +23,19 @@
     var CONFIG = {"hostname":"jtlibrain.github.io","root":"/","scheme":"Gemini","version":"8.0.0-rc.5","exturl":false,"sidebar":{"position":"left","display":"hide","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false};
   </script>
 
-  <meta name="description" content="Spark On Yarn运行方式有两种，分别为client和cluster。本文主要阐述向Yarn提交Spark应用的流程以及一些重要的接口。">
+  <meta name="description" content="TODO">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Spark On Yarn原理">
-<meta property="og:url" content="https://jtlibrain.github.io/2020/08/20/spark-on-yarn-details/index.html">
+<meta property="og:title" content="Flink：执行模式（译）">
+<meta property="og:url" content="https://jtlibrain.github.io/2021/02/18/Flink-Execution-Mode/index.html">
 <meta property="og:site_name" content="jtLiBrain">
-<meta property="og:description" content="Spark On Yarn运行方式有两种，分别为client和cluster。本文主要阐述向Yarn提交Spark应用的流程以及一些重要的接口。">
+<meta property="og:description" content="TODO">
 <meta property="og:locale" content="en_US">
-<meta property="og:image" content="https://jtlibrain.github.io/images/spark/submit-Spark-to-yarn-process.svg">
-<meta property="article:published_time" content="2020-08-20T03:40:18.000Z">
-<meta property="article:modified_time" content="2020-09-05T12:38:02.644Z">
+<meta property="article:published_time" content="2021-02-18T13:16:42.000Z">
+<meta property="article:modified_time" content="2021-02-20T13:10:42.316Z">
 <meta property="article:author" content="JT Li">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://jtlibrain.github.io/images/spark/submit-Spark-to-yarn-process.svg">
 
-<link rel="canonical" href="https://jtlibrain.github.io/2020/08/20/spark-on-yarn-details/">
+<link rel="canonical" href="https://jtlibrain.github.io/2021/02/18/Flink-Execution-Mode/">
 
 
 <script class="page-configurations">
@@ -50,7 +48,7 @@
   };
 </script>
 
-  <title>Spark On Yarn原理 | jtLiBrain</title>
+  <title>Flink：执行模式（译） | jtLiBrain</title>
   
 
 
@@ -184,7 +182,7 @@
 
       <!--noindex-->
       <section class="post-toc-wrap sidebar-panel">
-          <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%8F%90%E4%BA%A4%E6%B5%81%E7%A8%8B"><span class="nav-number">1.</span> <span class="nav-text">提交流程</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#YarnAllocator"><span class="nav-number">2.</span> <span class="nav-text">YarnAllocator</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#ExecutorRunnable"><span class="nav-number">3.</span> <span class="nav-text">ExecutorRunnable</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#TODO"><span class="nav-number">4.</span> <span class="nav-text">TODO</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#NOTEs"><span class="nav-number">5.</span> <span class="nav-text">NOTEs</span></a></li></ol></div>
+          <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%89%A7%E8%A1%8C%E8%A1%8C%E4%B8%BA"><span class="nav-number">1.</span> <span class="nav-text">执行行为</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%8A%B6%E6%80%81%E5%90%8E%E7%AB%AF-%E7%8A%B6%E6%80%81"><span class="nav-number">1.1.</span> <span class="nav-text">状态后端&#x2F;状态</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8B%E4%BB%B6%E6%97%B6%E9%97%B4-%E6%B0%B4%E5%8D%B0"><span class="nav-number">1.2.</span> <span class="nav-text">事件时间&#x2F;水印</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%A4%84%E7%90%86%E6%97%B6%E9%97%B4"><span class="nav-number">1.3.</span> <span class="nav-text">处理时间</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%82%E8%80%83"><span class="nav-number">2.</span> <span class="nav-text">参考</span></a></li></ol></div>
       </section>
       <!--/noindex-->
 
@@ -253,7 +251,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="https://jtlibrain.github.io/2020/08/20/spark-on-yarn-details/">
+    <link itemprop="mainEntityOfPage" href="https://jtlibrain.github.io/2021/02/18/Flink-Execution-Mode/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -268,7 +266,7 @@
     
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          Spark On Yarn原理
+          Flink：执行模式（译）
         </h1>
 
         <div class="post-meta">
@@ -278,14 +276,14 @@
               </span>
               <span class="post-meta-item-text">Posted on</span>
 
-              <time title="Created: 2020-08-20 11:40:18" itemprop="dateCreated datePublished" datetime="2020-08-20T11:40:18+08:00">2020-08-20</time>
+              <time title="Created: 2021-02-18 21:16:42" itemprop="dateCreated datePublished" datetime="2021-02-18T21:16:42+08:00">2021-02-18</time>
             </span>
               <span class="post-meta-item">
                 <span class="post-meta-item-icon">
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2020-09-05 20:38:02" itemprop="dateModified" datetime="2020-09-05T20:38:02+08:00">2020-09-05</time>
+                <time title="Modified: 2021-02-20 21:10:42" itemprop="dateModified" datetime="2021-02-20T21:10:42+08:00">2021-02-20</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -293,7 +291,7 @@
               </span>
               <span class="post-meta-item-text">In</span>
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/spark/" itemprop="url" rel="index"><span itemprop="name">spark</span></a>
+                  <a href="/categories/flink/" itemprop="url" rel="index"><span itemprop="name">flink</span></a>
                 </span>
             </span>
 
@@ -313,14 +311,40 @@
     
     
     <div class="post-body" itemprop="articleBody">
-        <p>Spark On Yarn运行方式有两种，分别为client和cluster。本文主要阐述向Yarn提交Spark应用的流程以及一些重要的接口。</p>
+        <p>TODO</p>
 <a id="more"></a>
 
-<h1 id="提交流程"><a href="#提交流程" class="headerlink" title="提交流程"></a>提交流程</h1><p>下图是以client模式提交Spark应用时的流程，cluster模式下Spark的AM和Driver是同一进程，与此图描述会略有不同。</p>
-<p>其中，黄色框表示的是Spark相关的组件，蓝色框表示的是Yarn相关的组件；<code>NodeManager-A</code>表示的是某个NodeManager进程A，<code>NodeManager-B*</code>和<code>CoarseGrainedExecutorBackend-E*</code>的<code>*</code>表示会有多个相应的进程。</p>
-<p><img src="/images/spark/submit-Spark-to-yarn-process.svg"></p>
-<h1 id="YarnAllocator"><a href="#YarnAllocator" class="headerlink" title="YarnAllocator"></a>YarnAllocator</h1><p>YarnAllocator负责向YARN ResourceManager请求容器资源，并决定以怎样的方式来使用这些容器资源，下面我们来了解一下这个类中比较重要的部分。</p>
-<h1 id="ExecutorRunnable"><a href="#ExecutorRunnable" class="headerlink" title="ExecutorRunnable"></a>ExecutorRunnable</h1><h1 id="TODO"><a href="#TODO" class="headerlink" title="TODO"></a>TODO</h1><h1 id="NOTEs"><a href="#NOTEs" class="headerlink" title="NOTEs"></a>NOTEs</h1><p>本文以Spark 2.4.3为基础。</p>
+<h1 id="执行行为"><a href="#执行行为" class="headerlink" title="执行行为"></a>执行行为</h1><h2 id="状态后端-状态"><a href="#状态后端-状态" class="headerlink" title="状态后端/状态"></a>状态后端/状态</h2><h2 id="事件时间-水印"><a href="#事件时间-水印" class="headerlink" title="事件时间/水印"></a>事件时间/水印</h2><blockquote>
+<p>When it comes to supporting <a target="_blank" rel="noopener" href="https://ci.apache.org/projects/flink/flink-docs-release-1.12/zh/dev/event_time.html">event time</a>, Flink’s streaming runtime builds on the pessimistic assumption that events may come out-of-order, <em>i.e.</em> an event with timestamp <code>t</code> may come after an event with timestamp <code>t+1</code>. Because of this, the system can never be sure that no more elements with timestamp <code>t &lt; T</code> for a given timestamp <code>T</code> can come in the future. To amortise the impact of this out-of-orderness on the final result while making the system practical, in <code>STREAMING</code> mode, Flink uses a heuristic called <a target="_blank" rel="noopener" href="https://ci.apache.org/projects/flink/flink-docs-release-1.12/zh/concepts/timely-stream-processing.html#event-time-and-watermarks">Watermarks</a>. A watermark with timestamp <code>T</code> signals that no element with timestamp <code>t &lt; T</code> will follow.</p>
+</blockquote>
+<p>TODO</p>
+<blockquote>
+<p>In <code>BATCH</code> mode, where the input dataset is known in advance, there is no need for such a heuristic as, at the very least, elements can be sorted by timestamp so that they are processed in temporal order. For readers familiar with streaming, in <code>BATCH</code> we can assume “perfect watermarks”.</p>
+</blockquote>
+<p>TODO</p>
+<blockquote>
+<p>Given the above, in <code>BATCH</code> mode, we only need a <code>MAX_WATERMARK</code> at the end of the input associated with each key, or at the end of input if the input stream is not keyed. Based on this scheme, all registered timers will fire at the <em>end of time</em> and user-defined <code>WatermarkAssigners</code> or <code>WatermarkStrategies</code> are ignored.</p>
+</blockquote>
+<p>TODO</p>
+<h2 id="处理时间"><a href="#处理时间" class="headerlink" title="处理时间"></a>处理时间</h2><blockquote>
+<p>Processing Time is the wall-clock time on the machine that a record is processed, at the specific instance that the record is being processed. Based on this definition, we see that the results of a computation that is based on processing time are not reproducible. This is because the same record processed twice will have two different timestamps.</p>
+</blockquote>
+<p>处理时间是记录被处理时机器的时钟，。根据该定义，我们可以看出基于处理时间的运算结果是不能复现的。这是因为，同一记录被两次处理，运算结果会有不同的时间戳。</p>
+<blockquote>
+<p>Despite the above, using processing time in <code>STREAMING</code> mode can be useful. The reason has to do with the fact that streaming pipelines often ingest their unbounded input in <em>real time</em> so there is a correlation between event time and processing time. In addition, because of the above, in <code>STREAMING</code> mode <code>1h</code> in event time can often be almost <code>1h</code> in processing time, or wall-clock time. So using processing time can be used for early (incomplete) firings that give hints about the expected results.</p>
+</blockquote>
+<p>尽管如此，在<code>STREAMING</code>模式中使用处理时间仍然是有用的。原因是：流式管道(Pipeline)通常是实时地摄入无界输入，所以事件时间与处理时间之间存在一定的关系。而且，在<code>STREAMING</code>模式中，1小时的事件时间通常几乎也是1小时的处理时间。所以，使用处理时间</p>
+<blockquote>
+<p>This correlation does not exist in the batch world where the input dataset is static and known in advance. Given this, in <code>BATCH</code> mode we allow users to request the current processing time and register processing time timers, but, as in the case of Event Time, all the timers are going to fire at the end of the input.</p>
+</blockquote>
+<p>TODO</p>
+<blockquote>
+<p>Conceptually, we can imagine that processing time does not advance during the execution of a job and we fast-forward to the <em>end of time</em> when the whole input is processed.</p>
+</blockquote>
+<p>TODO</p>
+<h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><ol>
+<li><a target="_blank" rel="noopener" href="https://ci.apache.org/projects/flink/flink-docs-release-1.12/zh/dev/datastream_execution_mode.html">https://ci.apache.org/projects/flink/flink-docs-release-1.12/zh/dev/datastream_execution_mode.html</a></li>
+</ol>
 
     </div>
 
@@ -336,13 +360,10 @@
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/2020/08/14/Spark-rpc-details/" rel="prev" title="Spark RPC原理">
-      <i class="fa fa-chevron-left"></i> Spark RPC原理
+    <a href="/2021/01/22/Flink-Job-Submission/" rel="prev" title="Flink入门系列2：作业提交">
+      <i class="fa fa-chevron-left"></i> Flink入门系列2：作业提交
     </a></div>
-      <div class="post-nav-item">
-    <a href="/2020/08/21/Spark-cluster-introduction/" rel="next" title="Spark集群概述">
-      Spark集群概述 <i class="fa fa-chevron-right"></i>
-    </a></div>
+      <div class="post-nav-item"></div>
     </div>
       </footer>
     
@@ -479,7 +500,7 @@ NexT.utils.loadComments('#gitalk-container', () => {
       repo        : 'jtLiBrain.github.io',
       owner       : 'jtLiBrain',
       admin       : ['jtLiBrain'],
-      id          : 'e2db18e4b2327c1d27e50731ce179f16',
+      id          : '70d9b727077e82ff99dcb24655716ce9',
         language: 'en',
       distractionFreeMode: true
     });
