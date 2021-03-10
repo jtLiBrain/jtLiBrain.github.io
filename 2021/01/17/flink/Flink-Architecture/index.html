@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.0.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.14.0/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css">
+
+<script class="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"jtlibrain.github.io","root":"/","scheme":"Gemini","version":"8.0.0-rc.5","exturl":false,"sidebar":{"position":"left","display":"hide","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false};
+  </script>
+
+  <meta name="description" content="Flink是一个通用的框架，支持多种不同的部署场景。本篇从Flink集群架构、提交模式、以及资源部署方案的角度进行介绍。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Flink入门系列1：架构与部署">
+<meta property="og:url" content="https://jtlibrain.github.io/2021/01/17/flink/Flink-Architecture/index.html">
+<meta property="og:site_name" content="jtLiBrain">
+<meta property="og:description" content="Flink是一个通用的框架，支持多种不同的部署场景。本篇从Flink集群架构、提交模式、以及资源部署方案的角度进行介绍。">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://jtlibrain.github.io/images/flink/cluster-components.svg">
+<meta property="og:image" content="https://jtlibrain.github.io/images/flink/deployment_modes.svg">
+<meta property="og:image" content="https://jtlibrain.github.io/images/flink/deployment-yarn-application-2.png">
+<meta property="og:image" content="https://jtlibrain.github.io/images/flink/deployment-yarn-application-5.png">
+<meta property="og:image" content="https://jtlibrain.github.io/images/flink/deployment-yarn-perjob-2.png">
+<meta property="og:image" content="https://jtlibrain.github.io/images/flink/deployment-yarn-perjob-3.png">
+<meta property="og:image" content="https://jtlibrain.github.io/images/flink/deployment-yarn-session-2.png">
+<meta property="og:image" content="https://jtlibrain.github.io/images/flink/deployment-yarn-session-3.png">
+<meta property="og:image" content="https://jtlibrain.github.io/images/flink/deployment-yarn-session-5.png">
+<meta property="og:image" content="https://jtlibrain.github.io/images/flink/deployment-yarn-session-8.png">
+<meta property="og:image" content="https://jtlibrain.github.io/images/flink/deployment-yarn-session-11.png">
+<meta property="og:image" content="https://jtlibrain.github.io/images/flink/deployment-yarn-session-14.png">
+<meta property="article:published_time" content="2021-01-17T09:07:18.000Z">
+<meta property="article:modified_time" content="2021-01-22T14:15:59.174Z">
+<meta property="article:author" content="JT Li">
+<meta property="article:tag" content="Flink入门系列">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://jtlibrain.github.io/images/flink/cluster-components.svg">
+
+<link rel="canonical" href="https://jtlibrain.github.io/2021/01/17/flink/Flink-Architecture/">
+
+
+<script class="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>Flink入门系列1：架构与部署 | jtLiBrain</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  body { margin-top: 2rem; }
+
+  .use-motion .menu-item,
+  .use-motion .sidebar,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header {
+    visibility: visible;
+  }
+
+  .use-motion .header,
+  .use-motion .site-brand-container .toggle,
+  .use-motion .footer { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle,
+  .use-motion .custom-logo-image {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line {
+    transform: scaleX(1);
+  }
+
+  .search-pop-overlay, .sidebar-nav { display: none; }
+  .sidebar-panel { display: block; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <main class="main">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+        <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">jtLiBrain</h1>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">任何伟大的事都不会一蹴而就，三分智慧，七分韧性</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <section class="post-toc-wrap sidebar-panel">
+          <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%9B%86%E7%BE%A4%E7%BB%84%E4%BB%B6"><span class="nav-number">1.</span> <span class="nav-text">集群组件</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Flink%E5%AE%A2%E6%88%B7%E7%AB%AF"><span class="nav-number">1.1.</span> <span class="nav-text">Flink客户端</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#JobManager"><span class="nav-number">1.2.</span> <span class="nav-text">JobManager</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#TaskManager"><span class="nav-number">1.3.</span> <span class="nav-text">TaskManager</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%A4%96%E9%83%A8%E7%BB%84%E4%BB%B6"><span class="nav-number">1.4.</span> <span class="nav-text">外部组件</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Resource-Provider"><span class="nav-number">1.4.1.</span> <span class="nav-text">Resource Provider</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#High-Availability-Service-Provider"><span class="nav-number">1.4.2.</span> <span class="nav-text">High Availability Service Provider</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#File-Storage-and-Persistency"><span class="nav-number">1.4.3.</span> <span class="nav-text">File Storage and Persistency</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Metrics-Storage"><span class="nav-number">1.4.4.</span> <span class="nav-text">Metrics Storage</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%BA%94%E7%94%A8%E5%B1%82%E7%9A%84%E6%95%B0%E6%8D%AE%E6%BA%90%E5%92%8Csink"><span class="nav-number">1.4.5.</span> <span class="nav-text">应用层的数据源和sink</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%8F%90%E4%BA%A4%E6%A8%A1%E5%BC%8F"><span class="nav-number">2.</span> <span class="nav-text">提交模式</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Application%E6%A8%A1%E5%BC%8F"><span class="nav-number">2.1.</span> <span class="nav-text">Application模式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Per-Job%E6%A8%A1%E5%BC%8F"><span class="nav-number">2.2.</span> <span class="nav-text">Per-Job模式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Session%E6%A8%A1%E5%BC%8F"><span class="nav-number">2.3.</span> <span class="nav-text">Session模式</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%83%A8%E7%BD%B2%E7%A4%BA%E4%BE%8B"><span class="nav-number">3.</span> <span class="nav-text">部署示例</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Standalone"><span class="nav-number">3.1.</span> <span class="nav-text">Standalone</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Application%E6%A8%A1%E5%BC%8F-1"><span class="nav-number">3.1.1.</span> <span class="nav-text">Application模式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Per-Job%E6%A8%A1%E5%BC%8F-1"><span class="nav-number">3.1.2.</span> <span class="nav-text">Per-Job模式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Session%E6%A8%A1%E5%BC%8F-1"><span class="nav-number">3.1.3.</span> <span class="nav-text">Session模式</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#YARN"><span class="nav-number">3.2.</span> <span class="nav-text">YARN</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Application%E6%A8%A1%E5%BC%8F-2"><span class="nav-number">3.2.1.</span> <span class="nav-text">Application模式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Per-Job%E6%A8%A1%E5%BC%8F-2"><span class="nav-number">3.2.2.</span> <span class="nav-text">Per-Job模式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Session%E6%A8%A1%E5%BC%8F-2"><span class="nav-number">3.2.3.</span> <span class="nav-text">Session模式</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Mesos"><span class="nav-number">3.3.</span> <span class="nav-text">Mesos</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Native-Kubernetes"><span class="nav-number">3.4.</span> <span class="nav-text">Native Kubernetes</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%82%E8%80%83"><span class="nav-number">4.</span> <span class="nav-text">参考</span></a></li></ol></div>
+      </section>
+      <!--/noindex-->
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">JT Li</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">28</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">11</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="mailto:jtli.brain@hotmail.com" title="E-Mail → mailto:jtli.brain@hotmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </section>
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </header>
+
+      
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div id="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+      <div class="main-inner">
+        
+
+        <div class="content post posts-expand">
+          
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://jtlibrain.github.io/2021/01/17/flink/Flink-Architecture/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="JT Li">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="jtLiBrain">
+    </span>
+
+    
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Flink入门系列1：架构与部署
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-01-17 17:07:18" itemprop="dateCreated datePublished" datetime="2021-01-17T17:07:18+08:00">2021-01-17</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2021-01-22 22:15:59" itemprop="dateModified" datetime="2021-01-22T22:15:59+08:00">2021-01-22</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/flink/" itemprop="url" rel="index"><span itemprop="name">flink</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="Views" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">Views: </span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p>Flink是一个通用的框架，支持多种不同的部署场景。本篇从Flink集群架构、提交模式、以及资源部署方案的角度进行介绍。</p>
+<a id="more"></a>
+
+<h1 id="集群组件"><a href="#集群组件" class="headerlink" title="集群组件"></a>集群组件</h1><img src="/images/flink/cluster-components.svg" style="zoom:80%;" />
+
+<h2 id="Flink客户端"><a href="#Flink客户端" class="headerlink" title="Flink客户端"></a>Flink客户端</h2><p>Flink客户端负责将FIink应用程序编译为数据流图，然后将其提交给JobManager。</p>
+<h2 id="JobManager"><a href="#JobManager" class="headerlink" title="JobManager"></a>JobManager</h2><p>JobManager是Flink集群工作的中央协调组件。它针对不同的Resource Provider会有不同实现，这些实现在高可用、资源分配以及所支持的提交模式是不同的。</p>
+<p>JobManager所提供的作业提交模式有：</p>
+<ul>
+<li>Application模式</li>
+<li>Per-Job模式</li>
+<li>Session模式</li>
+</ul>
+<h2 id="TaskManager"><a href="#TaskManager" class="headerlink" title="TaskManager"></a>TaskManager</h2><p>TaskManager负责执行Flink作业。</p>
+<h2 id="外部组件"><a href="#外部组件" class="headerlink" title="外部组件"></a>外部组件</h2><h3 id="Resource-Provider"><a href="#Resource-Provider" class="headerlink" title="Resource Provider"></a>Resource Provider</h3><p>Flink可以通过不同的资源提供框架进行部署，例如Kubernetes、YARN或Mesos。</p>
+<h3 id="High-Availability-Service-Provider"><a href="#High-Availability-Service-Provider" class="headerlink" title="High Availability Service Provider"></a>High Availability Service Provider</h3><h3 id="File-Storage-and-Persistency"><a href="#File-Storage-and-Persistency" class="headerlink" title="File Storage and Persistency"></a>File Storage and Persistency</h3><h3 id="Metrics-Storage"><a href="#Metrics-Storage" class="headerlink" title="Metrics Storage"></a>Metrics Storage</h3><h3 id="应用层的数据源和sink"><a href="#应用层的数据源和sink" class="headerlink" title="应用层的数据源和sink"></a>应用层的数据源和sink</h3><h1 id="提交模式"><a href="#提交模式" class="headerlink" title="提交模式"></a>提交模式</h1><p><img src="/images/flink/deployment_modes.svg"></p>
+<h2 id="Application模式"><a href="#Application模式" class="headerlink" title="Application模式"></a>Application模式</h2><p>在其它的模式中，应用程序的main()方法都是在client中执行的。过程包括：将应用的依赖下载到本地、执行main()方法提取Flink运行时可以理解的应用程序的表示(例如，JobGraph)、将依赖和JobGraph分发到集群。这使客户端成了一个大量消耗资源的组件，因为它需要大量的网络带宽来下载依赖、然后向集群发送这些二进制数据，并需要大量的CPU时间来执行main()方法。如果该客户端节点有很多用户所共享，那么这个问题会变得更为显著。</p>
+<p>Application模式下，每个应用程序单独创建一个集群，应用程序的main()方法在JobManager上被执行。不需要事先启动一个Flink集群，然后再向集群提交作业；而是，将应用程序的业务逻辑和其依赖打包到一个可执行的作业JAR，集群的入口（ApplicationClusterEntryPoint）负责调用main()方法来获取JobGraph。每个应用创建一个集群可以被看作是：创建一个session集群，但是这个session集群只能由该应用的作业所使用；应用完成，集群也相应终止。这种架构下，Application模式提供了与Per-Job模式一样的资源隔离和负载均衡的保障，但是是在整个应用粒度上的。在JobManager上执行main()方法节省了所需要的CPU资源，也节省了本地下载依赖所需要的带宽。并且，因为每个应用一个JobManager，它会使得下载应用程序的依赖所需要的网络负载更加均匀得分散到集群中（Per-Job模式和Session模式，Client端负载会过于严重）。</p>
+<div style="color:#31708f; background-color:#d9edf7; border-color:#bce8f1; padding:15px; margin-bottom:20px; border:1px solid transparent; border-radius:4px;">
+注意：在Application模式中，main()是在集群中执行了，而不是像其它模式一样在客户端上执行。这可能会对你的程序有些影响，例如，使用registerCachedFile()在环境中注册的任何路径必须对于该应用的JobManager是可访问的。
+</div>
+
+<p>相比于Per-Job模型，Application模式允许提交包含多个作业的应用。作业执行的顺序不受部署模式的影响，但会受到启动作业所使用的调用影响。<code>execute()</code>方法（它是阻塞式的）可以保证是顺序得，它会将“下一个”作业的执行拖延到“当前”作业完成。<code>executeAsync()</code>方法（它是非阻塞式的）会导致“下一个”作业会在“这个”作业完成之前就被启动了。</p>
+<h2 id="Per-Job模式"><a href="#Per-Job模式" class="headerlink" title="Per-Job模式"></a>Per-Job模式</h2><p>旨在提供更好的资源隔离的保障，Per-Job模式利用可用的资源调度框架（例如，YARN、Kubernetes）为每个提交的作业启动一个集群。集群只对该作业可用。当作业结束时，集群也会结束、任何lingering的资源（例如，文件、等）也会被清理。</p>
+<p>该模式下，作业的<code>main()</code>方法在创建集群之前在Client端执行。客户端首先从集群管理器请求资源启动 JobManager，然后将作业提交给在这个进程中运行的 Dispatcher。然后根据作业的资源请求惰性的分配 TaskManager。一旦作业完成，Flink Job 集群将被拆除。</p>
+<p>它提供了更好的资源隔离，因为一个行为可疑的作业只会搞垮它自己TaskManager。另外，它将记账的负担分散到了多个JobManager，因为每个Job都有一个JobManager。<font color="red">基于这些原因，Per-Job资源分配模式是很多生产环境的首选模式。</font></p>
+<h2 id="Session模式"><a href="#Session模式" class="headerlink" title="Session模式"></a>Session模式</h2><p>Session模式假设有一个已经在运行的Flink集群，使用该集群的资源来执行执行的应用。同一个集群中执行的应用使用的同样的资源，因此就会对资源进行竞争。但是，如果其中有一个作业胡作非为或者搞垮了TaskManager，那么运行在那个TaskManager上的所有作业都会受到影响。另外，使用一个集群运行多个作业这意味着JobManager更大的负载，它负责对集群中的所有作业进行记账。</p>
+<h1 id="部署示例"><a href="#部署示例" class="headerlink" title="部署示例"></a>部署示例</h1><p>下表给出了各个资源调度平台对于Flink三种提交模式的支持情况：</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Application模式</th>
+<th>Per-Job模式</th>
+<th>Session模式</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Standalone</td>
+<td>✅</td>
+<td>❌</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>YARN</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>Mesos</td>
+<td>❌</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>Kubernetes</td>
+<td>✅</td>
+<td>❌</td>
+<td>✅</td>
+</tr>
+</tbody></table>
+<h2 id="Standalone"><a href="#Standalone" class="headerlink" title="Standalone"></a>Standalone</h2><p>本篇旨在本地环境快速搭建Flink Standalone集群，从而快速一探究竟；关于如何在多设备上搭建分布式Standalone集群、以及docker和kubernetes部署，可以参考官方相关文档。</p>
+<h3 id="Application模式-1"><a href="#Application模式-1" class="headerlink" title="Application模式"></a>Application模式</h3><p>第1步：准备应用程序jar</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ cp ./examples/streaming/TopSpeedWindowing.jar lib/</span><br></pre></td></tr></table></figure>
+
+<p>第2步：提交作业启动JobManager</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ ./bin/standalone-job.sh start --job-classname org.apache.flink.streaming.examples.windowing.TopSpeedWindowing</span><br></pre></td></tr></table></figure>
+
+<p>第3步：启动TaskManager（执行两次以下命令，启动两个TaskManager进程）</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ ./bin/taskmanager.sh start</span><br></pre></td></tr></table></figure>
+
+<p>第4步：使用<code>jps</code>查看本地机器上的Flink进程，会有如下三个相关进程</p>
+<blockquote>
+<p>StandaloneApplicationClusterEntryPoint</p>
+<p>TaskManagerRunner</p>
+<p>TaskManagerRunner</p>
+</blockquote>
+<p>第5步：使用<a target="_blank" rel="noopener" href="http://localhost:8081/">localhost:8081</a>查看Flink Web UI</p>
+<p>第6步：停止集群</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ ./bin/taskmanager.sh stop-all</span><br><span class="line">$ ./bin/standalone-job.sh stop</span><br></pre></td></tr></table></figure>
+
+<h3 id="Per-Job模式-1"><a href="#Per-Job模式-1" class="headerlink" title="Per-Job模式"></a>Per-Job模式</h3><p>Standalone集群不支持Per-Job</p>
+<h3 id="Session模式-1"><a href="#Session模式-1" class="headerlink" title="Session模式"></a>Session模式</h3><p>第1步：进行如下配置，conf/workers中有两行，意味着我们要在本地启动两个TaskManager</p>
+<p>conf/masters</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">localhost</span><br></pre></td></tr></table></figure>
+
+<p>conf/workers</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">localhost</span><br><span class="line">localhost</span><br></pre></td></tr></table></figure>
+
+<p>第2步：启动集群</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ ./bin/start-cluster.sh</span><br></pre></td></tr></table></figure>
+
+<p>第3步：使用<code>jps</code>查看本地机器上的Flink进程，会有如下3个相关进程：</p>
+<blockquote>
+<p>StandaloneSessionClusterEntrypoint（注意，这里与Application模式的StandaloneApplicationClusterEntryPoint不同）</p>
+<p>TaskManagerRunner</p>
+<p>TaskManagerRunner</p>
+</blockquote>
+<p>第4步：使用<a target="_blank" rel="noopener" href="http://localhost:8081/">localhost:8081</a>查看Flink Web UI，通过UI我们可以看到，<font color="blue">Jobs - Running Jobs</font>页面没有在运行的作业，<font color="blue">Task Managers</font>页面中的每个TaskManager行中的All Slots和Free Slots值是相等的。</p>
+<p>第5步：向Flink集群提交作业</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ ./bin/flink run ./examples/streaming/TopSpeedWindowing.jar</span><br></pre></td></tr></table></figure>
+
+<p>这是使用<code>jps</code>再次查看本地机器上的Flink进程，会有如下4个相关进程：</p>
+<blockquote>
+<p>CliFrontend</p>
+<p>StandaloneSessionClusterEntrypoint</p>
+<p>TaskManagerRunner</p>
+<p>TaskManagerRunner</p>
+</blockquote>
+<p>通过Web UI界面我们可以看到<font color="blue">Jobs - Running Jobs</font>页面有一个在运行的作业，<font color="blue">Task Managers</font>页面中的有一行的Free Slots值为0。</p>
+<p>第6步：重复【第5步】，我们再提交一个作业，同样进行观察，这时Flink集群的Slots被全部占用了，并且多了一个CliFrontend进程。</p>
+<blockquote>
+<p>CliFrontend</p>
+<p>CliFrontend</p>
+<p>StandaloneSessionClusterEntrypoint</p>
+<p>TaskManagerRunner</p>
+<p>TaskManagerRunner</p>
+</blockquote>
+<p>第7步：停止集群</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ ./bin/stop-cluster.sh</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="YARN"><a href="#YARN" class="headerlink" title="YARN"></a>YARN</h2><p>该节的试验是在AWS EMR上进行的，集群设备描述如下：</p>
+<table>
+<thead>
+<tr>
+<th>节点类型和名称</th>
+<th>私有IP地址</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>MASTER</strong><br/>主实例组 - 1</td>
+<td>172.31.13.9</td>
+<td>主实例节点作为Flink提交节点</td>
+</tr>
+<tr>
+<td><strong>CORE</strong><br/>核心实例组 - 2</td>
+<td>172.31.2.210<br/>172.31.11.231</td>
+<td>核心节点是YARN NodeManager运行节点</td>
+</tr>
+</tbody></table>
+<h3 id="Application模式-2"><a href="#Application模式-2" class="headerlink" title="Application模式"></a>Application模式</h3><p>第1步：相关配置</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ <span class="built_in">export</span> HADOOP_CLASSPATH=`hadoop classpath`</span><br></pre></td></tr></table></figure>
+
+<p>第2步：提交作业启动集群</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ ./bin/flink run-application -t yarn-application ./examples/streaming/TopSpeedWindowing.jar</span><br></pre></td></tr></table></figure>
+
+<p>第3步：查看Flink Web UI、YARN ResourceManager UI</p>
+<p><img src="/images/flink/deployment-yarn-application-2.png"></p>
+<p><img src="/images/flink/deployment-yarn-application-5.png"></p>
+<p>第4步：使用<code>jps</code>查看YARN各个节点上的Flink进程</p>
+<table>
+<thead>
+<tr>
+<th>节点说明</th>
+<th>进程说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>提交节点（172.31.13.9）</td>
+<td>无Flink相关进程</td>
+</tr>
+<tr>
+<td>集群某个节点A（172.31.11.231）</td>
+<td>YarnApplicationClusterEntryPoint</td>
+</tr>
+<tr>
+<td>集群某个节点B（172.31.2.210）</td>
+<td>YarnTaskExecutorRunner</td>
+</tr>
+</tbody></table>
+<h3 id="Per-Job模式-2"><a href="#Per-Job模式-2" class="headerlink" title="Per-Job模式"></a>Per-Job模式</h3><p>第1步：相关配置</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ <span class="built_in">export</span> HADOOP_CLASSPATH=`hadoop classpath`</span><br></pre></td></tr></table></figure>
+
+<p>第2步：提交作业启动集群</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ ./bin/flink run -t yarn-per-job --detached ./examples/streaming/TopSpeedWindowing.jar</span><br></pre></td></tr></table></figure>
+
+<p>第3步：查看Flink Web UI、YARN ResourceManager UI</p>
+<p><img src="/images/flink/deployment-yarn-perjob-2.png"></p>
+<p><img src="/images/flink/deployment-yarn-perjob-3.png"></p>
+<p>第4步：使用<code>jps</code>查看YARN节点上的Flink进程</p>
+<table>
+<thead>
+<tr>
+<th>节点说明</th>
+<th>进程说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>提交节点（172.31.13.9）</td>
+<td>无Flink相关进程</td>
+</tr>
+<tr>
+<td>集群某个节点A（172.31.11.231）</td>
+<td>YarnJobClusterEntrypoint</td>
+</tr>
+<tr>
+<td>集群某个节点B（172.31.2.210）</td>
+<td>YarnTaskExecutorRunner</td>
+</tr>
+</tbody></table>
+<h3 id="Session模式-2"><a href="#Session模式-2" class="headerlink" title="Session模式"></a>Session模式</h3><p>第1步：相关配置</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ <span class="built_in">export</span> HADOOP_CLASSPATH=`hadoop classpath`</span><br></pre></td></tr></table></figure>
+
+<p>第2步：启动集群</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ ./bin/yarn-session.sh --detached</span><br></pre></td></tr></table></figure>
+
+<p>第3步：查看Flink Web UI、YARN ResourceManager UI</p>
+<p><img src="/images/flink/deployment-yarn-session-2.png"></p>
+<p><img src="/images/flink/deployment-yarn-session-3.png"></p>
+<p>第4步：使用<code>jps</code>查看YARN各个节点上的Flink进程</p>
+<table>
+<thead>
+<tr>
+<th>节点说明</th>
+<th>进程说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>提交节点（172.31.13.9）</td>
+<td>无Flink相关进程</td>
+</tr>
+<tr>
+<td>集群某个节点A（172.31.2.210）</td>
+<td>YarnSessionClusterEntrypoint</td>
+</tr>
+</tbody></table>
+<p>第5步：提交作业</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ ./bin/flink run ./examples/streaming/TopSpeedWindowing.jar</span><br><span class="line">或</span><br><span class="line">$ ./bin/flink run -t yarn-session -Dyarn.application.id=application_XXXX_YY ./examples/streaming/TopSpeedWindowing.jar</span><br></pre></td></tr></table></figure>
+
+<p>第6步：查看Flink Web UI、YARN ResourceManager UI</p>
+<p><img src="/images/flink/deployment-yarn-session-5.png"></p>
+<p><img src="/images/flink/deployment-yarn-session-8.png"></p>
+<p>第7步：使用<code>jps</code>查看YARN各个节点上的Flink进程</p>
+<table>
+<thead>
+<tr>
+<th>节点说明</th>
+<th>进程说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>提交节点（172.31.13.9）</td>
+<td>CliFrontend</td>
+</tr>
+<tr>
+<td>集群某个节点A（172.31.2.210）</td>
+<td>YarnSessionClusterEntrypoint</td>
+</tr>
+<tr>
+<td>集群某个节点B（172.31.11.231）</td>
+<td>YarnTaskExecutorRunner</td>
+</tr>
+</tbody></table>
+<p>第8步：重复【第5步】，我们再提交一个作业，同样进行观察</p>
+<p><img src="/images/flink/deployment-yarn-session-11.png"></p>
+<p><img src="/images/flink/deployment-yarn-session-14.png"></p>
+<table>
+<thead>
+<tr>
+<th>节点说明</th>
+<th>进程说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>提交节点（172.31.13.9）</td>
+<td>CliFrontend<br/>CliFrontend</td>
+</tr>
+<tr>
+<td>集群某个节点A（172.31.2.210）</td>
+<td>YarnSessionClusterEntrypoint</td>
+</tr>
+<tr>
+<td>集群某个节点B（172.31.11.231）</td>
+<td>YarnTaskExecutorRunner<br/>YarnTaskExecutorRunner</td>
+</tr>
+</tbody></table>
+<h2 id="Mesos"><a href="#Mesos" class="headerlink" title="Mesos"></a>Mesos</h2><p>TODO</p>
+<h2 id="Native-Kubernetes"><a href="#Native-Kubernetes" class="headerlink" title="Native Kubernetes"></a>Native Kubernetes</h2><p>TODO</p>
+<h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><p>注意，官方中文文档和英文文档内容并不是一致的，如resource-providers/standalone的中/英文文档介绍的内容是不大一致的。</p>
+<ol>
+<li><a target="_blank" rel="noopener" href="https://ci.apache.org/projects/flink/flink-docs-release-1.12/zh/deployment/">https://ci.apache.org/projects/flink/flink-docs-release-1.12/zh/deployment/</a></li>
+<li><a target="_blank" rel="noopener" href="https://ci.apache.org/projects/flink/flink-docs-release-1.12/zh/concepts/flink-architecture.html">https://ci.apache.org/projects/flink/flink-docs-release-1.12/zh/concepts/flink-architecture.html</a></li>
+<li><a target="_blank" rel="noopener" href="https://ci.apache.org/projects/flink/flink-docs-release-1.12/zh/deployment/resource-providers/standalone/">https://ci.apache.org/projects/flink/flink-docs-release-1.12/zh/deployment/resource-providers/standalone/</a></li>
+<li><a target="_blank" rel="noopener" href="https://ci.apache.org/projects/flink/flink-docs-release-1.12/deployment/resource-providers/standalone">https://ci.apache.org/projects/flink/flink-docs-release-1.12/deployment/resource-providers/standalone</a></li>
+<li><a target="_blank" rel="noopener" href="https://ci.apache.org/projects/flink/flink-docs-release-1.12/deployment/resource-providers/standalone/docker.html">https://ci.apache.org/projects/flink/flink-docs-release-1.12/deployment/resource-providers/standalone/docker.html</a></li>
+<li><a target="_blank" rel="noopener" href="https://ci.apache.org/projects/flink/flink-docs-release-1.12/zh/deployment/resource-providers/standalone/docker.html">https://ci.apache.org/projects/flink/flink-docs-release-1.12/zh/deployment/resource-providers/standalone/docker.html</a></li>
+<li><a target="_blank" rel="noopener" href="https://ci.apache.org/projects/flink/flink-docs-release-1.12/deployment/resource-providers/standalone/kubernetes.html">https://ci.apache.org/projects/flink/flink-docs-release-1.12/deployment/resource-providers/standalone/kubernetes.html</a></li>
+<li><a target="_blank" rel="noopener" href="https://ci.apache.org/projects/flink/flink-docs-release-1.12/zh/deployment/resource-providers/standalone/kubernetes.html">https://ci.apache.org/projects/flink/flink-docs-release-1.12/zh/deployment/resource-providers/standalone/kubernetes.html</a></li>
+</ol>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Flink%E5%85%A5%E9%97%A8%E7%B3%BB%E5%88%97/" rel="tag"><i class="fa fa-tag"></i> Flink入门系列</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/01/16/flink/Flink-Learn-Flink/" rel="prev" title="Flink：学习Flink">
+      <i class="fa fa-chevron-left"></i> Flink：学习Flink
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/01/21/NexT-Usage/" rel="next" title="NexT 主题使用">
+      NexT 主题使用 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+        </div>
+        
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">JT Li</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="Total Visitors">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="Total Views">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="//cdn.jsdelivr.net/npm/animejs@3.2.0/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1.6.2/dist/gitalk.css">
+
+<script>
+NexT.utils.loadComments('#gitalk-container', () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1.6.2/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : 'c94aa78cf2eda71757bf',
+      clientSecret: '01e1353b3f8eac54aafb1224c784b7af0305ce8c',
+      repo        : 'jtLiBrain.github.io',
+      owner       : 'jtLiBrain',
+      admin       : ['jtLiBrain'],
+      id          : '1f3f84852ca5ee625cba6b5b669458a5',
+        language: 'en',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+</body>
+</html>

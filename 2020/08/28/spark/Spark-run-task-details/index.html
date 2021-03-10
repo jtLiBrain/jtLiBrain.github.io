@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.0.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.14.0/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css">
+
+<script class="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"jtlibrain.github.io","root":"/","scheme":"Gemini","version":"8.0.0-rc.5","exturl":false,"sidebar":{"position":"left","display":"hide","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false};
+  </script>
+
+  <meta name="description" content="本站文章《Spark提交作业原理》讲述了作业是如何提交到集群，本篇介绍任务是如何被运行的。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Spark运行任务原理">
+<meta property="og:url" content="https://jtlibrain.github.io/2020/08/28/spark/Spark-run-task-details/index.html">
+<meta property="og:site_name" content="jtLiBrain">
+<meta property="og:description" content="本站文章《Spark提交作业原理》讲述了作业是如何提交到集群，本篇介绍任务是如何被运行的。">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://jtlibrain.github.io/images/spark/run-task.svg">
+<meta property="og:image" content="https://jtlibrain.github.io/images/spark/ShuffleMapTask-runTask.svg">
+<meta property="article:published_time" content="2020-08-28T08:11:09.000Z">
+<meta property="article:modified_time" content="2020-11-29T03:56:35.840Z">
+<meta property="article:author" content="JT Li">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://jtlibrain.github.io/images/spark/run-task.svg">
+
+<link rel="canonical" href="https://jtlibrain.github.io/2020/08/28/spark/Spark-run-task-details/">
+
+
+<script class="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>Spark运行任务原理 | jtLiBrain</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  body { margin-top: 2rem; }
+
+  .use-motion .menu-item,
+  .use-motion .sidebar,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header {
+    visibility: visible;
+  }
+
+  .use-motion .header,
+  .use-motion .site-brand-container .toggle,
+  .use-motion .footer { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle,
+  .use-motion .custom-logo-image {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line {
+    transform: scaleX(1);
+  }
+
+  .search-pop-overlay, .sidebar-nav { display: none; }
+  .sidebar-panel { display: block; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <main class="main">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+        <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">jtLiBrain</h1>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">任何伟大的事都不会一蹴而就，三分智慧，七分韧性</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <section class="post-toc-wrap sidebar-panel">
+          <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BB%BB%E5%8A%A1%E6%89%A7%E8%A1%8C"><span class="nav-number">1.</span> <span class="nav-text">任务执行</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Executor"><span class="nav-number">1.1.</span> <span class="nav-text">Executor</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#TaskRunner"><span class="nav-number">1.2.</span> <span class="nav-text">TaskRunner</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#DriverEndpoint"><span class="nav-number">1.3.</span> <span class="nav-text">DriverEndpoint</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ShuffleStatus"><span class="nav-number">1.4.</span> <span class="nav-text">ShuffleStatus</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#MapOutputTracker"><span class="nav-number">1.5.</span> <span class="nav-text">MapOutputTracker</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#MapOutputTrackerMaster"><span class="nav-number">1.6.</span> <span class="nav-text">MapOutputTrackerMaster</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#MapOutputTrackerWorker"><span class="nav-number">1.7.</span> <span class="nav-text">MapOutputTrackerWorker</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#TaskSchedulerImpl"><span class="nav-number">1.8.</span> <span class="nav-text">TaskSchedulerImpl</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#TaskResultGetter"><span class="nav-number">1.9.</span> <span class="nav-text">TaskResultGetter</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#TaskSetManager"><span class="nav-number">1.10.</span> <span class="nav-text">TaskSetManager</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#DagScheduler"><span class="nav-number">1.11.</span> <span class="nav-text">DagScheduler</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#OutputCommitCoordinator"><span class="nav-number">1.12.</span> <span class="nav-text">OutputCommitCoordinator</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Spark%E4%BB%BB%E5%8A%A1"><span class="nav-number">2.</span> <span class="nav-text">Spark任务</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#ShuffleMapTask"><span class="nav-number">2.1.</span> <span class="nav-text">ShuffleMapTask</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B3%A8%E5%86%8CShuffleHandle"><span class="nav-number">2.1.1.</span> <span class="nav-text">注册ShuffleHandle</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ShuffleWriter"><span class="nav-number">2.1.2.</span> <span class="nav-text">ShuffleWriter</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ResultTask"><span class="nav-number">2.2.</span> <span class="nav-text">ResultTask</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#NOTEs"><span class="nav-number">3.</span> <span class="nav-text">NOTEs</span></a></li></ol></div>
+      </section>
+      <!--/noindex-->
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">JT Li</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">28</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">11</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="mailto:jtli.brain@hotmail.com" title="E-Mail → mailto:jtli.brain@hotmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </section>
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </header>
+
+      
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div id="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+      <div class="main-inner">
+        
+
+        <div class="content post posts-expand">
+          
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://jtlibrain.github.io/2020/08/28/spark/Spark-run-task-details/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="JT Li">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="jtLiBrain">
+    </span>
+
+    
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Spark运行任务原理
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2020-08-28 16:11:09" itemprop="dateCreated datePublished" datetime="2020-08-28T16:11:09+08:00">2020-08-28</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2020-11-29 11:56:35" itemprop="dateModified" datetime="2020-11-29T11:56:35+08:00">2020-11-29</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/spark/" itemprop="url" rel="index"><span itemprop="name">spark</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="Views" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">Views: </span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p>本站文章《<a href="/2020/08/24/Spark-submit-job-details">Spark提交作业原理</a>》讲述了作业是如何提交到集群，本篇介绍任务是如何被运行的。</p>
+<a id="more"></a>
+
+<h1 id="任务执行"><a href="#任务执行" class="headerlink" title="任务执行"></a>任务执行</h1><p><img src="/images/spark/run-task.svg"></p>
+<h2 id="Executor"><a href="#Executor" class="headerlink" title="Executor"></a>Executor</h2><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 接受ExecutorBackend提交任务请求</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">launchTask</span></span>(context: <span class="type">ExecutorBackend</span>, taskDescription: <span class="type">TaskDescription</span>): <span class="type">Unit</span> = &#123;</span><br><span class="line">  <span class="keyword">val</span> tr = <span class="keyword">new</span> <span class="type">TaskRunner</span>(context, taskDescription)</span><br><span class="line">  runningTasks.put(taskDescription.taskId, tr)</span><br><span class="line">  threadPool.execute(tr)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="TaskRunner"><a href="#TaskRunner" class="headerlink" title="TaskRunner"></a>TaskRunner</h2><h2 id="DriverEndpoint"><a href="#DriverEndpoint" class="headerlink" title="DriverEndpoint"></a>DriverEndpoint</h2><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">override</span> <span class="function"><span class="keyword">def</span> <span class="title">receive</span></span>: <span class="type">PartialFunction</span>[<span class="type">Any</span>, <span class="type">Unit</span>] = &#123;</span><br><span class="line">  <span class="keyword">case</span> <span class="type">StatusUpdate</span>(executorId, taskId, state, data) =&gt;</span><br><span class="line">    scheduler.statusUpdate(taskId, state, data.value)</span><br><span class="line">    <span class="keyword">if</span> (<span class="type">TaskState</span>.isFinished(state)) &#123;</span><br><span class="line">      executorDataMap.get(executorId) <span class="keyword">match</span> &#123;</span><br><span class="line">        <span class="keyword">case</span> <span class="type">Some</span>(executorInfo) =&gt;</span><br><span class="line">          executorInfo.freeCores += scheduler.<span class="type">CPUS_PER_TASK</span></span><br><span class="line">          makeOffers(executorId)</span><br><span class="line">        <span class="keyword">case</span> <span class="type">None</span> =&gt;</span><br><span class="line">          <span class="comment">// Ignoring the update since we don&#x27;t know about the executor.</span></span><br><span class="line">          logWarning(<span class="string">s&quot;Ignored task status update (<span class="subst">$taskId</span> state <span class="subst">$state</span>) &quot;</span> +</span><br><span class="line">            <span class="string">s&quot;from unknown executor with ID <span class="subst">$executorId</span>&quot;</span>)</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="ShuffleStatus"><a href="#ShuffleStatus" class="headerlink" title="ShuffleStatus"></a>ShuffleStatus</h2><h2 id="MapOutputTracker"><a href="#MapOutputTracker" class="headerlink" title="MapOutputTracker"></a>MapOutputTracker</h2><p>抽象类，MapOutputTrackerMaster和MapOutputTrackerWorker的父类。该类用来记录stage的map输出的位置。</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 每次当丢失map输出的时候，这个driver端的计数器就递增。</span></span><br><span class="line"><span class="comment"> * 该值作为task的一部分发送到executor，然后executor会拿这个epoch值和它迄今所接收到最大的epoch值做比较。</span></span><br><span class="line"><span class="comment"> * 如果新的epoch值更大，那么executor会清除本地缓存的map输出状态，然后从driver端重新获取map输出的状态信息</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">protected</span> <span class="keyword">var</span> epoch: <span class="type">Long</span> = <span class="number">0</span></span><br><span class="line"><span class="keyword">protected</span> <span class="keyword">val</span> epochLock = <span class="keyword">new</span> <span class="type">AnyRef</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="MapOutputTrackerMaster"><a href="#MapOutputTrackerMaster" class="headerlink" title="MapOutputTrackerMaster"></a>MapOutputTrackerMaster</h2><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * driver端存储shuffleStatuses</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">val</span> shuffleStatuses = <span class="keyword">new</span> <span class="type">ConcurrentHashMap</span>[<span class="type">Int</span>, <span class="type">ShuffleStatus</span>]().asScala</span><br></pre></td></tr></table></figure>
+
+<h2 id="MapOutputTrackerWorker"><a href="#MapOutputTrackerWorker" class="headerlink" title="MapOutputTrackerWorker"></a>MapOutputTrackerWorker</h2><p>该类担负了executor端从driver端的MapOutputTrackerMaster获取map输出信息的客户端。</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// key是shuffleId</span></span><br><span class="line"><span class="keyword">val</span> mapStatuses: <span class="type">Map</span>[<span class="type">Int</span>, <span class="type">Array</span>[<span class="type">MapStatus</span>]] =</span><br><span class="line">  <span class="keyword">new</span> <span class="type">ConcurrentHashMap</span>[<span class="type">Int</span>, <span class="type">Array</span>[<span class="type">MapStatus</span>]]().asScala</span><br></pre></td></tr></table></figure>
+
+<br/>
+
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 每个executor上的task都会用它在driver端被创建时driver端最新的epoch来调用次方法。</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">updateEpoch</span></span>(newEpoch: <span class="type">Long</span>): <span class="type">Unit</span> = &#123;</span><br><span class="line">  epochLock.synchronized &#123;</span><br><span class="line">    <span class="keyword">if</span> (newEpoch &gt; epoch) &#123;</span><br><span class="line">      logInfo(<span class="string">&quot;Updating epoch to &quot;</span> + newEpoch + <span class="string">&quot; and clearing cache&quot;</span>)</span><br><span class="line">      epoch = newEpoch</span><br><span class="line">      mapStatuses.clear()</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="TaskSchedulerImpl"><a href="#TaskSchedulerImpl" class="headerlink" title="TaskSchedulerImpl"></a>TaskSchedulerImpl</h2><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">statusUpdate</span></span>(tid: <span class="type">Long</span>, state: <span class="type">TaskState</span>, serializedData: <span class="type">ByteBuffer</span>) &#123;</span><br><span class="line">  <span class="keyword">var</span> failedExecutor: <span class="type">Option</span>[<span class="type">String</span>] = <span class="type">None</span></span><br><span class="line">  <span class="keyword">var</span> reason: <span class="type">Option</span>[<span class="type">ExecutorLossReason</span>] = <span class="type">None</span></span><br><span class="line">  synchronized &#123;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">      <span class="type">Option</span>(taskIdToTaskSetManager.get(tid)) <span class="keyword">match</span> &#123;</span><br><span class="line">        <span class="keyword">case</span> <span class="type">Some</span>(taskSet) =&gt;</span><br><span class="line">          <span class="keyword">if</span> (state == <span class="type">TaskState</span>.<span class="type">LOST</span>) &#123;</span><br><span class="line">            <span class="comment">// TaskState.LOST is only used by the deprecated Mesos fine-grained scheduling mode,</span></span><br><span class="line">            <span class="comment">// where each executor corresponds to a single task, so mark the executor as failed.</span></span><br><span class="line">            <span class="keyword">val</span> execId = taskIdToExecutorId.getOrElse(tid, <span class="keyword">throw</span> <span class="keyword">new</span> <span class="type">IllegalStateException</span>(</span><br><span class="line">              <span class="string">&quot;taskIdToTaskSetManager.contains(tid) &lt;=&gt; taskIdToExecutorId.contains(tid)&quot;</span>))</span><br><span class="line">            <span class="keyword">if</span> (executorIdToRunningTaskIds.contains(execId)) &#123;</span><br><span class="line">              reason = <span class="type">Some</span>(</span><br><span class="line">                <span class="type">SlaveLost</span>(<span class="string">s&quot;Task <span class="subst">$tid</span> was lost, so marking the executor as lost as well.&quot;</span>))</span><br><span class="line">              removeExecutor(execId, reason.get)</span><br><span class="line">              failedExecutor = <span class="type">Some</span>(execId)</span><br><span class="line">            &#125;</span><br><span class="line">          &#125;</span><br><span class="line">          <span class="keyword">if</span> (<span class="type">TaskState</span>.isFinished(state)) &#123;</span><br><span class="line">            cleanupTaskState(tid)</span><br><span class="line">            taskSet.removeRunningTask(tid)</span><br><span class="line">            <span class="keyword">if</span> (state == <span class="type">TaskState</span>.<span class="type">FINISHED</span>) &#123;</span><br><span class="line">              taskResultGetter.enqueueSuccessfulTask(taskSet, tid, serializedData)</span><br><span class="line">            &#125; <span class="keyword">else</span> <span class="keyword">if</span> (<span class="type">Set</span>(<span class="type">TaskState</span>.<span class="type">FAILED</span>, <span class="type">TaskState</span>.<span class="type">KILLED</span>, <span class="type">TaskState</span>.<span class="type">LOST</span>).contains(state)) &#123;</span><br><span class="line">              taskResultGetter.enqueueFailedTask(taskSet, tid, state, serializedData)</span><br><span class="line">            &#125;</span><br><span class="line">          &#125;</span><br><span class="line">        <span class="keyword">case</span> <span class="type">None</span> =&gt;</span><br><span class="line">          logError(</span><br><span class="line">            (<span class="string">&quot;Ignoring update with state %s for TID %s because its task set is gone (this is &quot;</span> +</span><br><span class="line">              <span class="string">&quot;likely the result of receiving duplicate task finished status updates) or its &quot;</span> +</span><br><span class="line">              <span class="string">&quot;executor has been marked as failed.&quot;</span>)</span><br><span class="line">              .format(state, tid))</span><br><span class="line">      &#125;</span><br><span class="line">    &#125; <span class="keyword">catch</span> &#123;</span><br><span class="line">      <span class="keyword">case</span> e: <span class="type">Exception</span> =&gt; logError(<span class="string">&quot;Exception in statusUpdate&quot;</span>, e)</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// Update the DAGScheduler without holding a lock on this, since that can deadlock</span></span><br><span class="line">  <span class="keyword">if</span> (failedExecutor.isDefined) &#123;</span><br><span class="line">    assert(reason.isDefined)</span><br><span class="line">    dagScheduler.executorLost(failedExecutor.get, reason.get)</span><br><span class="line">    backend.reviveOffers()</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<br/>
+
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Marks the task has completed in all TaskSetManagers for the given stage.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * After stage failure and retry, there may be multiple TaskSetManagers for the stage.</span></span><br><span class="line"><span class="comment"> * If an earlier attempt of a stage completes a task, we should ensure that the later attempts</span></span><br><span class="line"><span class="comment"> * do not also submit those same tasks.  That also means that a task completion from an earlier</span></span><br><span class="line"><span class="comment"> * attempt can lead to the entire stage getting marked as successful.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">private</span>[scheduler] <span class="function"><span class="keyword">def</span> <span class="title">markPartitionCompletedInAllTaskSets</span></span>(</span><br><span class="line">    stageId: <span class="type">Int</span>,</span><br><span class="line">    partitionId: <span class="type">Int</span>,</span><br><span class="line">    taskInfo: <span class="type">TaskInfo</span>) = &#123;</span><br><span class="line">  taskSetsByStageIdAndAttempt.getOrElse(stageId, <span class="type">Map</span>()).values.foreach &#123; tsm =&gt;</span><br><span class="line">    tsm.markPartitionCompleted(partitionId, taskInfo)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="TaskResultGetter"><a href="#TaskResultGetter" class="headerlink" title="TaskResultGetter"></a>TaskResultGetter</h2><p>TaskResultGetter在内部运行了一个线程池enqueueSuccessfulTask()和enqueueFailedTask()提交的任务。</p>
+<br/>
+
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">enqueueSuccessfulTask</span></span>(</span><br><span class="line">    taskSetManager: <span class="type">TaskSetManager</span>,</span><br><span class="line">    tid: <span class="type">Long</span>,</span><br><span class="line">    serializedData: <span class="type">ByteBuffer</span>): <span class="type">Unit</span> = &#123;</span><br><span class="line">  getTaskResultExecutor.execute(<span class="keyword">new</span> <span class="type">Runnable</span> &#123;</span><br><span class="line">    <span class="keyword">override</span> <span class="function"><span class="keyword">def</span> <span class="title">run</span></span>(): <span class="type">Unit</span> = <span class="type">Utils</span>.logUncaughtExceptions &#123;</span><br><span class="line">      <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="keyword">val</span> (result, size) = serializer.get().deserialize[<span class="type">TaskResult</span>[_]](serializedData) <span class="keyword">match</span> &#123;</span><br><span class="line">          <span class="keyword">case</span> directResult: <span class="type">DirectTaskResult</span>[_] =&gt;</span><br><span class="line">            <span class="keyword">if</span> (!taskSetManager.canFetchMoreResults(serializedData.limit())) &#123;</span><br><span class="line">              <span class="keyword">return</span></span><br><span class="line">            &#125;</span><br><span class="line">            <span class="comment">// deserialize &quot;value&quot; without holding any lock so that it won&#x27;t block other threads.</span></span><br><span class="line">            <span class="comment">// We should call it here, so that when it&#x27;s called again in</span></span><br><span class="line">            <span class="comment">// &quot;TaskSetManager.handleSuccessfulTask&quot;, it does not need to deserialize the value.</span></span><br><span class="line">            directResult.value(taskResultSerializer.get())</span><br><span class="line">            (directResult, serializedData.limit())</span><br><span class="line">          <span class="keyword">case</span> <span class="type">IndirectTaskResult</span>(blockId, size) =&gt; <span class="comment">// 对于IndirectTaskResult，需要从远端拉取结果</span></span><br><span class="line">            <span class="keyword">if</span> (!taskSetManager.canFetchMoreResults(size)) &#123;</span><br><span class="line">              <span class="comment">// dropped by executor if size is larger than maxResultSize</span></span><br><span class="line">              sparkEnv.blockManager.master.removeBlock(blockId)</span><br><span class="line">              <span class="keyword">return</span></span><br><span class="line">            &#125;</span><br><span class="line">            logDebug(<span class="string">&quot;Fetching indirect task result for TID %s&quot;</span>.format(tid))</span><br><span class="line">            scheduler.handleTaskGettingResult(taskSetManager, tid)</span><br><span class="line">            <span class="keyword">val</span> serializedTaskResult = sparkEnv.blockManager.getRemoteBytes(blockId)</span><br><span class="line">            <span class="keyword">if</span> (!serializedTaskResult.isDefined) &#123;</span><br><span class="line">              <span class="comment">/* We won&#x27;t be able to get the task result if the machine that ran the task failed</span></span><br><span class="line"><span class="comment">               * between when the task ended and when we tried to fetch the result, or if the</span></span><br><span class="line"><span class="comment">               * block manager had to flush the result. */</span></span><br><span class="line">              scheduler.handleFailedTask(</span><br><span class="line">                taskSetManager, tid, <span class="type">TaskState</span>.<span class="type">FINISHED</span>, <span class="type">TaskResultLost</span>)</span><br><span class="line">              <span class="keyword">return</span></span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">val</span> deserializedResult = serializer.get().deserialize[<span class="type">DirectTaskResult</span>[_]](</span><br><span class="line">              serializedTaskResult.get.toByteBuffer)</span><br><span class="line">            <span class="comment">// force deserialization of referenced value</span></span><br><span class="line">            deserializedResult.value(taskResultSerializer.get())</span><br><span class="line">            <span class="comment">// 下载完block，通知将该数据块remove掉</span></span><br><span class="line">            sparkEnv.blockManager.master.removeBlock(blockId)</span><br><span class="line">            (deserializedResult, size)</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// Set the task result size in the accumulator updates received from the executors.</span></span><br><span class="line">        <span class="comment">// We need to do this here on the driver because if we did this on the executors then</span></span><br><span class="line">        <span class="comment">// we would have to serialize the result again after updating the size.</span></span><br><span class="line">        result.accumUpdates = result.accumUpdates.map &#123; a =&gt;</span><br><span class="line">          <span class="keyword">if</span> (a.name == <span class="type">Some</span>(<span class="type">InternalAccumulator</span>.<span class="type">RESULT_SIZE</span>)) &#123;</span><br><span class="line">            <span class="keyword">val</span> acc = a.asInstanceOf[<span class="type">LongAccumulator</span>]</span><br><span class="line">            assert(acc.sum == <span class="number">0</span>L, <span class="string">&quot;task result size should not have been set on the executors&quot;</span>)</span><br><span class="line">            acc.setValue(size.toLong)</span><br><span class="line">            acc</span><br><span class="line">          &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            a</span><br><span class="line">          &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">//</span></span><br><span class="line">        scheduler.handleSuccessfulTask(taskSetManager, tid, result)</span><br><span class="line">      &#125; <span class="keyword">catch</span> &#123;</span><br><span class="line">        <span class="keyword">case</span> cnf: <span class="type">ClassNotFoundException</span> =&gt;</span><br><span class="line">          <span class="keyword">val</span> loader = <span class="type">Thread</span>.currentThread.getContextClassLoader</span><br><span class="line">          taskSetManager.abort(<span class="string">&quot;ClassNotFound with classloader: &quot;</span> + loader)</span><br><span class="line">        <span class="comment">// Matching NonFatal so we don&#x27;t catch the ControlThrowable from the &quot;return&quot; above.</span></span><br><span class="line">        <span class="keyword">case</span> <span class="type">NonFatal</span>(ex) =&gt;</span><br><span class="line">          logError(<span class="string">&quot;Exception while getting task result&quot;</span>, ex)</span><br><span class="line">          taskSetManager.abort(<span class="string">&quot;Exception while getting task result: %s&quot;</span>.format(ex))</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="TaskSetManager"><a href="#TaskSetManager" class="headerlink" title="TaskSetManager"></a>TaskSetManager</h2><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">handleSuccessfulTask</span></span>(tid: <span class="type">Long</span>, result: <span class="type">DirectTaskResult</span>[_]): <span class="type">Unit</span> = &#123;</span><br><span class="line">  <span class="keyword">val</span> info = taskInfos(tid)</span><br><span class="line">  <span class="keyword">val</span> index = info.index</span><br><span class="line">  <span class="comment">// Check if any other attempt succeeded before this and this attempt has not been handled</span></span><br><span class="line">  <span class="keyword">if</span> (successful(index) &amp;&amp; killedByOtherAttempt.contains(tid)) &#123;</span><br><span class="line">    <span class="comment">// Undo the effect on calculatedTasks and totalResultSize made earlier when</span></span><br><span class="line">    <span class="comment">// checking if can fetch more results</span></span><br><span class="line">    calculatedTasks -= <span class="number">1</span></span><br><span class="line">    <span class="keyword">val</span> resultSizeAcc = result.accumUpdates.find(a =&gt;</span><br><span class="line">      a.name == <span class="type">Some</span>(<span class="type">InternalAccumulator</span>.<span class="type">RESULT_SIZE</span>))</span><br><span class="line">    <span class="keyword">if</span> (resultSizeAcc.isDefined) &#123;</span><br><span class="line">      totalResultSize -= resultSizeAcc.get.asInstanceOf[<span class="type">LongAccumulator</span>].value</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Handle this task as a killed task</span></span><br><span class="line">    handleFailedTask(tid, <span class="type">TaskState</span>.<span class="type">KILLED</span>,</span><br><span class="line">      <span class="type">TaskKilled</span>(<span class="string">&quot;Finish but did not commit due to another attempt succeeded&quot;</span>))</span><br><span class="line">    <span class="keyword">return</span></span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  info.markFinished(<span class="type">TaskState</span>.<span class="type">FINISHED</span>, clock.getTimeMillis())</span><br><span class="line">  <span class="keyword">if</span> (speculationEnabled) &#123;</span><br><span class="line">    successfulTaskDurations.insert(info.duration)</span><br><span class="line">  &#125;</span><br><span class="line">  removeRunningTask(tid)</span><br><span class="line"></span><br><span class="line">  <span class="comment">// Kill any other attempts for the same task (since those are unnecessary now that one</span></span><br><span class="line">  <span class="comment">// attempt completed successfully).</span></span><br><span class="line">  <span class="keyword">for</span> (attemptInfo &lt;- taskAttempts(index) <span class="keyword">if</span> attemptInfo.running) &#123;</span><br><span class="line">    logInfo(<span class="string">s&quot;Killing attempt <span class="subst">$&#123;attemptInfo.attemptNumber&#125;</span> for task <span class="subst">$&#123;attemptInfo.id&#125;</span> &quot;</span> +</span><br><span class="line">      <span class="string">s&quot;in stage <span class="subst">$&#123;taskSet.id&#125;</span> (TID <span class="subst">$&#123;attemptInfo.taskId&#125;</span>) on <span class="subst">$&#123;attemptInfo.host&#125;</span> &quot;</span> +</span><br><span class="line">      <span class="string">s&quot;as the attempt <span class="subst">$&#123;info.attemptNumber&#125;</span> succeeded on <span class="subst">$&#123;info.host&#125;</span>&quot;</span>)</span><br><span class="line">    killedByOtherAttempt += attemptInfo.taskId</span><br><span class="line">    sched.backend.killTask(</span><br><span class="line">      attemptInfo.taskId,</span><br><span class="line">      attemptInfo.executorId,</span><br><span class="line">      interruptThread = <span class="literal">true</span>,</span><br><span class="line">      reason = <span class="string">&quot;another attempt succeeded&quot;</span>)</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">if</span> (!successful(index)) &#123;</span><br><span class="line">    tasksSuccessful += <span class="number">1</span></span><br><span class="line">    logInfo(<span class="string">s&quot;Finished task <span class="subst">$&#123;info.id&#125;</span> in stage <span class="subst">$&#123;taskSet.id&#125;</span> (TID <span class="subst">$&#123;info.taskId&#125;</span>) in&quot;</span> +</span><br><span class="line">      <span class="string">s&quot; <span class="subst">$&#123;info.duration&#125;</span> ms on <span class="subst">$&#123;info.host&#125;</span> (executor <span class="subst">$&#123;info.executorId&#125;</span>)&quot;</span> +</span><br><span class="line">      <span class="string">s&quot; (<span class="subst">$tasksSuccessful</span>/<span class="subst">$numTasks</span>)&quot;</span>)</span><br><span class="line">    <span class="comment">// Mark successful and stop if all the tasks have succeeded.</span></span><br><span class="line">    successful(index) = <span class="literal">true</span></span><br><span class="line">    <span class="keyword">if</span> (tasksSuccessful == numTasks) &#123;</span><br><span class="line">      isZombie = <span class="literal">true</span></span><br><span class="line">    &#125;</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    logInfo(<span class="string">&quot;Ignoring task-finished event for &quot;</span> + info.id + <span class="string">&quot; in stage &quot;</span> + taskSet.id +</span><br><span class="line">      <span class="string">&quot; because task &quot;</span> + index + <span class="string">&quot; has already completed successfully&quot;</span>)</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// There may be multiple tasksets for this stage -- we let all of them know that the partition</span></span><br><span class="line">  <span class="comment">// was completed.  This may result in some of the tasksets getting completed.</span></span><br><span class="line">  sched.markPartitionCompletedInAllTaskSets(stageId, tasks(index).partitionId, info)</span><br><span class="line">  <span class="comment">// This method is called by &quot;TaskSchedulerImpl.handleSuccessfulTask&quot; which holds the</span></span><br><span class="line">  <span class="comment">// &quot;TaskSchedulerImpl&quot; lock until exiting. To avoid the SPARK-7655 issue, we should not</span></span><br><span class="line">  <span class="comment">// &quot;deserialize&quot; the value when holding a lock to avoid blocking other threads. So we call</span></span><br><span class="line">  <span class="comment">// &quot;result.value()&quot; in &quot;TaskResultGetter.enqueueSuccessfulTask&quot; before reaching here.</span></span><br><span class="line">  <span class="comment">// Note: &quot;result.value()&quot; only deserializes the value when it&#x27;s called at the first time, so</span></span><br><span class="line">  <span class="comment">// here &quot;result.value()&quot; just returns the value and won&#x27;t block other threads.</span></span><br><span class="line">  sched.dagScheduler.taskEnded(tasks(index), <span class="type">Success</span>, result.value(), result.accumUpdates, info)</span><br><span class="line">  maybeFinishTaskSet()</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<br/>
+
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * </span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">private</span>[scheduler] <span class="function"><span class="keyword">def</span> <span class="title">markPartitionCompleted</span></span>(partitionId: <span class="type">Int</span>, taskInfo: <span class="type">TaskInfo</span>): <span class="type">Unit</span> = &#123;</span><br><span class="line">  partitionToIndex.get(partitionId).foreach &#123; index =&gt;</span><br><span class="line">    <span class="keyword">if</span> (!successful(index)) &#123;</span><br><span class="line">      <span class="keyword">if</span> (speculationEnabled &amp;&amp; !isZombie) &#123;</span><br><span class="line">        successfulTaskDurations.insert(taskInfo.duration)</span><br><span class="line">      &#125;</span><br><span class="line">      tasksSuccessful += <span class="number">1</span></span><br><span class="line">      successful(index) = <span class="literal">true</span></span><br><span class="line">      <span class="keyword">if</span> (tasksSuccessful == numTasks) &#123;</span><br><span class="line">        isZombie = <span class="literal">true</span></span><br><span class="line">      &#125;</span><br><span class="line">      maybeFinishTaskSet()</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<br/>
+
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="function"><span class="keyword">def</span> <span class="title">maybeFinishTaskSet</span></span>() &#123;</span><br><span class="line">  <span class="keyword">if</span> (isZombie &amp;&amp; runningTasks == <span class="number">0</span>) &#123;</span><br><span class="line">    sched.taskSetFinished(<span class="keyword">this</span>)</span><br><span class="line">    <span class="keyword">if</span> (tasksSuccessful == numTasks) &#123;</span><br><span class="line">      blacklistTracker.foreach(_.updateBlacklistForSuccessfulTaskSet(</span><br><span class="line">        taskSet.stageId,</span><br><span class="line">        taskSet.stageAttemptId,</span><br><span class="line">        taskSetBlacklistHelperOpt.get.execToFailures))</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="DagScheduler"><a href="#DagScheduler" class="headerlink" title="DagScheduler"></a>DagScheduler</h2><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span>[scheduler] <span class="function"><span class="keyword">def</span> <span class="title">handleTaskCompletion</span></span>(event: <span class="type">CompletionEvent</span>) &#123;</span><br><span class="line">  <span class="keyword">val</span> task = event.task</span><br><span class="line">  <span class="keyword">val</span> stageId = task.stageId</span><br><span class="line"></span><br><span class="line">  outputCommitCoordinator.taskCompleted(</span><br><span class="line">    stageId,</span><br><span class="line">    task.stageAttemptId,</span><br><span class="line">    task.partitionId,</span><br><span class="line">    event.taskInfo.attemptNumber, <span class="comment">// this is a task attempt number</span></span><br><span class="line">    event.reason)</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (!stageIdToStage.contains(task.stageId)) &#123;</span><br><span class="line">    <span class="comment">// The stage may have already finished when we get this event -- eg. maybe it was a</span></span><br><span class="line">    <span class="comment">// speculative task. It is important that we send the TaskEnd event in any case, so listeners</span></span><br><span class="line">    <span class="comment">// are properly notified and can chose to handle it. For instance, some listeners are</span></span><br><span class="line">    <span class="comment">// doing their own accounting and if they don&#x27;t get the task end event they think</span></span><br><span class="line">    <span class="comment">// tasks are still running when they really aren&#x27;t.</span></span><br><span class="line">    postTaskEnd(event)</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Skip all the actions if the stage has been cancelled.</span></span><br><span class="line">    <span class="keyword">return</span></span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">val</span> stage = stageIdToStage(task.stageId)</span><br><span class="line"></span><br><span class="line">  <span class="comment">// Make sure the task&#x27;s accumulators are updated before any other processing happens, so that</span></span><br><span class="line">  <span class="comment">// we can post a task end event before any jobs or stages are updated. The accumulators are</span></span><br><span class="line">  <span class="comment">// only updated in certain cases.</span></span><br><span class="line">  event.reason <span class="keyword">match</span> &#123;</span><br><span class="line">    <span class="keyword">case</span> <span class="type">Success</span> =&gt;</span><br><span class="line">      task <span class="keyword">match</span> &#123;</span><br><span class="line">        <span class="keyword">case</span> rt: <span class="type">ResultTask</span>[_, _] =&gt;</span><br><span class="line">          <span class="keyword">val</span> resultStage = stage.asInstanceOf[<span class="type">ResultStage</span>]</span><br><span class="line">          resultStage.activeJob <span class="keyword">match</span> &#123;</span><br><span class="line">            <span class="keyword">case</span> <span class="type">Some</span>(job) =&gt;</span><br><span class="line">              <span class="comment">// Only update the accumulator once for each result task.</span></span><br><span class="line">              <span class="keyword">if</span> (!job.finished(rt.outputId)) &#123;</span><br><span class="line">                updateAccumulators(event)</span><br><span class="line">              &#125;</span><br><span class="line">            <span class="keyword">case</span> <span class="type">None</span> =&gt; <span class="comment">// Ignore update if task&#x27;s job has finished.</span></span><br><span class="line">          &#125;</span><br><span class="line">        <span class="keyword">case</span> _ =&gt;</span><br><span class="line">          updateAccumulators(event)</span><br><span class="line">      &#125;</span><br><span class="line">    <span class="keyword">case</span> _: <span class="type">ExceptionFailure</span> | _: <span class="type">TaskKilled</span> =&gt; updateAccumulators(event)</span><br><span class="line">    <span class="keyword">case</span> _ =&gt;</span><br><span class="line">  &#125;</span><br><span class="line">  postTaskEnd(event)</span><br><span class="line"></span><br><span class="line">  event.reason <span class="keyword">match</span> &#123;</span><br><span class="line">    <span class="keyword">case</span> <span class="type">Success</span> =&gt;</span><br><span class="line">      task <span class="keyword">match</span> &#123;</span><br><span class="line">        <span class="keyword">case</span> rt: <span class="type">ResultTask</span>[_, _] =&gt;</span><br><span class="line">          <span class="comment">// Cast to ResultStage here because it&#x27;s part of the ResultTask</span></span><br><span class="line">          <span class="comment">// TODO Refactor this out to a function that accepts a ResultStage</span></span><br><span class="line">          <span class="keyword">val</span> resultStage = stage.asInstanceOf[<span class="type">ResultStage</span>]</span><br><span class="line">          resultStage.activeJob <span class="keyword">match</span> &#123;</span><br><span class="line">            <span class="keyword">case</span> <span class="type">Some</span>(job) =&gt;</span><br><span class="line">              <span class="keyword">if</span> (!job.finished(rt.outputId)) &#123;</span><br><span class="line">                job.finished(rt.outputId) = <span class="literal">true</span></span><br><span class="line">                job.numFinished += <span class="number">1</span></span><br><span class="line">                <span class="comment">// If the whole job has finished, remove it</span></span><br><span class="line">                <span class="keyword">if</span> (job.numFinished == job.numPartitions) &#123;</span><br><span class="line">                  markStageAsFinished(resultStage)</span><br><span class="line">                  cleanupStateForJobAndIndependentStages(job)</span><br><span class="line">                  listenerBus.post(</span><br><span class="line">                    <span class="type">SparkListenerJobEnd</span>(job.jobId, clock.getTimeMillis(), <span class="type">JobSucceeded</span>))</span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">                <span class="comment">// taskSucceeded runs some user code that might throw an exception. Make sure</span></span><br><span class="line">                <span class="comment">// we are resilient against that.</span></span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                  job.listener.taskSucceeded(rt.outputId, event.result)</span><br><span class="line">                &#125; <span class="keyword">catch</span> &#123;</span><br><span class="line">                  <span class="keyword">case</span> e: <span class="type">Exception</span> =&gt;</span><br><span class="line">                    <span class="comment">// <span class="doctag">TODO:</span> Perhaps we want to mark the resultStage as failed?</span></span><br><span class="line">                    job.listener.jobFailed(<span class="keyword">new</span> <span class="type">SparkDriverExecutionException</span>(e))</span><br><span class="line">                &#125;</span><br><span class="line">              &#125;</span><br><span class="line">            <span class="keyword">case</span> <span class="type">None</span> =&gt;</span><br><span class="line">              logInfo(<span class="string">&quot;Ignoring result from &quot;</span> + rt + <span class="string">&quot; because its job has finished&quot;</span>)</span><br><span class="line">          &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">case</span> smt: <span class="type">ShuffleMapTask</span> =&gt;</span><br><span class="line">          <span class="keyword">val</span> shuffleStage = stage.asInstanceOf[<span class="type">ShuffleMapStage</span>]</span><br><span class="line">          shuffleStage.pendingPartitions -= task.partitionId</span><br><span class="line">          <span class="keyword">val</span> status = event.result.asInstanceOf[<span class="type">MapStatus</span>]</span><br><span class="line">          <span class="keyword">val</span> execId = status.location.executorId</span><br><span class="line">          logDebug(<span class="string">&quot;ShuffleMapTask finished on &quot;</span> + execId)</span><br><span class="line">          <span class="keyword">if</span> (failedEpoch.contains(execId) &amp;&amp; smt.epoch &lt;= failedEpoch(execId)) &#123;</span><br><span class="line">            logInfo(<span class="string">s&quot;Ignoring possibly bogus <span class="subst">$smt</span> completion from executor <span class="subst">$execId</span>&quot;</span>)</span><br><span class="line">          &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="comment">// The epoch of the task is acceptable (i.e., the task was launched after the most</span></span><br><span class="line">            <span class="comment">// recent failure we&#x27;re aware of for the executor), so mark the task&#x27;s output as</span></span><br><span class="line">            <span class="comment">// available.</span></span><br><span class="line">            mapOutputTracker.registerMapOutput(</span><br><span class="line">              shuffleStage.shuffleDep.shuffleId, smt.partitionId, status)</span><br><span class="line">          &#125;</span><br><span class="line"></span><br><span class="line">          <span class="keyword">if</span> (runningStages.contains(shuffleStage) &amp;&amp; shuffleStage.pendingPartitions.isEmpty) &#123;</span><br><span class="line">            markStageAsFinished(shuffleStage)</span><br><span class="line">            logInfo(<span class="string">&quot;looking for newly runnable stages&quot;</span>)</span><br><span class="line">            logInfo(<span class="string">&quot;running: &quot;</span> + runningStages)</span><br><span class="line">            logInfo(<span class="string">&quot;waiting: &quot;</span> + waitingStages)</span><br><span class="line">            logInfo(<span class="string">&quot;failed: &quot;</span> + failedStages)</span><br><span class="line"></span><br><span class="line">            <span class="comment">// This call to increment the epoch may not be strictly necessary, but it is retained</span></span><br><span class="line">            <span class="comment">// for now in order to minimize the changes in behavior from an earlier version of the</span></span><br><span class="line">            <span class="comment">// code. This existing behavior of always incrementing the epoch following any</span></span><br><span class="line">            <span class="comment">// successful shuffle map stage completion may have benefits by causing unneeded</span></span><br><span class="line">            <span class="comment">// cached map outputs to be cleaned up earlier on executors. In the future we can</span></span><br><span class="line">            <span class="comment">// consider removing this call, but this will require some extra investigation.</span></span><br><span class="line">            <span class="comment">// See https://github.com/apache/spark/pull/17955/files#r117385673 for more details.</span></span><br><span class="line">            mapOutputTracker.incrementEpoch()</span><br><span class="line"></span><br><span class="line">            clearCacheLocs()</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (!shuffleStage.isAvailable) &#123;</span><br><span class="line">              <span class="comment">// Some tasks had failed; let&#x27;s resubmit this shuffleStage.</span></span><br><span class="line">              <span class="comment">// <span class="doctag">TODO:</span> Lower-level scheduler should also deal with this</span></span><br><span class="line">              logInfo(<span class="string">&quot;Resubmitting &quot;</span> + shuffleStage + <span class="string">&quot; (&quot;</span> + shuffleStage.name +</span><br><span class="line">                <span class="string">&quot;) because some of its tasks had failed: &quot;</span> +</span><br><span class="line">                shuffleStage.findMissingPartitions().mkString(<span class="string">&quot;, &quot;</span>))</span><br><span class="line">              submitStage(shuffleStage)</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">              markMapStageJobsAsFinished(shuffleStage)</span><br><span class="line">              submitWaitingChildStages(shuffleStage)</span><br><span class="line">            &#125;</span><br><span class="line">          &#125;</span><br><span class="line">      &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">case</span> <span class="type">FetchFailed</span>(bmAddress, shuffleId, mapId, _, failureMessage) =&gt;</span><br><span class="line">      ...</span><br><span class="line"></span><br><span class="line">    <span class="keyword">case</span> failure: <span class="type">TaskFailedReason</span> <span class="keyword">if</span> task.isBarrier =&gt;</span><br><span class="line">      ...</span><br><span class="line"></span><br><span class="line">    <span class="keyword">case</span> <span class="type">Resubmitted</span> =&gt;</span><br><span class="line">      handleResubmittedFailure(task, stage)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">case</span> _: <span class="type">TaskCommitDenied</span> =&gt;</span><br><span class="line">      <span class="comment">// Do nothing here, left up to the TaskScheduler to decide how to handle denied commits</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">case</span> _: <span class="type">ExceptionFailure</span> | _: <span class="type">TaskKilled</span> =&gt;</span><br><span class="line">      <span class="comment">// Nothing left to do, already handled above for accumulator updates.</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">case</span> <span class="type">TaskResultLost</span> =&gt;</span><br><span class="line">      <span class="comment">// Do nothing here; the TaskScheduler handles these failures and resubmits the task.</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">case</span> _: <span class="type">ExecutorLostFailure</span> | <span class="type">UnknownReason</span> =&gt;</span><br><span class="line">      <span class="comment">// Unrecognized failure - also do nothing. If the task fails repeatedly, the TaskScheduler</span></span><br><span class="line">      <span class="comment">// will abort the job.</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="OutputCommitCoordinator"><a href="#OutputCommitCoordinator" class="headerlink" title="OutputCommitCoordinator"></a>OutputCommitCoordinator</h2><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span>[scheduler] <span class="function"><span class="keyword">def</span> <span class="title">taskCompleted</span></span>(</span><br><span class="line">    stage: <span class="type">Int</span>,</span><br><span class="line">    stageAttempt: <span class="type">Int</span>,</span><br><span class="line">    partition: <span class="type">Int</span>,</span><br><span class="line">    attemptNumber: <span class="type">Int</span>,</span><br><span class="line">    reason: <span class="type">TaskEndReason</span>): <span class="type">Unit</span> = synchronized &#123;</span><br><span class="line">  <span class="keyword">val</span> stageState = stageStates.getOrElse(stage, &#123;</span><br><span class="line">    logDebug(<span class="string">s&quot;Ignoring task completion for completed stage&quot;</span>)</span><br><span class="line">    <span class="keyword">return</span></span><br><span class="line">  &#125;)</span><br><span class="line">  reason <span class="keyword">match</span> &#123;</span><br><span class="line">    <span class="keyword">case</span> <span class="type">Success</span> =&gt;</span><br><span class="line">    <span class="comment">// The task output has been committed successfully</span></span><br><span class="line">    <span class="keyword">case</span> _: <span class="type">TaskCommitDenied</span> =&gt;</span><br><span class="line">      logInfo(<span class="string">s&quot;Task was denied committing, stage: <span class="subst">$stage</span>.<span class="subst">$stageAttempt</span>, &quot;</span> +</span><br><span class="line">        <span class="string">s&quot;partition: <span class="subst">$partition</span>, attempt: <span class="subst">$attemptNumber</span>&quot;</span>)</span><br><span class="line">    <span class="keyword">case</span> _ =&gt;</span><br><span class="line">      <span class="comment">// Mark the attempt as failed to blacklist from future commit protocol</span></span><br><span class="line">      <span class="keyword">val</span> taskId = <span class="type">TaskIdentifier</span>(stageAttempt, attemptNumber)</span><br><span class="line">      stageState.failures.getOrElseUpdate(partition, mutable.<span class="type">Set</span>()) += taskId</span><br><span class="line">      <span class="keyword">if</span> (stageState.authorizedCommitters(partition) == taskId) &#123;</span><br><span class="line">        logDebug(<span class="string">s&quot;Authorized committer (attemptNumber=<span class="subst">$attemptNumber</span>, stage=<span class="subst">$stage</span>, &quot;</span> +</span><br><span class="line">          <span class="string">s&quot;partition=<span class="subst">$partition</span>) failed; clearing lock&quot;</span>)</span><br><span class="line">        stageState.authorizedCommitters(partition) = <span class="literal">null</span></span><br><span class="line">      &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+
+
+
+
+<h1 id="Spark任务"><a href="#Spark任务" class="headerlink" title="Spark任务"></a>Spark任务</h1><h2 id="ShuffleMapTask"><a href="#ShuffleMapTask" class="headerlink" title="ShuffleMapTask"></a>ShuffleMapTask</h2><p><img src="/images/spark/ShuffleMapTask-runTask.svg"></p>
+<h3 id="注册ShuffleHandle"><a href="#注册ShuffleHandle" class="headerlink" title="注册ShuffleHandle"></a>注册ShuffleHandle</h3><p>ShuffleDependency通过SortShuffleManager注册ShuffleHandle，对于具体返回的ShuffleHandle，其选取标准为：</p>
+<ul>
+<li>如果不需要进行map端合并，且下游reduce端分区数小于等于<code>spark.shuffle.sort.bypassMergeThreshold</code>所配置的值，那么返回BypassMergeSortShuffleHandle；</li>
+<li>否则，如果a) 序列化器支持对象重定位，且b) 不需要进行map端合并，且c) 下游reduce端分区数小于$2^{24}$，那么返回SerializedShuffleHandle；</li>
+<li>其它情况，返回BaseShuffleHandle；</li>
+</ul>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">override</span> <span class="function"><span class="keyword">def</span> <span class="title">registerShuffle</span></span>[<span class="type">K</span>, <span class="type">V</span>, <span class="type">C</span>](</span><br><span class="line">    shuffleId: <span class="type">Int</span>,</span><br><span class="line">    numMaps: <span class="type">Int</span>,</span><br><span class="line">    dependency: <span class="type">ShuffleDependency</span>[<span class="type">K</span>, <span class="type">V</span>, <span class="type">C</span>]): <span class="type">ShuffleHandle</span> = &#123;</span><br><span class="line">  <span class="keyword">if</span> (<span class="type">SortShuffleWriter</span>.shouldBypassMergeSort(conf, dependency)) &#123;</span><br><span class="line">    <span class="comment">// If there are fewer than spark.shuffle.sort.bypassMergeThreshold partitions and we don&#x27;t</span></span><br><span class="line">    <span class="comment">// need map-side aggregation, then write numPartitions files directly and just concatenate</span></span><br><span class="line">    <span class="comment">// them at the end. This avoids doing serialization and deserialization twice to merge</span></span><br><span class="line">    <span class="comment">// together the spilled files, which would happen with the normal code path. The downside is</span></span><br><span class="line">    <span class="comment">// having multiple files open at a time and thus more memory allocated to buffers.</span></span><br><span class="line">    <span class="keyword">new</span> <span class="type">BypassMergeSortShuffleHandle</span>[<span class="type">K</span>, <span class="type">V</span>](</span><br><span class="line">      shuffleId, numMaps, dependency.asInstanceOf[<span class="type">ShuffleDependency</span>[<span class="type">K</span>, <span class="type">V</span>, <span class="type">V</span>]])</span><br><span class="line">  &#125; <span class="keyword">else</span> <span class="keyword">if</span> (<span class="type">SortShuffleManager</span>.canUseSerializedShuffle(dependency)) &#123;</span><br><span class="line">    <span class="comment">// Otherwise, try to buffer map outputs in a serialized form, since this is more efficient:</span></span><br><span class="line">    <span class="keyword">new</span> <span class="type">SerializedShuffleHandle</span>[<span class="type">K</span>, <span class="type">V</span>](</span><br><span class="line">      shuffleId, numMaps, dependency.asInstanceOf[<span class="type">ShuffleDependency</span>[<span class="type">K</span>, <span class="type">V</span>, <span class="type">V</span>]])</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="comment">// Otherwise, buffer map outputs in a deserialized form:</span></span><br><span class="line">    <span class="keyword">new</span> <span class="type">BaseShuffleHandle</span>(shuffleId, numMaps, dependency)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="ShuffleWriter"><a href="#ShuffleWriter" class="headerlink" title="ShuffleWriter"></a>ShuffleWriter</h3><p>《<a href="/2020/08/05/Spark-shuffle-writer">Spark shuffle writer</a>》详细描述各ShuffleWriter的内部原理。</p>
+<p>对于ShuffleHandle的不同实现，SortShuffleManager简单地根据类型匹配来返回相应的ShuffleWriter。</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">override</span> <span class="function"><span class="keyword">def</span> <span class="title">getWriter</span></span>[<span class="type">K</span>, <span class="type">V</span>](</span><br><span class="line">    handle: <span class="type">ShuffleHandle</span>,</span><br><span class="line">    mapId: <span class="type">Int</span>,</span><br><span class="line">    context: <span class="type">TaskContext</span>): <span class="type">ShuffleWriter</span>[<span class="type">K</span>, <span class="type">V</span>] = &#123;</span><br><span class="line">  numMapsForShuffle.putIfAbsent(</span><br><span class="line">    handle.shuffleId, handle.asInstanceOf[<span class="type">BaseShuffleHandle</span>[_, _, _]].numMaps)</span><br><span class="line">  <span class="keyword">val</span> env = <span class="type">SparkEnv</span>.get</span><br><span class="line">  handle <span class="keyword">match</span> &#123;</span><br><span class="line">    <span class="keyword">case</span> unsafeShuffleHandle: <span class="type">SerializedShuffleHandle</span>[<span class="type">K</span> <span class="meta">@unchecked</span>, <span class="type">V</span> <span class="meta">@unchecked</span>] =&gt;</span><br><span class="line">      <span class="keyword">new</span> <span class="type">UnsafeShuffleWriter</span>(</span><br><span class="line">        env.blockManager,</span><br><span class="line">        shuffleBlockResolver.asInstanceOf[<span class="type">IndexShuffleBlockResolver</span>],</span><br><span class="line">        context.taskMemoryManager(),</span><br><span class="line">        unsafeShuffleHandle,</span><br><span class="line">        mapId,</span><br><span class="line">        context,</span><br><span class="line">        env.conf)</span><br><span class="line">    <span class="keyword">case</span> bypassMergeSortHandle: <span class="type">BypassMergeSortShuffleHandle</span>[<span class="type">K</span> <span class="meta">@unchecked</span>, <span class="type">V</span> <span class="meta">@unchecked</span>] =&gt;</span><br><span class="line">      <span class="keyword">new</span> <span class="type">BypassMergeSortShuffleWriter</span>(</span><br><span class="line">        env.blockManager,</span><br><span class="line">        shuffleBlockResolver.asInstanceOf[<span class="type">IndexShuffleBlockResolver</span>],</span><br><span class="line">        bypassMergeSortHandle,</span><br><span class="line">        mapId,</span><br><span class="line">        context,</span><br><span class="line">        env.conf)</span><br><span class="line">    <span class="keyword">case</span> other: <span class="type">BaseShuffleHandle</span>[<span class="type">K</span> <span class="meta">@unchecked</span>, <span class="type">V</span> <span class="meta">@unchecked</span>, _] =&gt;</span><br><span class="line">      <span class="keyword">new</span> <span class="type">SortShuffleWriter</span>(shuffleBlockResolver, other, mapId, context)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="ResultTask"><a href="#ResultTask" class="headerlink" title="ResultTask"></a>ResultTask</h2><p>（TODO）</p>
+<h1 id="NOTEs"><a href="#NOTEs" class="headerlink" title="NOTEs"></a>NOTEs</h1><p>本文以Spark 2.4.3为基础。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/08/28/spark/Spark-RDD-dependency-stage-relation/" rel="prev" title="Spark中的RDD、依赖、stage以及它们之间的联系">
+      <i class="fa fa-chevron-left"></i> Spark中的RDD、依赖、stage以及它们之间的联系
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2020/09/11/spark/Spark-SQL-Catalyst-details/" rel="next" title="Spark SQL：Catalyst优化引擎原理">
+      Spark SQL：Catalyst优化引擎原理 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+        </div>
+        
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">JT Li</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="Total Visitors">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="Total Views">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="//cdn.jsdelivr.net/npm/animejs@3.2.0/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      <script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      const script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3.0.5/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1.6.2/dist/gitalk.css">
+
+<script>
+NexT.utils.loadComments('#gitalk-container', () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1.6.2/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : 'c94aa78cf2eda71757bf',
+      clientSecret: '01e1353b3f8eac54aafb1224c784b7af0305ce8c',
+      repo        : 'jtLiBrain.github.io',
+      owner       : 'jtLiBrain',
+      admin       : ['jtLiBrain'],
+      id          : '58d36aa111d9dd1b0550649a84cca7ef',
+        language: 'en',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+</body>
+</html>

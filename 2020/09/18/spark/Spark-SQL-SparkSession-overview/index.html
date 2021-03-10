@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.0.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.14.0/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css">
+
+<script class="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"jtlibrain.github.io","root":"/","scheme":"Gemini","version":"8.0.0-rc.5","exturl":false,"sidebar":{"position":"left","display":"hide","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false};
+  </script>
+
+  <meta name="description" content="SparkSession是开启Spark SQL的切入点。本文将对SparkSession进行详细介绍。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Spark SQL：SparkSession概述">
+<meta property="og:url" content="https://jtlibrain.github.io/2020/09/18/spark/Spark-SQL-SparkSession-overview/index.html">
+<meta property="og:site_name" content="jtLiBrain">
+<meta property="og:description" content="SparkSession是开启Spark SQL的切入点。本文将对SparkSession进行详细介绍。">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://jtlibrain.github.io/images/spark/SparkSession-component-classes.svg">
+<meta property="article:published_time" content="2020-09-18T02:45:38.000Z">
+<meta property="article:modified_time" content="2020-09-22T08:18:00.303Z">
+<meta property="article:author" content="JT Li">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://jtlibrain.github.io/images/spark/SparkSession-component-classes.svg">
+
+<link rel="canonical" href="https://jtlibrain.github.io/2020/09/18/spark/Spark-SQL-SparkSession-overview/">
+
+
+<script class="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>Spark SQL：SparkSession概述 | jtLiBrain</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  body { margin-top: 2rem; }
+
+  .use-motion .menu-item,
+  .use-motion .sidebar,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header {
+    visibility: visible;
+  }
+
+  .use-motion .header,
+  .use-motion .site-brand-container .toggle,
+  .use-motion .footer { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle,
+  .use-motion .custom-logo-image {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line {
+    transform: scaleX(1);
+  }
+
+  .search-pop-overlay, .sidebar-nav { display: none; }
+  .sidebar-panel { display: block; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <main class="main">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+        <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">jtLiBrain</h1>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">任何伟大的事都不会一蹴而就，三分智慧，七分韧性</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <section class="post-toc-wrap sidebar-panel">
+          <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%A6%82%E8%BF%B0"><span class="nav-number">1.</span> <span class="nav-text">概述</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#SparkSessionExtensions"><span class="nav-number">2.</span> <span class="nav-text">SparkSessionExtensions</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#SparkSessionExtensions%E5%86%85%E9%83%A8"><span class="nav-number">2.1.</span> <span class="nav-text">SparkSessionExtensions内部</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B3%A8%E5%85%A5%E6%89%A9%E5%B1%95%E7%82%B9"><span class="nav-number">2.2.</span> <span class="nav-text">注入扩展点</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#SparkSession"><span class="nav-number">3.</span> <span class="nav-text">SparkSession</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#SharedState"><span class="nav-number">4.</span> <span class="nav-text">SharedState</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#BaseSessionStateBuilder"><span class="nav-number">5.</span> <span class="nav-text">BaseSessionStateBuilder</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#SessionState"><span class="nav-number">6.</span> <span class="nav-text">SessionState</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#SessionCatalog"><span class="nav-number">7.</span> <span class="nav-text">SessionCatalog</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#ExternalCatalog"><span class="nav-number">8.</span> <span class="nav-text">ExternalCatalog</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#FunctionRegistry"><span class="nav-number">9.</span> <span class="nav-text">FunctionRegistry</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#SimpleFunctionRegistry"><span class="nav-number">9.1.</span> <span class="nav-text">SimpleFunctionRegistry</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#GlobalTempViewManager"><span class="nav-number">10.</span> <span class="nav-text">GlobalTempViewManager</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#ExperimentalMethods"><span class="nav-number">11.</span> <span class="nav-text">ExperimentalMethods</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#ParserInterface"><span class="nav-number">12.</span> <span class="nav-text">ParserInterface</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#QueryExecution"><span class="nav-number">13.</span> <span class="nav-text">QueryExecution</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#NOTEs"><span class="nav-number">14.</span> <span class="nav-text">NOTEs</span></a></li></ol></div>
+      </section>
+      <!--/noindex-->
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">JT Li</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">28</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">11</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="mailto:jtli.brain@hotmail.com" title="E-Mail → mailto:jtli.brain@hotmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </section>
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </header>
+
+      
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div id="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+      <div class="main-inner">
+        
+
+        <div class="content post posts-expand">
+          
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://jtlibrain.github.io/2020/09/18/spark/Spark-SQL-SparkSession-overview/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="JT Li">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="jtLiBrain">
+    </span>
+
+    
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Spark SQL：SparkSession概述
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2020-09-18 10:45:38" itemprop="dateCreated datePublished" datetime="2020-09-18T10:45:38+08:00">2020-09-18</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2020-09-22 16:18:00" itemprop="dateModified" datetime="2020-09-22T16:18:00+08:00">2020-09-22</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/spark/" itemprop="url" rel="index"><span itemprop="name">spark</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="Views" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">Views: </span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p>SparkSession是开启Spark SQL的切入点。本文将对SparkSession进行详细介绍。</p>
+<a id="more"></a>
+
+<h1 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h1><p><img src="/images/spark/SparkSession-component-classes.svg"></p>
+<p>上图描述了SparkSession中的组件类图，我们来分析一下此图。SparkSession的关键组件有：SparkSessionExtensions、SharedState、SessionState、以及Catalog。其中：</p>
+<ol>
+<li>SharedState、SessionState担负着保持“状态”信息的作用：SharedState保持同一个SQLContext下，跨SparkSession所共享的状态信息；而SessionState保存特定某个SparkSession中的状态信息。</li>
+<li>图中左侧的灰色背景区域代表的是SharedState内部关系图，其中橙色的类表示的是编目系统(catalog)，这个编目系统(catalog)也是SessionState通过SessionCatalog API所访问的编目系统(catalog)。</li>
+<li>图中右侧的浅蓝色背景区域代表的是BaseSessionStateBuilder在构建SessionState时的关系图。</li>
+<li>Catalog是暴露给API用户用于访问底层的外部catalog系统的接口，SparkSession使用<code>CatalogImpl</code>来具体实现，它底层是通过SessionState中SessionCatalog进而实现访问底层的外部catalog系统。</li>
+<li>SparkSessionExtensions是扩展点的容器，扩展点以<code>xxxBuilder</code>的形式注入到该容器。</li>
+</ol>
+<h1 id="SparkSessionExtensions"><a href="#SparkSessionExtensions" class="headerlink" title="SparkSessionExtensions"></a>SparkSessionExtensions</h1><p>扩展点的容器，通过该接口用户可以将Analyzer规则、Optimizer规则、计划策略以及自定义的解析器注入到SparkSession。</p>
+<h2 id="SparkSessionExtensions内部"><a href="#SparkSessionExtensions内部" class="headerlink" title="SparkSessionExtensions内部"></a>SparkSessionExtensions内部</h2><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 注入的数据类型为函数</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="class"><span class="keyword">type</span> <span class="title">RuleBuilder</span> </span>= <span class="type">SparkSession</span> =&gt; <span class="type">Rule</span>[<span class="type">LogicalPlan</span>]</span><br><span class="line"><span class="class"><span class="keyword">type</span> <span class="title">CheckRuleBuilder</span> </span>= <span class="type">SparkSession</span> =&gt; <span class="type">LogicalPlan</span> =&gt; <span class="type">Unit</span></span><br><span class="line"><span class="class"><span class="keyword">type</span> <span class="title">StrategyBuilder</span> </span>= <span class="type">SparkSession</span> =&gt; <span class="type">Strategy</span></span><br><span class="line"><span class="class"><span class="keyword">type</span> <span class="title">ParserBuilder</span> </span>= (<span class="type">SparkSession</span>, <span class="type">ParserInterface</span>) =&gt; <span class="type">ParserInterface</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 这些分析器规则作为分析阶段中resolution过程的一部分被执行</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">private</span>[<span class="keyword">this</span>] <span class="keyword">val</span> resolutionRuleBuilders = mutable.<span class="type">Buffer</span>.empty[<span class="type">RuleBuilder</span>]</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 这些分析器规则在resolution过程后被执行</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">private</span>[<span class="keyword">this</span>] <span class="keyword">val</span> postHocResolutionRuleBuilders = mutable.<span class="type">Buffer</span>.empty[<span class="type">RuleBuilder</span>]</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 校验分析规则：这些规则在分析阶段后被执行，它用来探测LogicalPlan中存在的问题。</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">private</span>[<span class="keyword">this</span>] <span class="keyword">val</span> checkRuleBuilders = mutable.<span class="type">Buffer</span>.empty[<span class="type">CheckRuleBuilder</span>]</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 这些规则在运算符优化时被执行，优化器规则用来提高分析后逻辑计划的质量，这些规则应该修改LogicalPlan的结果</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">private</span>[<span class="keyword">this</span>] <span class="keyword">val</span> optimizerRules = mutable.<span class="type">Buffer</span>.empty[<span class="type">RuleBuilder</span>]</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 这些策略被用来将LogicalPlan转换为可执行的org.apache.spark.sql.execution.SparkPlan</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">private</span>[<span class="keyword">this</span>] <span class="keyword">val</span> plannerStrategyBuilders = mutable.<span class="type">Buffer</span>.empty[<span class="type">StrategyBuilder</span>]</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * </span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">private</span>[<span class="keyword">this</span>] <span class="keyword">val</span> parserBuilders = mutable.<span class="type">Buffer</span>.empty[<span class="type">ParserBuilder</span>]</span><br></pre></td></tr></table></figure>
+
+<h2 id="注入扩展点"><a href="#注入扩展点" class="headerlink" title="注入扩展点"></a>注入扩展点</h2><p>使用SparkSession.Builder.withExtensions()方法就可以将自定义的扩展点注入SparkSession实例。</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">SparkSession</span>.builder()</span><br><span class="line">  .master(<span class="string">&quot;...&quot;</span>)</span><br><span class="line">  .conf(<span class="string">&quot;...&quot;</span>, <span class="literal">true</span>)</span><br><span class="line">  .withExtensions &#123; extensions =&gt;</span><br><span class="line">    extensions.injectResolutionRule &#123; session =&gt;</span><br><span class="line">      ...</span><br><span class="line">    &#125;</span><br><span class="line">    extensions.injectParser &#123; (session, parser) =&gt;</span><br><span class="line">      ...</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  .getOrCreate()</span><br></pre></td></tr></table></figure>
+
+
+
+<h1 id="SparkSession"><a href="#SparkSession" class="headerlink" title="SparkSession"></a>SparkSession</h1><p>SparkSession类</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">lazy</span> <span class="keyword">val</span> sessionState: <span class="type">SessionState</span> = &#123;</span><br><span class="line">  parentSessionState</span><br><span class="line">    .map(_.clone(<span class="keyword">this</span>))</span><br><span class="line">    .getOrElse &#123;</span><br><span class="line">      <span class="keyword">val</span> state = <span class="type">SparkSession</span>.instantiateSessionState(</span><br><span class="line">        <span class="type">SparkSession</span>.sessionStateClassName(sparkContext.conf),</span><br><span class="line">        self)</span><br><span class="line">      initialSessionOptions.foreach &#123; <span class="keyword">case</span> (k, v) =&gt; state.conf.setConfString(k, v) &#125;</span><br><span class="line">      state</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<br/>
+
+<p>SparkSession object中工具方法：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">val</span> <span class="type">HIVE_SESSION_STATE_BUILDER_CLASS_NAME</span> =</span><br><span class="line">  <span class="string">&quot;org.apache.spark.sql.hive.HiveSessionStateBuilder&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 基于spark.sql.catalogImplementation的配置实例化相应的SessionStateBuilder实例</span></span><br><span class="line"><span class="keyword">private</span> <span class="function"><span class="keyword">def</span> <span class="title">sessionStateClassName</span></span>(conf: <span class="type">SparkConf</span>): <span class="type">String</span> = &#123;</span><br><span class="line">  conf.get(<span class="type">CATALOG_IMPLEMENTATION</span>) <span class="keyword">match</span> &#123;</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&quot;hive&quot;</span> =&gt; <span class="type">HIVE_SESSION_STATE_BUILDER_CLASS_NAME</span></span><br><span class="line">    <span class="keyword">case</span> <span class="string">&quot;in-memory&quot;</span> =&gt; classOf[<span class="type">SessionStateBuilder</span>].getCanonicalName</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span> <span class="function"><span class="keyword">def</span> <span class="title">instantiateSessionState</span></span>(</span><br><span class="line">    className: <span class="type">String</span>,</span><br><span class="line">    sparkSession: <span class="type">SparkSession</span>): <span class="type">SessionState</span> = &#123;</span><br><span class="line">  <span class="keyword">try</span> &#123;</span><br><span class="line">    <span class="comment">// invoke `new [Hive]SessionStateBuilder(SparkSession, Option[SessionState])`</span></span><br><span class="line">    <span class="keyword">val</span> clazz = <span class="type">Utils</span>.classForName(className)</span><br><span class="line">    <span class="keyword">val</span> ctor = clazz.getConstructors.head</span><br><span class="line">    ctor.newInstance(sparkSession, <span class="type">None</span>).asInstanceOf[<span class="type">BaseSessionStateBuilder</span>].build()</span><br><span class="line">  &#125; <span class="keyword">catch</span> &#123;</span><br><span class="line">    <span class="keyword">case</span> <span class="type">NonFatal</span>(e) =&gt;</span><br><span class="line">      <span class="keyword">throw</span> <span class="keyword">new</span> <span class="type">IllegalArgumentException</span>(<span class="string">s&quot;Error while instantiating &#x27;<span class="subst">$className</span>&#x27;:&quot;</span>, e)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h1 id="SharedState"><a href="#SharedState" class="headerlink" title="SharedState"></a>SharedState</h1><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 解析metastore warehouse路径</span></span><br><span class="line"><span class="keyword">val</span> warehousePath: <span class="type">String</span> = &#123;</span><br><span class="line">  <span class="comment">// 将hive-site.xml加载到hadoopConfiguration配置中</span></span><br><span class="line">  <span class="keyword">val</span> configFile = <span class="type">Utils</span>.getContextOrSparkClassLoader.getResource(<span class="string">&quot;hive-site.xml&quot;</span>)</span><br><span class="line">  <span class="keyword">if</span> (configFile != <span class="literal">null</span>) &#123;</span><br><span class="line">    logInfo(<span class="string">s&quot;loading hive config file: <span class="subst">$configFile</span>&quot;</span>)</span><br><span class="line">    sparkContext.hadoopConfiguration.addResource(configFile)</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// hive.metastore.warehouse.dir only stay in hadoopConf</span></span><br><span class="line">  sparkContext.conf.remove(<span class="string">&quot;hive.metastore.warehouse.dir&quot;</span>)</span><br><span class="line">  <span class="comment">// Set the Hive metastore warehouse path to the one we use</span></span><br><span class="line">  <span class="keyword">val</span> hiveWarehouseDir = sparkContext.hadoopConfiguration.get(<span class="string">&quot;hive.metastore.warehouse.dir&quot;</span>)</span><br><span class="line">  <span class="keyword">if</span> (hiveWarehouseDir != <span class="literal">null</span> &amp;&amp; !sparkContext.conf.contains(<span class="type">WAREHOUSE_PATH</span>.key)) &#123;</span><br><span class="line">    <span class="comment">// 如果设置了hive.metastore.warehouse.dir，没有设置spark.sql.warehouse.dir</span></span><br><span class="line">    <span class="comment">// 将hive.metastore.warehouse.dir赋值给spark.sql.warehouse.dir</span></span><br><span class="line">    sparkContext.conf.set(<span class="type">WAREHOUSE_PATH</span>.key, hiveWarehouseDir)</span><br><span class="line">    logInfo(<span class="string">s&quot;<span class="subst">$&#123;WAREHOUSE_PATH.key&#125;</span> is not set, but hive.metastore.warehouse.dir &quot;</span> +</span><br><span class="line">      <span class="string">s&quot;is set. Setting <span class="subst">$&#123;WAREHOUSE_PATH.key&#125;</span> to the value of &quot;</span> +</span><br><span class="line">      <span class="string">s&quot;hive.metastore.warehouse.dir (&#x27;<span class="subst">$hiveWarehouseDir</span>&#x27;).&quot;</span>)</span><br><span class="line">    hiveWarehouseDir</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="comment">// 如果设置了spark.sql.warehouse.dir，将其覆盖hive.metastore.warehouse.dir</span></span><br><span class="line">    <span class="keyword">val</span> sparkWarehouseDir = sparkContext.conf.get(<span class="type">WAREHOUSE_PATH</span>)</span><br><span class="line">    logInfo(<span class="string">s&quot;Setting hive.metastore.warehouse.dir (&#x27;<span class="subst">$hiveWarehouseDir</span>&#x27;) to the value of &quot;</span> +</span><br><span class="line">      <span class="string">s&quot;<span class="subst">$&#123;WAREHOUSE_PATH.key&#125;</span> (&#x27;<span class="subst">$sparkWarehouseDir</span>&#x27;).&quot;</span>)</span><br><span class="line">    sparkContext.hadoopConfiguration.set(<span class="string">&quot;hive.metastore.warehouse.dir&quot;</span>, sparkWarehouseDir)</span><br><span class="line">    sparkWarehouseDir</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line">logInfo(<span class="string">s&quot;Warehouse path is &#x27;<span class="subst">$warehousePath</span>&#x27;.&quot;</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 缓存查询结果的类</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">val</span> cacheManager: <span class="type">CacheManager</span> = <span class="keyword">new</span> <span class="type">CacheManager</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * A status store to query SQL status/metrics of this Spark application, based on SQL-specific</span></span><br><span class="line"><span class="comment"> * [[org.apache.spark.scheduler.SparkListenerEvent]]s.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">val</span> statusStore: <span class="type">SQLAppStatusStore</span> = &#123;</span><br><span class="line">  <span class="keyword">val</span> kvStore = sparkContext.statusStore.store.asInstanceOf[<span class="type">ElementTrackingStore</span>]</span><br><span class="line">  <span class="keyword">val</span> listener = <span class="keyword">new</span> <span class="type">SQLAppStatusListener</span>(sparkContext.conf, kvStore, live = <span class="literal">true</span>)</span><br><span class="line">  sparkContext.listenerBus.addToStatusQueue(listener)</span><br><span class="line">  <span class="keyword">val</span> statusStore = <span class="keyword">new</span> <span class="type">SQLAppStatusStore</span>(kvStore, <span class="type">Some</span>(listener))</span><br><span class="line">  sparkContext.ui.foreach(<span class="keyword">new</span> <span class="type">SQLTab</span>(statusStore, _))</span><br><span class="line">  statusStore</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * catalog系统，它维护与外部系统的交互</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">lazy</span> <span class="keyword">val</span> externalCatalog: <span class="type">ExternalCatalogWithListener</span> = &#123;</span><br><span class="line">  <span class="comment">// 实例化catalog系统</span></span><br><span class="line">  <span class="keyword">val</span> externalCatalog = <span class="type">SharedState</span>.reflect[<span class="type">ExternalCatalog</span>, <span class="type">SparkConf</span>, <span class="type">Configuration</span>](</span><br><span class="line">    <span class="type">SharedState</span>.externalCatalogClassName(sparkContext.conf),</span><br><span class="line">    sparkContext.conf,</span><br><span class="line">    sparkContext.hadoopConfiguration)</span><br><span class="line"></span><br><span class="line">  <span class="keyword">val</span> defaultDbDefinition = <span class="type">CatalogDatabase</span>(</span><br><span class="line">    <span class="type">SessionCatalog</span>.<span class="type">DEFAULT_DATABASE</span>,</span><br><span class="line">    <span class="string">&quot;default database&quot;</span>,</span><br><span class="line">    <span class="type">CatalogUtils</span>.stringToURI(warehousePath), <span class="comment">// metastore warehouse路径</span></span><br><span class="line">    <span class="type">Map</span>())</span><br><span class="line">  <span class="comment">// 判断default库是否存在，如果不存在，则通过catalog API在外部系统创建出来</span></span><br><span class="line">  <span class="keyword">if</span> (!externalCatalog.databaseExists(<span class="type">SessionCatalog</span>.<span class="type">DEFAULT_DATABASE</span>)) &#123;</span><br><span class="line">    <span class="comment">// There may be another Spark application creating default database at the same time, here we</span></span><br><span class="line">    <span class="comment">// set `ignoreIfExists = true` to avoid `DatabaseAlreadyExists` exception.</span></span><br><span class="line">    externalCatalog.createDatabase(defaultDbDefinition, ignoreIfExists = <span class="literal">true</span>)</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// Wrap to provide catalog events</span></span><br><span class="line">  <span class="keyword">val</span> wrapped = <span class="keyword">new</span> <span class="type">ExternalCatalogWithListener</span>(externalCatalog)</span><br><span class="line"></span><br><span class="line">  <span class="comment">// Make sure we propagate external catalog events to the spark listener bus</span></span><br><span class="line">  wrapped.addListener(<span class="keyword">new</span> <span class="type">ExternalCatalogEventListener</span> &#123;</span><br><span class="line">    <span class="keyword">override</span> <span class="function"><span class="keyword">def</span> <span class="title">onEvent</span></span>(event: <span class="type">ExternalCatalogEvent</span>): <span class="type">Unit</span> = &#123;</span><br><span class="line">      sparkContext.listenerBus.post(event)</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;)</span><br><span class="line"></span><br><span class="line">  wrapped</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 全局临时视图管理器</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">lazy</span> <span class="keyword">val</span> globalTempViewManager: <span class="type">GlobalTempViewManager</span> = &#123;</span><br><span class="line">  <span class="comment">// metastore中不应该存在系统维护的数据库（spark.sql.globalTempDatabase，默认为global_temp）</span></span><br><span class="line">  <span class="keyword">val</span> globalTempDB = sparkContext.conf.get(<span class="type">GLOBAL_TEMP_DATABASE</span>).toLowerCase(<span class="type">Locale</span>.<span class="type">ROOT</span>)</span><br><span class="line">  <span class="keyword">if</span> (externalCatalog.databaseExists(globalTempDB)) &#123;</span><br><span class="line">    <span class="keyword">throw</span> <span class="keyword">new</span> <span class="type">SparkException</span>(</span><br><span class="line">      <span class="string">s&quot;<span class="subst">$globalTempDB</span> is a system preserved database, please rename your existing database &quot;</span> +</span><br><span class="line">        <span class="string">&quot;to resolve the name conflict, or set a different value for &quot;</span> +</span><br><span class="line">        <span class="string">s&quot;<span class="subst">$&#123;GLOBAL_TEMP_DATABASE.key&#125;</span>, and launch your Spark application again.&quot;</span>)</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">new</span> <span class="type">GlobalTempViewManager</span>(globalTempDB)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="BaseSessionStateBuilder"><a href="#BaseSessionStateBuilder" class="headerlink" title="BaseSessionStateBuilder"></a>BaseSessionStateBuilder</h1><p>为每个SparkSession创建一个BaseSessionStateBuilder的具体对象，BaseSessionStateBuilder提供了创建SessionState的<code>build</code>方法。</p>
+<br/>
+
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 管理用户注册的方法</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">protected</span> <span class="keyword">lazy</span> <span class="keyword">val</span> functionRegistry: <span class="type">FunctionRegistry</span> = &#123;</span><br><span class="line">  parentState.map(_.functionRegistry).getOrElse(<span class="type">FunctionRegistry</span>.builtin).clone()</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 可以用来定义自定义的优化规则和自定义的计划策略</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">protected</span> <span class="keyword">lazy</span> <span class="keyword">val</span> experimentalMethods: <span class="type">ExperimentalMethods</span> = &#123;</span><br><span class="line">  parentState.map(_.experimentalMethods.clone()).getOrElse(<span class="keyword">new</span> <span class="type">ExperimentalMethods</span>)</span><br><span class="line">&#125;  </span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * SQL Parser：用于从SQL文本中提取表达式、计划、表标识符</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">protected</span> <span class="keyword">lazy</span> <span class="keyword">val</span> sqlParser: <span class="type">ParserInterface</span> = &#123;</span><br><span class="line">  <span class="comment">// 以SparkSqlParser为基础，结合自定义的扩展点构建ParserInterface</span></span><br><span class="line">  extensions.buildParser(session, <span class="keyword">new</span> <span class="type">SparkSqlParser</span>(conf))</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Catalog：用于管理表和数据库的状态</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">protected</span> <span class="keyword">lazy</span> <span class="keyword">val</span> catalog: <span class="type">SessionCatalog</span> = &#123;</span><br><span class="line">  <span class="keyword">val</span> catalog = <span class="keyword">new</span> <span class="type">SessionCatalog</span>(</span><br><span class="line">    () =&gt; session.sharedState.externalCatalog,</span><br><span class="line">    () =&gt; session.sharedState.globalTempViewManager,</span><br><span class="line">    functionRegistry,</span><br><span class="line">    conf,</span><br><span class="line">    <span class="type">SessionState</span>.newHadoopConf(session.sparkContext.hadoopConfiguration, conf),</span><br><span class="line">    sqlParser,</span><br><span class="line">    resourceLoader)</span><br><span class="line">  parentState.foreach(_.catalog.copyStateTo(catalog))</span><br><span class="line">  catalog</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 暴露给用户用于注册用户自定义函数</span></span><br><span class="line"><span class="comment"> * Note 1: 用户自定义函数必须是deterministic.</span></span><br><span class="line"><span class="comment"> * Note 2: 依赖functionRegistry字段</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">protected</span> <span class="function"><span class="keyword">def</span> <span class="title">udfRegistration</span></span>: <span class="type">UDFRegistration</span> = <span class="keyword">new</span> <span class="type">UDFRegistration</span>(functionRegistry)</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 逻辑查询计划分析器，用于解析未解析过的属性和关系</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">protected</span> <span class="function"><span class="keyword">def</span> <span class="title">analyzer</span></span>: <span class="type">Analyzer</span> = <span class="keyword">new</span> <span class="type">Analyzer</span>(catalog, conf) &#123;</span><br><span class="line">  <span class="keyword">override</span> <span class="keyword">val</span> extendedResolutionRules: <span class="type">Seq</span>[<span class="type">Rule</span>[<span class="type">LogicalPlan</span>]] =</span><br><span class="line">    <span class="keyword">new</span> <span class="type">FindDataSourceTable</span>(session) +:</span><br><span class="line">      <span class="keyword">new</span> <span class="type">ResolveSQLOnFile</span>(session) +:</span><br><span class="line">      customResolutionRules</span><br><span class="line"></span><br><span class="line">  <span class="keyword">override</span> <span class="keyword">val</span> postHocResolutionRules: <span class="type">Seq</span>[<span class="type">Rule</span>[<span class="type">LogicalPlan</span>]] =</span><br><span class="line">    <span class="type">PreprocessTableCreation</span>(session) +:</span><br><span class="line">      <span class="type">PreprocessTableInsertion</span>(conf) +:</span><br><span class="line">      <span class="type">DataSourceAnalysis</span>(conf) +:</span><br><span class="line">      customPostHocResolutionRules</span><br><span class="line"></span><br><span class="line">  <span class="keyword">override</span> <span class="keyword">val</span> extendedCheckRules: <span class="type">Seq</span>[<span class="type">LogicalPlan</span> =&gt; <span class="type">Unit</span>] =</span><br><span class="line">    <span class="type">PreWriteCheck</span> +:</span><br><span class="line">      <span class="type">PreReadCheck</span> +:</span><br><span class="line">      <span class="type">HiveOnlyCheck</span> +:</span><br><span class="line">      customCheckRules</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 逻辑查询计划优化器</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">protected</span> <span class="function"><span class="keyword">def</span> <span class="title">optimizer</span></span>: <span class="type">Optimizer</span> = &#123;</span><br><span class="line">  <span class="keyword">new</span> <span class="type">SparkOptimizer</span>(catalog, experimentalMethods) &#123;</span><br><span class="line">    <span class="keyword">override</span> <span class="function"><span class="keyword">def</span> <span class="title">extendedOperatorOptimizationRules</span></span>: <span class="type">Seq</span>[<span class="type">Rule</span>[<span class="type">LogicalPlan</span>]] =</span><br><span class="line">      <span class="keyword">super</span>.extendedOperatorOptimizationRules ++ customOperatorOptimizationRules</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 计划器：将优化过的逻辑计划转换为物理计划</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">protected</span> <span class="function"><span class="keyword">def</span> <span class="title">planner</span></span>: <span class="type">SparkPlanner</span> = &#123;</span><br><span class="line">  <span class="keyword">new</span> <span class="type">SparkPlanner</span>(session.sparkContext, conf, experimentalMethods) &#123; <span class="comment">// ExperimentalMethods</span></span><br><span class="line">    <span class="keyword">override</span> <span class="function"><span class="keyword">def</span> <span class="title">extraPlanningStrategies</span></span>: <span class="type">Seq</span>[<span class="type">Strategy</span>] =</span><br><span class="line">      <span class="keyword">super</span>.extraPlanningStrategies ++ customPlanningStrategies</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 创建查询执行对象</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">protected</span> <span class="function"><span class="keyword">def</span> <span class="title">createQueryExecution</span></span>: <span class="type">LogicalPlan</span> =&gt; <span class="type">QueryExecution</span> = &#123; plan =&gt;</span><br><span class="line">  <span class="keyword">new</span> <span class="type">QueryExecution</span>(session, plan)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<br/>
+
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 创建SessionState</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">build</span></span>(): <span class="type">SessionState</span> = &#123;</span><br><span class="line">  <span class="keyword">new</span> <span class="type">SessionState</span>(</span><br><span class="line">    session.sharedState,</span><br><span class="line">    conf,</span><br><span class="line">    experimentalMethods,</span><br><span class="line">    functionRegistry,</span><br><span class="line">    udfRegistration,</span><br><span class="line">    () =&gt; catalog,</span><br><span class="line">    sqlParser,</span><br><span class="line">    () =&gt; analyzer,</span><br><span class="line">    () =&gt; optimizer,</span><br><span class="line">    planner,</span><br><span class="line">    streamingQueryManager,</span><br><span class="line">    listenerManager,</span><br><span class="line">    () =&gt; resourceLoader,</span><br><span class="line">    createQueryExecution,</span><br><span class="line">    createClone)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h1 id="SessionState"><a href="#SessionState" class="headerlink" title="SessionState"></a>SessionState</h1><p>（略）</p>
+<h1 id="SessionCatalog"><a href="#SessionCatalog" class="headerlink" title="SessionCatalog"></a>SessionCatalog</h1><p>SparkSession所实际使用的内部catalog。此类充当到底层metastore的代理，将调用转发到ExternalCatalog来执行。同时它也负责管理SparkSession所拥有的临时视图和函数。</p>
+<p>该类中所有对于数据库和分区的操作都是直接与底层catalog进行交互，对分区的操作都是与metastore表相关的。</p>
+<p>有两种类型的表：临时视图（view）和metastore表（table）。临时视图在session之间是隔离的，这类表不属于任何数据库；metastore表属于某数据库，可以跨session使用，因为这类表的元数据被持久化到了底层catalog。</p>
+<p>有两种类型的函数：临时函数和metastore函数。临时函数在session之间是隔离的，这类函数不属于任何数据库；metastore函数属于某数据库，可以跨session使用，因为这类函数的元数据被持久化到了底层catalog中。</p>
+<br/>
+
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">protected</span> <span class="keyword">val</span> tempViews = <span class="keyword">new</span> mutable.<span class="type">HashMap</span>[<span class="type">String</span>, <span class="type">LogicalPlan</span>]</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 创建属于session本地的临时视图</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">createTempView</span></span>(</span><br><span class="line">    name: <span class="type">String</span>,</span><br><span class="line">    tableDefinition: <span class="type">LogicalPlan</span>,</span><br><span class="line">    overrideIfExists: <span class="type">Boolean</span>): <span class="type">Unit</span> = synchronized &#123;</span><br><span class="line">  <span class="keyword">val</span> table = formatTableName(name)</span><br><span class="line">  <span class="keyword">if</span> (tempViews.contains(table) &amp;&amp; !overrideIfExists) &#123;</span><br><span class="line">    <span class="keyword">throw</span> <span class="keyword">new</span> <span class="type">TempTableAlreadyExistsException</span>(name)</span><br><span class="line">  &#125;</span><br><span class="line">  tempViews.put(table, tableDefinition)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 创建全局临时视图</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">createGlobalTempView</span></span>(</span><br><span class="line">    name: <span class="type">String</span>,</span><br><span class="line">    viewDefinition: <span class="type">LogicalPlan</span>,</span><br><span class="line">    overrideIfExists: <span class="type">Boolean</span>): <span class="type">Unit</span> = &#123;</span><br><span class="line">  globalTempViewManager.create(formatTableName(name), viewDefinition, overrideIfExists)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Alter the definition of a local/global temp view matching the given name, returns true if a</span></span><br><span class="line"><span class="comment"> * temp view is matched and altered, false otherwise.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">alterTempViewDefinition</span></span>(</span><br><span class="line">    name: <span class="type">TableIdentifier</span>,</span><br><span class="line">    viewDefinition: <span class="type">LogicalPlan</span>): <span class="type">Boolean</span> = synchronized &#123;</span><br><span class="line">  <span class="keyword">val</span> viewName = formatTableName(name.table)</span><br><span class="line">  <span class="keyword">if</span> (name.database.isEmpty) &#123;</span><br><span class="line">    <span class="keyword">if</span> (tempViews.contains(viewName)) &#123;</span><br><span class="line">      createTempView(viewName, viewDefinition, overrideIfExists = <span class="literal">true</span>)</span><br><span class="line">      <span class="literal">true</span></span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      <span class="literal">false</span></span><br><span class="line">    &#125;</span><br><span class="line">  &#125; <span class="keyword">else</span> <span class="keyword">if</span> (formatDatabaseName(name.database.get) == globalTempViewManager.database) &#123;</span><br><span class="line">    globalTempViewManager.update(viewName, viewDefinition)</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="literal">false</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 返回session本地的临时视图</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">getTempView</span></span>(name: <span class="type">String</span>): <span class="type">Option</span>[<span class="type">LogicalPlan</span>] = synchronized &#123;</span><br><span class="line">  tempViews.get(formatTableName(name))</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 返回全局临时视图</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">getGlobalTempView</span></span>(name: <span class="type">String</span>): <span class="type">Option</span>[<span class="type">LogicalPlan</span>] = &#123;</span><br><span class="line">  globalTempViewManager.get(formatTableName(name))</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 删除session本地的临时视图</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">dropTempView</span></span>(name: <span class="type">String</span>): <span class="type">Boolean</span> = synchronized &#123;</span><br><span class="line">  tempViews.remove(formatTableName(name)).isDefined</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 删除全局临时视图</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">dropGlobalTempView</span></span>(name: <span class="type">String</span>): <span class="type">Boolean</span> = &#123;</span><br><span class="line">  globalTempViewManager.remove(formatTableName(name))</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h1 id="ExternalCatalog"><a href="#ExternalCatalog" class="headerlink" title="ExternalCatalog"></a>ExternalCatalog</h1><p>系统catalog（函数、分区、表、数据库）的管理接口，它负责实际当中与外部系统（如，hive或内存）进行交互。</p>
+<p><strong>注意</strong>：$\color{red}{该接口只用于非临时性的项，像“临时表”这样的临时性的项不应该由接口处理。}$</p>
+<p>有三个具体实现类：</p>
+<ul>
+<li>InMemoryCatalog：使用内存来实现对系统catalog存储的方案，次方案为测试性或探索性的方案，生产环境不建议使用该方案，此方案为默认方案；</li>
+<li>HiveExternalCatalog：使用Hive来实现对系统catalog持久化存储的方案；</li>
+<li>ExternalCatalogWithListener：它是一个包装器，将调用代理给ExternalCatalog子类（由参数spark.sql.catalogImplementation配置）的相应方法，并在调用同时添加了监听事件的功能；</li>
+</ul>
+<h1 id="FunctionRegistry"><a href="#FunctionRegistry" class="headerlink" title="FunctionRegistry"></a>FunctionRegistry</h1><p>用来管理用户自定义函数的catalog，该catalog所属于一个SparkSession。</p>
+<p>我们来看一下FunctionRegistry对象的工具方法：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// expressions中包含了Spark内置的所有函数</span></span><br><span class="line"><span class="keyword">val</span> expressions: <span class="type">Map</span>[<span class="type">String</span>, (<span class="type">ExpressionInfo</span>, <span class="type">FunctionBuilder</span>)] = <span class="type">Map</span>(</span><br><span class="line">  <span class="comment">// misc non-aggregate functions</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">// math functions</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">// aggregate functions</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">// string functions</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">// datetime functions</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">// collection functions</span></span><br><span class="line"></span><br><span class="line">  <span class="type">CreateStruct</span>.registryEntry,</span><br><span class="line"></span><br><span class="line">  <span class="comment">// misc functions</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">// grouping sets</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">// window functions</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">// predicates</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">// comparison operators</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">// bitwise</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">// json</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">// cast</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">// Cast aliases</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="keyword">val</span> builtin: <span class="type">SimpleFunctionRegistry</span> = &#123;</span><br><span class="line">  <span class="keyword">val</span> fr = <span class="keyword">new</span> <span class="type">SimpleFunctionRegistry</span></span><br><span class="line">  expressions.foreach &#123;</span><br><span class="line">    <span class="comment">// 将内置函数注册到session级别的SimpleFunctionRegistry中</span></span><br><span class="line">    <span class="keyword">case</span> (name, (info, builder)) =&gt; fr.registerFunction(<span class="type">FunctionIdentifier</span>(name), info, builder)</span><br><span class="line">  &#125;</span><br><span class="line">  fr</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="SimpleFunctionRegistry"><a href="#SimpleFunctionRegistry" class="headerlink" title="SimpleFunctionRegistry"></a>SimpleFunctionRegistry</h2><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 持有注册的函数</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">val</span> functionBuilders =</span><br><span class="line">  <span class="keyword">new</span> mutable.<span class="type">HashMap</span>[<span class="type">FunctionIdentifier</span>, (<span class="type">ExpressionInfo</span>, <span class="type">FunctionBuilder</span>)]</span><br></pre></td></tr></table></figure>
+
+
+
+<h1 id="GlobalTempViewManager"><a href="#GlobalTempViewManager" class="headerlink" title="GlobalTempViewManager"></a>GlobalTempViewManager</h1><p>TODO</p>
+<h1 id="ExperimentalMethods"><a href="#ExperimentalMethods" class="headerlink" title="ExperimentalMethods"></a>ExperimentalMethods</h1><p>可以用于定义自定义的优化规则和自定义的计划策略</p>
+<h1 id="ParserInterface"><a href="#ParserInterface" class="headerlink" title="ParserInterface"></a>ParserInterface</h1><p>TODO</p>
+<h1 id="QueryExecution"><a href="#QueryExecution" class="headerlink" title="QueryExecution"></a>QueryExecution</h1><p>该类描述了一个关系查询所涉及的主要工作流程。</p>
+<h1 id="NOTEs"><a href="#NOTEs" class="headerlink" title="NOTEs"></a>NOTEs</h1><p>本文以Spark 2.4.3为基础。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/09/11/spark/Spark-SQL-Catalyst-details/" rel="prev" title="Spark SQL：Catalyst优化引擎原理">
+      <i class="fa fa-chevron-left"></i> Spark SQL：Catalyst优化引擎原理
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2020/10/28/druid/Druid-Overview/" rel="next" title="Druid Overview">
+      Druid Overview <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+        </div>
+        
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">JT Li</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="Total Visitors">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="Total Views">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="//cdn.jsdelivr.net/npm/animejs@3.2.0/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      <script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      const script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3.0.5/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1.6.2/dist/gitalk.css">
+
+<script>
+NexT.utils.loadComments('#gitalk-container', () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1.6.2/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : 'c94aa78cf2eda71757bf',
+      clientSecret: '01e1353b3f8eac54aafb1224c784b7af0305ce8c',
+      repo        : 'jtLiBrain.github.io',
+      owner       : 'jtLiBrain',
+      admin       : ['jtLiBrain'],
+      id          : '4568bff48f007394c6af1f7bf249288b',
+        language: 'en',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+</body>
+</html>
