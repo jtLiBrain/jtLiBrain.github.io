@@ -31,7 +31,7 @@
 <meta property="og:description" content="(草稿)">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2021-03-14T04:57:05.000Z">
-<meta property="article:modified_time" content="2021-03-14T12:07:35.166Z">
+<meta property="article:modified_time" content="2021-03-14T14:56:10.651Z">
 <meta property="article:author" content="JT Li">
 <meta name="twitter:card" content="summary">
 
@@ -276,7 +276,7 @@
               <span class="post-meta-item-text">Posted on</span>
               
 
-              <time title="Created: 2021-03-14 12:57:05 / Modified: 20:07:35" itemprop="dateCreated datePublished" datetime="2021-03-14T12:57:05+08:00">2021-03-14</time>
+              <time title="Created: 2021-03-14 12:57:05 / Modified: 22:56:10" itemprop="dateCreated datePublished" datetime="2021-03-14T12:57:05+08:00">2021-03-14</time>
             </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -427,6 +427,36 @@
             <td></td>
         </tr>
         <tr>
+            <td>job.setPartitionerClass()</td>
+            <td>mapreduce.job.partitioner.class</td>
+            <td></td>
+            <td></td>
+            <td>Y</td>
+            <td>Y</td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>job.setSortComparatorClass()</td>
+            <td>mapreduce.job.output.key.comparator.class</td>
+            <td></td>
+            <td></td>
+            <td>Y</td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>job.setGroupingComparatorClass()</td>
+            <td>mapreduce.job.output.group.comparator.class</td>
+            <td></td>
+            <td></td>
+            <td>Y</td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr>
             <td>job.setReducerClass()</td>
             <td>mapreduce.job.reduce.class</td>
             <td></td>
@@ -448,7 +478,6 @@
         </tr>
     </tbody>
 </table>
-
 
 
 <p>注意：表1中设置的类型是运行时的数据类型；而表2中的设置的类型为编译时的类型，目的是编程时方便做编译检查。</p>
