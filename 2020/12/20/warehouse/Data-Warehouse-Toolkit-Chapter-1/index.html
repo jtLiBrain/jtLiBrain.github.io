@@ -30,16 +30,16 @@
 <meta property="og:site_name" content="jtLiBrain">
 <meta property="og:description" content="第一章，探讨了维度建模的核心概念以及介绍了Kimball DW&#x2F;BI架构的主要组件。">
 <meta property="og:locale" content="en_US">
-<meta property="og:image" content="https://jtlibrain.github.io/images/datawarehouse/1-1.svg">
-<meta property="og:image" content="https://jtlibrain.github.io/images/datawarehouse/1-4.png">
-<meta property="og:image" content="https://jtlibrain.github.io/images/datawarehouse/1-5.svg">
-<meta property="og:image" content="https://jtlibrain.github.io/images/datawarehouse/1-7.svg">
+<meta property="og:image" content="https://jtlibrain.github.io/images/warehouse/1-1.svg">
+<meta property="og:image" content="https://jtlibrain.github.io/images/warehouse/1-4.png">
+<meta property="og:image" content="https://jtlibrain.github.io/images/warehouse/1-5.svg">
+<meta property="og:image" content="https://jtlibrain.github.io/images/warehouse/1-7.svg">
 <meta property="article:published_time" content="2020-12-20T12:45:49.000Z">
-<meta property="article:modified_time" content="2020-12-20T13:49:37.623Z">
+<meta property="article:modified_time" content="2021-03-20T02:26:45.888Z">
 <meta property="article:author" content="JT Li">
 <meta property="article:tag" content="学习笔记">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://jtlibrain.github.io/images/datawarehouse/1-1.svg">
+<meta name="twitter:image" content="https://jtlibrain.github.io/images/warehouse/1-1.svg">
 
 <link rel="canonical" href="https://jtlibrain.github.io/2020/12/20/warehouse/Data-Warehouse-Toolkit-Chapter-1/">
 
@@ -202,7 +202,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">32</span>
+          <span class="site-state-item-count">33</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
@@ -215,7 +215,7 @@
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-count">5</span>
         <span class="site-state-item-name">tags</span></a>
       </div>
   </nav>
@@ -281,21 +281,27 @@
                 <i class="far fa-calendar"></i>
               </span>
               <span class="post-meta-item-text">Posted on</span>
-              
 
-              <time title="Created: 2020-12-20 20:45:49 / Modified: 21:49:37" itemprop="dateCreated datePublished" datetime="2020-12-20T20:45:49+08:00">2020-12-20</time>
+              <time title="Created: 2020-12-20 20:45:49" itemprop="dateCreated datePublished" datetime="2020-12-20T20:45:49+08:00">2020-12-20</time>
             </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2021-03-20 10:26:45" itemprop="dateModified" datetime="2021-03-20T10:26:45+08:00">2021-03-20</time>
+              </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
                 <i class="far fa-folder"></i>
               </span>
               <span class="post-meta-item-text">In</span>
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E6%95%B0%E6%8D%AE%E4%BB%93%E5%BA%93/" itemprop="url" rel="index"><span itemprop="name">数据仓库</span></a>
+                  <a href="/categories/data-warehouse/" itemprop="url" rel="index"><span itemprop="name">data warehouse</span></a>
                 </span>
                   , 
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E6%95%B0%E6%8D%AE%E4%BB%93%E5%BA%93/%E3%80%8AData-Warehouse-Toolkit%E3%80%8B/" itemprop="url" rel="index"><span itemprop="name">《Data Warehouse Toolkit》</span></a>
+                  <a href="/categories/data-warehouse/%E3%80%8AData-Warehouse-Toolkit%E3%80%8B/" itemprop="url" rel="index"><span itemprop="name">《Data Warehouse Toolkit》</span></a>
                 </span>
             </span>
 
@@ -328,7 +334,7 @@
 <p>标准的3NF结构在业务处理当中是极其有用的，因为更新或插入的事务只能在一处对数据库进行操作。然而，标准化的模型对于BI查询太过复杂了。</p>
 <p>注意：维度模型包含了与标准化模型一样的信息，但维度模型是以一种用户易理解、查询高效、以及能应对变化的格式对数据进行打包。</p>
 <h2 id="星形模型和OLAP立方体"><a href="#星形模型和OLAP立方体" class="headerlink" title="星形模型和OLAP立方体"></a>星形模型和OLAP立方体</h2><p>在关系型数据库管理系统中实现的维度模型被称为星形模型，在多维数据库环境中实现的维度模型被称为联机分析处理（OLAP）立方体。</p>
-<img src="/images/datawarehouse/1-1.svg" style="zoom:60%;" />
+<img src="/images/warehouse/1-1.svg" style="zoom:60%;" />
 
 
 
@@ -349,14 +355,14 @@
 <p>在对操作源数据进行分类的时候，有时一个数值型数据元素是事实还是维度属性有时是不明确的。通常，问一下该列是否具有很多值、并参与计算（这样的列是事实）或者是基本上稳定、参与约束和行标签的离散值描述（这样的列是纬度属性）就可以做出判断了。偶尔，你不能确定如何区分的时候，可以将该数据元素建模为任何一种形式（或者两种形式）。</p>
 <p>注意：一个数值型的量是事实还是维度属性不是一件特别难的决定。连续型数值差不多都是事实，小范围的离散型数值几乎都是维度属性。</p>
 <p>图1-4所显示的维度表表示了层级关系。例如，从产品上卷到品牌，然后再上卷到到类别。对与产品维度中的每一行，你应该存储相关联的品牌和类别的描述。基于易用和查询性能的层级描述信息在存储冗余的。不要急于通过在产品维度中只存储品牌的码值、创建单独的品牌查找表，同样对于类别描述也做成单独的类别查找表来规范化数据。这样的规范化称为<em>雪片化</em>。非3范式，维度表通常都是高度非规范化的，每个维度表中都是一个扁平的<code>多对一</code>的关系。因为维度表通常是几何级数的小于事实表，通过规范化或雪片化来提升存储效率实际上对于整体数据库的规模没有实质的影响。</p>
-<img src="/images/datawarehouse/1-4.png" style="zoom:70%;" />
+<img src="/images/warehouse/1-4.png" style="zoom:70%;" />
 
 
 
 <h2 id="星形模型中连接事实表和维度表"><a href="#星形模型中连接事实表和维度表" class="headerlink" title="星形模型中连接事实表和维度表"></a>星形模型中连接事实表和维度表</h2><p>每个业务过程都表示为维度模型。</p>
-<p><img src="/images/datawarehouse/1-5.svg"></p>
+<p><img src="/images/warehouse/1-5.svg"></p>
 <p>关于维度模型首先要注意到的是它的简单和对称。</p>
-<h1 id="Kimball的DW-BI架构"><a href="#Kimball的DW-BI架构" class="headerlink" title="Kimball的DW/BI架构"></a>Kimball的DW/BI架构</h1><img src="/images/datawarehouse/1-7.svg" style="zoom:70%;" />
+<h1 id="Kimball的DW-BI架构"><a href="#Kimball的DW-BI架构" class="headerlink" title="Kimball的DW/BI架构"></a>Kimball的DW/BI架构</h1><img src="/images/warehouse/1-7.svg" style="zoom:70%;" />
 
 
 

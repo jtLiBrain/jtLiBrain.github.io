@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.0.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.14.0/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css">
+
+<script class="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"jtlibrain.github.io","root":"/","scheme":"Gemini","version":"8.0.0-rc.5","exturl":false,"sidebar":{"position":"left","display":"hide","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false};
+  </script>
+
+  <meta name="description" content="缓慢变化维度是数仓中常见的问题，历史拉链表通过添加新的维度记录来追踪维度信息的变更历史。本文通过一个示例介绍如何在实际当中使用历史拉链表解决缓慢变化维度的问题。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="数据仓库实战系列：缓慢变化维度-历史拉链表">
+<meta property="og:url" content="https://jtlibrain.github.io/2021/03/20/warehouse/Data-Warehouse-SCD-His-Zipper/index.html">
+<meta property="og:site_name" content="jtLiBrain">
+<meta property="og:description" content="缓慢变化维度是数仓中常见的问题，历史拉链表通过添加新的维度记录来追踪维度信息的变更历史。本文通过一个示例介绍如何在实际当中使用历史拉链表解决缓慢变化维度的问题。">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://jtlibrain.github.io/images/warehouse/scd-type2-dwd-update.svg">
+<meta property="og:image" content="https://jtlibrain.github.io/images/warehouse/scd-type2-dimtable-snapshot.svg">
+<meta property="og:image" content="https://jtlibrain.github.io/images/warehouse/scd-type2-dwd-20210103.png">
+<meta property="og:image" content="https://jtlibrain.github.io/images/warehouse/scd-type2-dwd-20210104.png">
+<meta property="og:image" content="https://jtlibrain.github.io/images/warehouse/scd-type2-dwd-20210105.png">
+<meta property="og:image" content="https://jtlibrain.github.io/images/warehouse/scd-type2-dwd-usecase1.png">
+<meta property="og:image" content="https://jtlibrain.github.io/images/warehouse/scd-type2-dwd-usecase2.png">
+<meta property="article:published_time" content="2021-03-20T01:35:21.000Z">
+<meta property="article:modified_time" content="2021-03-20T06:45:06.629Z">
+<meta property="article:author" content="JT Li">
+<meta property="article:tag" content="数据仓库实战系列">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://jtlibrain.github.io/images/warehouse/scd-type2-dwd-update.svg">
+
+<link rel="canonical" href="https://jtlibrain.github.io/2021/03/20/warehouse/Data-Warehouse-SCD-His-Zipper/">
+
+
+<script class="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>数据仓库实战系列：缓慢变化维度-历史拉链表 | jtLiBrain</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  body { margin-top: 2rem; }
+
+  .use-motion .menu-item,
+  .use-motion .sidebar,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header {
+    visibility: visible;
+  }
+
+  .use-motion .header,
+  .use-motion .site-brand-container .toggle,
+  .use-motion .footer { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle,
+  .use-motion .custom-logo-image {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line {
+    transform: scaleX(1);
+  }
+
+  .search-pop-overlay, .sidebar-nav { display: none; }
+  .sidebar-panel { display: block; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <main class="main">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+        <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">jtLiBrain</h1>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">任何伟大的事都不会一蹴而就，三分智慧，七分韧性</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <section class="post-toc-wrap sidebar-panel">
+          <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%A6%82%E8%BF%B0"><span class="nav-number">1.</span> <span class="nav-text">概述</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%87%86%E5%A4%87%E5%B7%A5%E4%BD%9C"><span class="nav-number">2.</span> <span class="nav-text">准备工作</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%9A%E5%8A%A1%E7%B3%BB%E7%BB%9F"><span class="nav-number">2.1.</span> <span class="nav-text">业务系统</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%95%B0%E4%BB%93"><span class="nav-number">2.2.</span> <span class="nav-text">数仓</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B8%9A%E5%8A%A1%E7%B3%BB%E7%BB%9F%E6%89%A7%E8%A1%8C%E6%83%85%E5%86%B5"><span class="nav-number">3.</span> <span class="nav-text">业务系统执行情况</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%95%B0%E4%BB%93%E7%B3%BB%E7%BB%9F%E6%89%A7%E8%A1%8C%E6%83%85%E5%86%B5"><span class="nav-number">4.</span> <span class="nav-text">数仓系统执行情况</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#2021%E5%B9%B401%E6%9C%8803%E6%97%A5"><span class="nav-number">4.1.</span> <span class="nav-text">2021年01月03日</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%89%A7%E8%A1%8C"><span class="nav-number">4.1.1.</span> <span class="nav-text">执行</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BB%93%E6%9E%9C"><span class="nav-number">4.1.2.</span> <span class="nav-text">结果</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2021%E5%B9%B401%E6%9C%8804%E6%97%A5"><span class="nav-number">4.2.</span> <span class="nav-text">2021年01月04日</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%89%A7%E8%A1%8C-1"><span class="nav-number">4.2.1.</span> <span class="nav-text">执行</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BB%93%E6%9E%9C-1"><span class="nav-number">4.2.2.</span> <span class="nav-text">结果</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2021%E5%B9%B401%E6%9C%8805%E6%97%A5"><span class="nav-number">4.3.</span> <span class="nav-text">2021年01月05日</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%89%A7%E8%A1%8C-2"><span class="nav-number">4.3.1.</span> <span class="nav-text">执行</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BB%93%E6%9E%9C-2"><span class="nav-number">4.3.2.</span> <span class="nav-text">结果</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%9F%A5%E8%AF%A2%E6%8B%89%E9%93%BE%E8%A1%A8"><span class="nav-number">5.</span> <span class="nav-text">查询拉链表</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9F%A5%E8%AF%A2%E5%95%86%E5%93%81%E8%A1%A8%E6%9F%90%E4%B8%80%E5%A4%A9%E7%9A%84%E5%BF%AB%E7%85%A7"><span class="nav-number">5.1.</span> <span class="nav-text">查询商品表某一天的快照</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9F%A5%E8%AF%A2%E5%95%86%E5%93%81%E8%A1%A8%E6%9C%80%E6%96%B0%E7%9A%84%E5%BF%AB%E7%85%A7"><span class="nav-number">5.2.</span> <span class="nav-text">查询商品表最新的快照</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%99%84"><span class="nav-number">6.</span> <span class="nav-text">附</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%82%E8%80%83"><span class="nav-number">7.</span> <span class="nav-text">参考</span></a></li></ol></div>
+      </section>
+      <!--/noindex-->
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">JT Li</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">33</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">11</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="mailto:jtli.brain@hotmail.com" title="E-Mail → mailto:jtli.brain@hotmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </section>
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </header>
+
+      
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div id="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+      <div class="main-inner">
+        
+
+        <div class="content post posts-expand">
+          
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://jtlibrain.github.io/2021/03/20/warehouse/Data-Warehouse-SCD-His-Zipper/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="JT Li">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="jtLiBrain">
+    </span>
+
+    
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          数据仓库实战系列：缓慢变化维度-历史拉链表
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+              
+
+              <time title="Created: 2021-03-20 09:35:21 / Modified: 14:45:06" itemprop="dateCreated datePublished" datetime="2021-03-20T09:35:21+08:00">2021-03-20</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/data-warehouse/" itemprop="url" rel="index"><span itemprop="name">data warehouse</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="Views" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">Views: </span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p>缓慢变化维度是数仓中常见的问题，历史拉链表通过添加新的维度记录来追踪维度信息的变更历史。本文通过一个示例介绍如何在实际当中使用历史拉链表解决缓慢变化维度的问题。</p>
+<a id="more"></a>
+
+<h1 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h1><p>TODO</p>
+<h1 id="准备工作"><a href="#准备工作" class="headerlink" title="准备工作"></a>准备工作</h1><h2 id="业务系统"><a href="#业务系统" class="headerlink" title="业务系统"></a>业务系统</h2><p>MySQL中创建商品表<code>product</code>：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">create</span> <span class="keyword">table</span> <span class="keyword">if</span> <span class="keyword">not</span> <span class="keyword">exists</span> product(</span><br><span class="line">  product_id <span class="built_in">varchar</span>(<span class="number">100</span>),        <span class="comment">-- 商品编号</span></span><br><span class="line">  product_status <span class="built_in">varchar</span>(<span class="number">100</span>),    <span class="comment">-- 商品状态</span></span><br><span class="line">  created_time <span class="built_in">varchar</span>(<span class="number">100</span>),      <span class="comment">-- 商品创建时间</span></span><br><span class="line">  last_updated_time <span class="built_in">varchar</span>(<span class="number">100</span>), <span class="comment">-- 商品最后修改时间</span></span><br><span class="line">  primary <span class="keyword">key</span> (product_id)</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="数仓"><a href="#数仓" class="headerlink" title="数仓"></a>数仓</h2><p>Hive数仓中创建表<code>t_ods_product</code>和表 <code>t_dwd_product_his</code>：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">create</span> <span class="keyword">database</span> demo;</span><br><span class="line"></span><br><span class="line"><span class="keyword">create</span> <span class="keyword">table</span> <span class="keyword">if</span> <span class="keyword">not</span> <span class="keyword">exists</span> demo.t_ods_product(</span><br><span class="line">  product_id <span class="keyword">string</span>,        <span class="comment">-- 商品编号</span></span><br><span class="line">  product_status <span class="keyword">string</span>,    <span class="comment">-- 商品状态</span></span><br><span class="line">  created_time <span class="keyword">string</span>,      <span class="comment">-- 商品创建时间</span></span><br><span class="line">  last_updated_time <span class="keyword">string</span>  <span class="comment">-- 商品最后修改时间</span></span><br><span class="line">)</span><br><span class="line">partitioned <span class="keyword">by</span> (p_date <span class="keyword">string</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">create</span> <span class="keyword">table</span> <span class="keyword">if</span> <span class="keyword">not</span> <span class="keyword">exists</span> demo.t_dwd_product_his(</span><br><span class="line">  product_id <span class="keyword">string</span>,         <span class="comment">-- 商品编号</span></span><br><span class="line">  product_status <span class="keyword">string</span>,     <span class="comment">-- 商品状态</span></span><br><span class="line">  created_time <span class="keyword">string</span>,       <span class="comment">-- 商品创建时间</span></span><br><span class="line">  last_updated_time <span class="keyword">string</span>,  <span class="comment">-- 商品最后修改时间</span></span><br><span class="line">  row_effective_date <span class="keyword">string</span>, <span class="comment">-- 生效日期</span></span><br><span class="line">  row_expiration_date <span class="keyword">string</span> <span class="comment">-- 失效日期</span></span><br><span class="line">);</span><br></pre></td></tr></table></figure>
+
+<p>定义如下函数负责每日更新历史拉链表：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Spark&amp;Scala代码</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">insertOrUpdateDimHis</span></span>(day: <span class="type">String</span>): <span class="type">Unit</span> = &#123;</span><br><span class="line">  <span class="keyword">val</span> sql1 = <span class="string">&quot;DROP TABLE IF EXISTS demo.t_dwd_product_his_tmp&quot;</span></span><br><span class="line">  <span class="keyword">val</span> sql2 =</span><br><span class="line">    <span class="string">s&quot;&quot;</span><span class="string">&quot;</span></span><br><span class="line"><span class="string">       |CREATE TABLE demo.t_dwd_product_his_tmp AS</span></span><br><span class="line"><span class="string">       |SELECT</span></span><br><span class="line"><span class="string">       |    product_id, product_status, created_time, last_updated_time,</span></span><br><span class="line"><span class="string">       |    row_effective_date, row_expiration_date</span></span><br><span class="line"><span class="string">       |FROM (</span></span><br><span class="line"><span class="string">       |    SELECT</span></span><br><span class="line"><span class="string">       |        dwd.product_id, dwd.product_status, dwd.created_time, dwd.last_updated_time,</span></span><br><span class="line"><span class="string">       |        dwd.row_effective_date,</span></span><br><span class="line"><span class="string">       |        CASE</span></span><br><span class="line"><span class="string">       |            WHEN ods.product_id IS NOT NULL AND dwd.row_expiration_date &gt; &#x27;$day&#x27; THEN &#x27;$day&#x27;</span></span><br><span class="line"><span class="string">       |            ELSE dwd.row_expiration_date</span></span><br><span class="line"><span class="string">       |        END AS row_expiration_date</span></span><br><span class="line"><span class="string">       |    FROM demo.t_dwd_product_his dwd</span></span><br><span class="line"><span class="string">       |        LEFT JOIN (</span></span><br><span class="line"><span class="string">       |            SELECT * FROM demo.t_ods_product WHERE p_date = &#x27;$day&#x27;</span></span><br><span class="line"><span class="string">       |        ) ods ON (dwd.product_id = ods.product_id)</span></span><br><span class="line"><span class="string">       |    UNION ALL</span></span><br><span class="line"><span class="string">       |    SELECT</span></span><br><span class="line"><span class="string">       |        product_id, product_status, created_time, last_updated_time,</span></span><br><span class="line"><span class="string">       |        last_updated_time AS row_effective_date,</span></span><br><span class="line"><span class="string">       |        &#x27;9999-12-31&#x27; AS row_expiration_date</span></span><br><span class="line"><span class="string">       |    FROM demo.t_ods_product</span></span><br><span class="line"><span class="string">       |    WHERE p_date = &#x27;$day&#x27;</span></span><br><span class="line"><span class="string">       |) t</span></span><br><span class="line"><span class="string">       |ORDER BY product_id,row_effective_date</span></span><br><span class="line"><span class="string">       |&quot;</span><span class="string">&quot;&quot;</span>.stripMargin</span><br><span class="line">  println(sql2)</span><br><span class="line"></span><br><span class="line">  <span class="keyword">val</span> sql3 = <span class="string">&quot;INSERT OVERWRITE TABLE demo.t_dwd_product_his SELECT * FROM demo.t_dwd_product_his_tmp&quot;</span></span><br><span class="line"></span><br><span class="line">  spark.sql(sql1)</span><br><span class="line">  spark.sql(sql2)</span><br><span class="line">  spark.sql(sql3)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>以上<code>insertOrUpdateDimHis()</code>逻辑如下图所示，其中：</p>
+<ul>
+<li>A部分为历史拉链表中<code>product_id</code>不存在于当日快照数据的记录，对于这部分记录保留拉链表中的<code>row_expiration_date</code>值；</li>
+<li>B部分为历史拉链表中<code>product_id</code>存在于当日快照数据的记录，说明这部分记录的<code>product_id</code>所对应商品信息在当前日期发生了更改，需要将历史拉链表中这部分记录更新其<code>row_expiration_date</code>值为当前日期（注意，数据有效期限为<font color="red">[row_effective_date, row_expiration_date)</font>）；</li>
+<li>C部分为历史拉链表中不存在的<code>product_id</code>，其<code>row_effective_date</code>为对应的<code>last_updated_time</code>，<code>row_expiration_date</code>为<code>9999-12-31</code>；</li>
+<li>将上述A、B、C的更新结果进行合并形成最终的拉链表；</li>
+</ul>
+<p><img src="/images/warehouse/scd-type2-dwd-update.svg"></p>
+<h1 id="业务系统执行情况"><a href="#业务系统执行情况" class="headerlink" title="业务系统执行情况"></a>业务系统执行情况</h1><p>下图为业务系统商品表<code>product</code>在2021年01月02日、2021年01月03日、2021年01月04日三天的快照记录。（具体实验数据参考<a href="#%E9%99%84"><strong>附</strong></a>）</p>
+<p><img src="/images/warehouse/scd-type2-dimtable-snapshot.svg"></p>
+<h1 id="数仓系统执行情况"><a href="#数仓系统执行情况" class="headerlink" title="数仓系统执行情况"></a>数仓系统执行情况</h1><h2 id="2021年01月03日"><a href="#2021年01月03日" class="headerlink" title="2021年01月03日"></a>2021年01月03日</h2><h3 id="执行"><a href="#执行" class="headerlink" title="执行"></a>执行</h3><p>将2021年01月02日新创建或更新过的商品从业务关系型数据库加载到<code>t_ods_product</code>表中<code>p_date=&#39;2021-01-02&#39;</code>的分区中：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- HIVE SQL</span></span><br><span class="line"><span class="keyword">insert</span> overwrite <span class="keyword">table</span> demo.t_ods_product <span class="keyword">partition</span> (p_date=<span class="string">&#x27;2021-01-02&#x27;</span>)</span><br><span class="line"><span class="keyword">select</span> * <span class="keyword">from</span> dimProduct20210102 <span class="keyword">where</span> created_time = <span class="string">&#x27;2021-01-02&#x27;</span> <span class="keyword">or</span> last_updated_time = <span class="string">&#x27;2021-01-02&#x27;</span>;</span><br></pre></td></tr></table></figure>
+
+<p>刷新历史拉链表：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Spark&amp;Scala代码</span></span><br><span class="line">insertOrUpdateDimHis(<span class="string">&quot;2021-01-02&quot;</span>)</span><br></pre></td></tr></table></figure>
+
+<h3 id="结果"><a href="#结果" class="headerlink" title="结果"></a>结果</h3><p><img src="/images/warehouse/scd-type2-dwd-20210103.png"></p>
+<h2 id="2021年01月04日"><a href="#2021年01月04日" class="headerlink" title="2021年01月04日"></a>2021年01月04日</h2><h3 id="执行-1"><a href="#执行-1" class="headerlink" title="执行"></a>执行</h3><p>将2021年01月03日新创建或更新过的商品从业务关系型数据库加载到<code>t_ods_product</code>表中<code>p_date=&#39;2021-01-03&#39;</code>的分区中：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- HIVE SQL</span></span><br><span class="line"><span class="keyword">insert</span> overwrite <span class="keyword">table</span> demo.t_ods_product <span class="keyword">partition</span> (p_date=<span class="string">&#x27;2021-01-03&#x27;</span>)</span><br><span class="line"><span class="keyword">select</span> * <span class="keyword">from</span> dimProduct20210103 <span class="keyword">where</span> created_time = <span class="string">&#x27;2021-01-03&#x27;</span> <span class="keyword">or</span> last_updated_time = <span class="string">&#x27;2021-01-03&#x27;</span>;</span><br></pre></td></tr></table></figure>
+
+<p>刷新历史拉链表：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Spark&amp;Scala代码</span></span><br><span class="line">insertOrUpdateDimHis(<span class="string">&quot;2021-01-03&quot;</span>)</span><br></pre></td></tr></table></figure>
+
+<h3 id="结果-1"><a href="#结果-1" class="headerlink" title="结果"></a>结果</h3><p><img src="/images/warehouse/scd-type2-dwd-20210104.png"></p>
+<h2 id="2021年01月05日"><a href="#2021年01月05日" class="headerlink" title="2021年01月05日"></a>2021年01月05日</h2><h3 id="执行-2"><a href="#执行-2" class="headerlink" title="执行"></a>执行</h3><p>将2021年01月03日新创建或更新过的商品从业务关系型数据库加载到<code>t_ods_product</code>表中<code>p_date=&#39;2021-01-03&#39;</code>的分区中：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- HIVE SQL</span></span><br><span class="line"><span class="keyword">insert</span> overwrite <span class="keyword">table</span> demo.t_ods_product <span class="keyword">partition</span> (p_date=<span class="string">&#x27;2021-01-04&#x27;</span>)</span><br><span class="line"><span class="keyword">select</span> * <span class="keyword">from</span> dimProduct20210104 <span class="keyword">where</span> created_time = <span class="string">&#x27;2021-01-04&#x27;</span> <span class="keyword">or</span> last_updated_time = <span class="string">&#x27;2021-01-04&#x27;</span>;</span><br></pre></td></tr></table></figure>
+
+<p>刷新历史拉链表：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Spark&amp;Scala代码</span></span><br><span class="line">insertOrUpdateDimHis(<span class="string">&quot;2021-01-04&quot;</span>)</span><br></pre></td></tr></table></figure>
+
+<h3 id="结果-2"><a href="#结果-2" class="headerlink" title="结果"></a>结果</h3><p><img src="/images/warehouse/scd-type2-dwd-20210105.png"></p>
+<h1 id="查询拉链表"><a href="#查询拉链表" class="headerlink" title="查询拉链表"></a>查询拉链表</h1><h2 id="查询商品表某一天的快照"><a href="#查询商品表某一天的快照" class="headerlink" title="查询商品表某一天的快照"></a>查询商品表某一天的快照</h2><p><img src="/images/warehouse/scd-type2-dwd-usecase1.png"></p>
+<h2 id="查询商品表最新的快照"><a href="#查询商品表最新的快照" class="headerlink" title="查询商品表最新的快照"></a>查询商品表最新的快照</h2><p><img src="/images/warehouse/scd-type2-dwd-usecase2.png"></p>
+<h1 id="附"><a href="#附" class="headerlink" title="附"></a>附</h1><ol>
+<li><a href="/assets/warehouse/product-2021-01-02.csv">2021年01月02日产品表快照</a></li>
+<li><a href="/assets/warehouse/product-2021-01-03.csv">2021年01月03日产品表快照</a></li>
+<li><a href="/assets/warehouse/product-2021-01-04.csv">2021年01月04日产品表快照</a></li>
+</ol>
+<h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><ol>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_44509920/article/details/106044647">https://blog.csdn.net/qq_44509920/article/details/106044647</a></li>
+<li>《Data Warehouse Toolkit》第5章第3节</li>
+</ol>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E6%95%B0%E6%8D%AE%E4%BB%93%E5%BA%93%E5%AE%9E%E6%88%98%E7%B3%BB%E5%88%97/" rel="tag"><i class="fa fa-tag"></i> 数据仓库实战系列</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/03/15/scala/Scala-Collections/" rel="prev" title="Scala学习系列1：集合概述">
+      <i class="fa fa-chevron-left"></i> Scala学习系列1：集合概述
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+        </div>
+        
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">JT Li</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="Total Visitors">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="Total Views">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="//cdn.jsdelivr.net/npm/animejs@3.2.0/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1.6.2/dist/gitalk.css">
+
+<script>
+NexT.utils.loadComments('#gitalk-container', () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1.6.2/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : 'c94aa78cf2eda71757bf',
+      clientSecret: '01e1353b3f8eac54aafb1224c784b7af0305ce8c',
+      repo        : 'jtLiBrain.github.io',
+      owner       : 'jtLiBrain',
+      admin       : ['jtLiBrain'],
+      id          : 'fbd522816a0399597035420989a8bf7b',
+        language: 'en',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+</body>
+</html>
