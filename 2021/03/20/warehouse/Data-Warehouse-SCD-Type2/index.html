@@ -23,12 +23,12 @@
     var CONFIG = {"hostname":"jtlibrain.github.io","root":"/","scheme":"Gemini","version":"8.0.0-rc.5","exturl":false,"sidebar":{"position":"left","display":"hide","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false};
   </script>
 
-  <meta name="description" content="缓慢变化维度是数仓中常见的问题，历史拉链表通过添加新的维度记录来追踪维度信息的变更历史。本文通过一个示例介绍如何在实际当中使用历史拉链表解决缓慢变化维度的问题。">
+  <meta name="description" content="缓慢变化维度是数仓中常见的问题，Type2类型的维度是处理数仓中追踪缓慢变化维度属性值最为强悍的技术手段。Type2通过添加新的维度记录来追踪维度信息的变更历史。本文通过一个示例介绍如何在实际当中使用历史拉链维度表解决缓慢变化维度的问题。">
 <meta property="og:type" content="article">
-<meta property="og:title" content="数据仓库实战系列：缓慢变化维度-历史拉链表">
-<meta property="og:url" content="https://jtlibrain.github.io/2021/03/20/warehouse/Data-Warehouse-SCD-His-Zipper/index.html">
+<meta property="og:title" content="数仓实战系列：缓慢变化维度-Type2（历史拉链维度表）">
+<meta property="og:url" content="https://jtlibrain.github.io/2021/03/20/warehouse/Data-Warehouse-SCD-Type2/index.html">
 <meta property="og:site_name" content="jtLiBrain">
-<meta property="og:description" content="缓慢变化维度是数仓中常见的问题，历史拉链表通过添加新的维度记录来追踪维度信息的变更历史。本文通过一个示例介绍如何在实际当中使用历史拉链表解决缓慢变化维度的问题。">
+<meta property="og:description" content="缓慢变化维度是数仓中常见的问题，Type2类型的维度是处理数仓中追踪缓慢变化维度属性值最为强悍的技术手段。Type2通过添加新的维度记录来追踪维度信息的变更历史。本文通过一个示例介绍如何在实际当中使用历史拉链维度表解决缓慢变化维度的问题。">
 <meta property="og:locale" content="en_US">
 <meta property="og:image" content="https://jtlibrain.github.io/images/warehouse/scd-type2-dwd-update.svg">
 <meta property="og:image" content="https://jtlibrain.github.io/images/warehouse/scd-type2-dimtable-snapshot.svg">
@@ -38,13 +38,13 @@
 <meta property="og:image" content="https://jtlibrain.github.io/images/warehouse/scd-type2-dwd-usecase1.png">
 <meta property="og:image" content="https://jtlibrain.github.io/images/warehouse/scd-type2-dwd-usecase2.png">
 <meta property="article:published_time" content="2021-03-20T01:35:21.000Z">
-<meta property="article:modified_time" content="2021-03-20T10:50:38.862Z">
+<meta property="article:modified_time" content="2021-03-20T14:01:07.951Z">
 <meta property="article:author" content="JT Li">
-<meta property="article:tag" content="数据仓库实战系列">
+<meta property="article:tag" content="数仓实战系列">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="https://jtlibrain.github.io/images/warehouse/scd-type2-dwd-update.svg">
 
-<link rel="canonical" href="https://jtlibrain.github.io/2021/03/20/warehouse/Data-Warehouse-SCD-His-Zipper/">
+<link rel="canonical" href="https://jtlibrain.github.io/2021/03/20/warehouse/Data-Warehouse-SCD-Type2/">
 
 
 <script class="page-configurations">
@@ -57,7 +57,7 @@
   };
 </script>
 
-  <title>数据仓库实战系列：缓慢变化维度-历史拉链表 | jtLiBrain</title>
+  <title>数仓实战系列：缓慢变化维度-Type2（历史拉链维度表） | jtLiBrain</title>
   
 
 
@@ -191,7 +191,7 @@
 
       <!--noindex-->
       <section class="post-toc-wrap sidebar-panel">
-          <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%A6%82%E8%BF%B0"><span class="nav-number">1.</span> <span class="nav-text">概述</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%87%86%E5%A4%87%E5%B7%A5%E4%BD%9C"><span class="nav-number">2.</span> <span class="nav-text">准备工作</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%9A%E5%8A%A1%E7%B3%BB%E7%BB%9F"><span class="nav-number">2.1.</span> <span class="nav-text">业务系统</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%95%B0%E4%BB%93"><span class="nav-number">2.2.</span> <span class="nav-text">数仓</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B8%9A%E5%8A%A1%E7%B3%BB%E7%BB%9F%E6%89%A7%E8%A1%8C%E6%83%85%E5%86%B5"><span class="nav-number">3.</span> <span class="nav-text">业务系统执行情况</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%95%B0%E4%BB%93%E7%B3%BB%E7%BB%9F%E6%89%A7%E8%A1%8C%E6%83%85%E5%86%B5"><span class="nav-number">4.</span> <span class="nav-text">数仓系统执行情况</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#2021%E5%B9%B401%E6%9C%8803%E6%97%A5"><span class="nav-number">4.1.</span> <span class="nav-text">2021年01月03日</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%89%A7%E8%A1%8C"><span class="nav-number">4.1.1.</span> <span class="nav-text">执行</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BB%93%E6%9E%9C"><span class="nav-number">4.1.2.</span> <span class="nav-text">结果</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2021%E5%B9%B401%E6%9C%8804%E6%97%A5"><span class="nav-number">4.2.</span> <span class="nav-text">2021年01月04日</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%89%A7%E8%A1%8C-1"><span class="nav-number">4.2.1.</span> <span class="nav-text">执行</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BB%93%E6%9E%9C-1"><span class="nav-number">4.2.2.</span> <span class="nav-text">结果</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2021%E5%B9%B401%E6%9C%8805%E6%97%A5"><span class="nav-number">4.3.</span> <span class="nav-text">2021年01月05日</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%89%A7%E8%A1%8C-2"><span class="nav-number">4.3.1.</span> <span class="nav-text">执行</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BB%93%E6%9E%9C-2"><span class="nav-number">4.3.2.</span> <span class="nav-text">结果</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%9F%A5%E8%AF%A2%E6%8B%89%E9%93%BE%E8%A1%A8"><span class="nav-number">5.</span> <span class="nav-text">查询拉链表</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9F%A5%E8%AF%A2%E5%95%86%E5%93%81%E8%A1%A8%E6%9F%90%E4%B8%80%E5%A4%A9%E7%9A%84%E5%BF%AB%E7%85%A7"><span class="nav-number">5.1.</span> <span class="nav-text">查询商品表某一天的快照</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9F%A5%E8%AF%A2%E5%95%86%E5%93%81%E8%A1%A8%E6%9C%80%E6%96%B0%E7%9A%84%E5%BF%AB%E7%85%A7"><span class="nav-number">5.2.</span> <span class="nav-text">查询商品表最新的快照</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%99%84"><span class="nav-number">6.</span> <span class="nav-text">附</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%82%E8%80%83"><span class="nav-number">7.</span> <span class="nav-text">参考</span></a></li></ol></div>
+          <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%A6%82%E8%BF%B0"><span class="nav-number">1.</span> <span class="nav-text">概述</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%8B%89%E9%93%BE%E7%BB%B4%E5%BA%A6%E8%A1%A8%E4%B8%AD%E5%88%97"><span class="nav-number">1.1.</span> <span class="nav-text">拉链维度表中列</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9C%89%E6%95%88%E6%97%A5%E6%9C%9F"><span class="nav-number">1.1.1.</span> <span class="nav-text">有效日期</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%BF%87%E6%9C%9F%E6%97%A5%E6%9C%9F"><span class="nav-number">1.1.2.</span> <span class="nav-text">过期日期</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%A3%E7%90%86%E9%94%AE"><span class="nav-number">1.1.3.</span> <span class="nav-text">代理键</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%87%86%E5%A4%87%E5%B7%A5%E4%BD%9C"><span class="nav-number">2.</span> <span class="nav-text">准备工作</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%9A%E5%8A%A1%E7%B3%BB%E7%BB%9F"><span class="nav-number">2.1.</span> <span class="nav-text">业务系统</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%95%B0%E4%BB%93"><span class="nav-number">2.2.</span> <span class="nav-text">数仓</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B8%9A%E5%8A%A1%E7%B3%BB%E7%BB%9F%E6%89%A7%E8%A1%8C%E6%83%85%E5%86%B5"><span class="nav-number">3.</span> <span class="nav-text">业务系统执行情况</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%95%B0%E4%BB%93%E7%B3%BB%E7%BB%9F%E6%89%A7%E8%A1%8C%E6%83%85%E5%86%B5"><span class="nav-number">4.</span> <span class="nav-text">数仓系统执行情况</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#2021%E5%B9%B401%E6%9C%8803%E6%97%A5"><span class="nav-number">4.1.</span> <span class="nav-text">2021年01月03日</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%89%A7%E8%A1%8C"><span class="nav-number">4.1.1.</span> <span class="nav-text">执行</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BB%93%E6%9E%9C"><span class="nav-number">4.1.2.</span> <span class="nav-text">结果</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2021%E5%B9%B401%E6%9C%8804%E6%97%A5"><span class="nav-number">4.2.</span> <span class="nav-text">2021年01月04日</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%89%A7%E8%A1%8C-1"><span class="nav-number">4.2.1.</span> <span class="nav-text">执行</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BB%93%E6%9E%9C-1"><span class="nav-number">4.2.2.</span> <span class="nav-text">结果</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2021%E5%B9%B401%E6%9C%8805%E6%97%A5"><span class="nav-number">4.3.</span> <span class="nav-text">2021年01月05日</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%89%A7%E8%A1%8C-2"><span class="nav-number">4.3.1.</span> <span class="nav-text">执行</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BB%93%E6%9E%9C-2"><span class="nav-number">4.3.2.</span> <span class="nav-text">结果</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%9F%A5%E8%AF%A2%E6%8B%89%E9%93%BE%E8%A1%A8"><span class="nav-number">5.</span> <span class="nav-text">查询拉链表</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9F%A5%E8%AF%A2%E5%95%86%E5%93%81%E8%A1%A8%E6%9F%90%E4%B8%80%E5%A4%A9%E7%9A%84%E5%BF%AB%E7%85%A7"><span class="nav-number">5.1.</span> <span class="nav-text">查询商品表某一天的快照</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9F%A5%E8%AF%A2%E5%95%86%E5%93%81%E8%A1%A8%E6%9C%80%E6%96%B0%E7%9A%84%E5%BF%AB%E7%85%A7"><span class="nav-number">5.2.</span> <span class="nav-text">查询商品表最新的快照</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%81%97%E7%95%99%E9%97%AE%E9%A2%98"><span class="nav-number">6.</span> <span class="nav-text">遗留问题</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%99%84"><span class="nav-number">7.</span> <span class="nav-text">附</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%82%E8%80%83"><span class="nav-number">8.</span> <span class="nav-text">参考</span></a></li></ol></div>
       </section>
       <!--/noindex-->
 
@@ -260,7 +260,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="https://jtlibrain.github.io/2021/03/20/warehouse/Data-Warehouse-SCD-His-Zipper/">
+    <link itemprop="mainEntityOfPage" href="https://jtlibrain.github.io/2021/03/20/warehouse/Data-Warehouse-SCD-Type2/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -275,7 +275,7 @@
     
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          数据仓库实战系列：缓慢变化维度-历史拉链表
+          数仓实战系列：缓慢变化维度-Type2（历史拉链维度表）
         </h1>
 
         <div class="post-meta">
@@ -286,7 +286,7 @@
               <span class="post-meta-item-text">Posted on</span>
               
 
-              <time title="Created: 2021-03-20 09:35:21 / Modified: 18:50:38" itemprop="dateCreated datePublished" datetime="2021-03-20T09:35:21+08:00">2021-03-20</time>
+              <time title="Created: 2021-03-20 09:35:21 / Modified: 22:01:07" itemprop="dateCreated datePublished" datetime="2021-03-20T09:35:21+08:00">2021-03-20</time>
             </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -314,10 +314,16 @@
     
     
     <div class="post-body" itemprop="articleBody">
-        <p>缓慢变化维度是数仓中常见的问题，历史拉链表通过添加新的维度记录来追踪维度信息的变更历史。本文通过一个示例介绍如何在实际当中使用历史拉链表解决缓慢变化维度的问题。</p>
+        <p>缓慢变化维度是数仓中常见的问题，Type2类型的维度是处理数仓中追踪缓慢变化维度属性值最为强悍的技术手段。Type2通过添加新的维度记录来追踪维度信息的变更历史。本文通过一个示例介绍如何在实际当中使用历史拉链维度表解决缓慢变化维度的问题。</p>
 <a id="more"></a>
 
 <h1 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h1><p>TODO</p>
+<h2 id="拉链维度表中列"><a href="#拉链维度表中列" class="headerlink" title="拉链维度表中列"></a>拉链维度表中列</h2><h3 id="有效日期"><a href="#有效日期" class="headerlink" title="有效日期"></a>有效日期</h3><p>TODO</p>
+<h3 id="过期日期"><a href="#过期日期" class="headerlink" title="过期日期"></a>过期日期</h3><p>参看《Data Warehouse Toolkit》第5章第3节【Type2: Add New Attribute】。</p>
+<h3 id="代理键"><a href="#代理键" class="headerlink" title="代理键"></a>代理键</h3><blockquote>
+<p>The type 2 response to slowly changing dimensions requires the use of surrogate keys, but you’re already using them anyhow, right? You certainly can’t use the operational natural key because there are multiple profile versions for the same natural key. It is not suicient to use the natural key with two or three version digits because you’d be vulnerable to the entire list of potential operational issues discussed in Chapter 3. Likewise, it is inadvisable to append an efective date to the otherwise primary key of the dimension table to uniquely identify each version. With the type 2 response, you create a new dimension row with a new single-column primary key to uniquely identify the new product profile. This single-column primary key establishes the linkage between the fact and dimension tables for a given set of product characteristics. There’s no need to create a confusing secondary join based on the dimension row’s efective or expiration dates.</p>
+<p>We recognize some of you may be concerned about the administration of surrogate keys to support type 2 changes. In Chapter 19: ETL Subsystems and Techniques and Chapter 20: ETL System Design and Development Process and Tasks, we’ll discuss a workflow for managing surrogate keys and accommodating type 2 changes in more detail.</p>
+</blockquote>
 <h1 id="准备工作"><a href="#准备工作" class="headerlink" title="准备工作"></a>准备工作</h1><h2 id="业务系统"><a href="#业务系统" class="headerlink" title="业务系统"></a>业务系统</h2><p>MySQL中创建商品表<code>product</code>：</p>
 <figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">create</span> <span class="keyword">table</span> <span class="keyword">if</span> <span class="keyword">not</span> <span class="keyword">exists</span> product(</span><br><span class="line">  product_id <span class="built_in">varchar</span>(<span class="number">100</span>),        <span class="comment">-- 商品编号</span></span><br><span class="line">  product_status <span class="built_in">varchar</span>(<span class="number">100</span>),    <span class="comment">-- 商品状态</span></span><br><span class="line">  created_time <span class="built_in">varchar</span>(<span class="number">100</span>),      <span class="comment">-- 商品创建时间</span></span><br><span class="line">  last_updated_time <span class="built_in">varchar</span>(<span class="number">100</span>), <span class="comment">-- 商品最后修改时间</span></span><br><span class="line">  primary <span class="keyword">key</span> (product_id)</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
 
@@ -333,8 +339,8 @@
 <ul>
 <li>A部分为历史拉链表中<code>product_id</code>不存在于当日快照数据的记录，对于这部分记录保留拉链表中的<code>row_expiration_date</code>值；</li>
 <li>B部分为历史拉链表中<code>product_id</code>存在于当日快照数据的记录，说明这部分记录的<code>product_id</code>所对应商品信息在当前日期发生了更改，需要将历史拉链表中这部分记录更新其<code>row_expiration_date</code>值为当前日期（注意，数据有效期限为<font color="red">[row_effective_date, row_expiration_date)</font>）；</li>
-<li>C部分为历史拉链表中不存在的<code>product_id</code>，其<code>row_effective_date</code>为对应的<code>last_updated_time</code>，<code>row_expiration_date</code>为<code>9999-12-31</code>；</li>
-<li>将上述A、B、C的更新结果进行合并形成最终的拉链表；</li>
+<li>当日快照中的数据为最新状态维度信息，记录的<code>row_effective_date</code>为对应的<code>last_updated_time</code>，<code>row_expiration_date</code>为<code>9999-12-31</code>；</li>
+<li>将上述A、B更新后结果、以及当日快照数据进行合并形成最终的拉链表；</li>
 </ul>
 <p><img src="/images/warehouse/scd-type2-dwd-update.svg"></p>
 <h1 id="业务系统执行情况"><a href="#业务系统执行情况" class="headerlink" title="业务系统执行情况"></a>业务系统执行情况</h1><p>下图为业务系统商品表<code>product</code>在2021年01月02日、2021年01月03日、2021年01月04日三天的快照记录。（具体实验数据参考<a href="#%E9%99%84"><strong>附</strong></a>）</p>
@@ -362,6 +368,7 @@
 <h3 id="结果-2"><a href="#结果-2" class="headerlink" title="结果"></a>结果</h3><p><img src="/images/warehouse/scd-type2-dwd-20210105.png"></p>
 <h1 id="查询拉链表"><a href="#查询拉链表" class="headerlink" title="查询拉链表"></a>查询拉链表</h1><h2 id="查询商品表某一天的快照"><a href="#查询商品表某一天的快照" class="headerlink" title="查询商品表某一天的快照"></a>查询商品表某一天的快照</h2><p><img src="/images/warehouse/scd-type2-dwd-usecase1.png"></p>
 <h2 id="查询商品表最新的快照"><a href="#查询商品表最新的快照" class="headerlink" title="查询商品表最新的快照"></a>查询商品表最新的快照</h2><p><img src="/images/warehouse/scd-type2-dwd-usecase2.png"></p>
+<h1 id="遗留问题"><a href="#遗留问题" class="headerlink" title="遗留问题"></a>遗留问题</h1><p>该示例拉链表中<code>product_id</code>是业务系统中<code>product</code>表的自然主键，并没有设计拉链表代理键的逻辑，后续会继续完善该篇。</p>
 <h1 id="附"><a href="#附" class="headerlink" title="附"></a>附</h1><ol>
 <li><a href="/assets/warehouse/product-2021-01-02.csv">2021年01月02日产品表快照</a></li>
 <li><a href="/assets/warehouse/product-2021-01-03.csv">2021年01月03日产品表快照</a></li>
@@ -369,6 +376,7 @@
 <li><a target="_blank" rel="noopener" href="https://databricks-prod-cloudfront.cloud.databricks.com/public/4027ec902e239c93eaaa8714f173bcfc/643418873586401/157892832685541/1817847275691493/latest.html">示例代码</a></li>
 </ol>
 <h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><ol>
+<li><a target="_blank" rel="noopener" href="https://www.pianshen.com/article/97501801493/">https://www.pianshen.com/article/97501801493/</a></li>
 <li><a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_44509920/article/details/106044647">https://blog.csdn.net/qq_44509920/article/details/106044647</a></li>
 <li><a target="_blank" rel="noopener" href="http://lxw1234.com/archives/2015/04/20.htm">http://lxw1234.com/archives/2015/04/20.htm</a></li>
 <li>《Data Warehouse Toolkit》第5章第3节</li>
@@ -382,7 +390,7 @@
 
       <footer class="post-footer">
           <div class="post-tags">
-              <a href="/tags/%E6%95%B0%E6%8D%AE%E4%BB%93%E5%BA%93%E5%AE%9E%E6%88%98%E7%B3%BB%E5%88%97/" rel="tag"><i class="fa fa-tag"></i> 数据仓库实战系列</a>
+              <a href="/tags/%E6%95%B0%E4%BB%93%E5%AE%9E%E6%88%98%E7%B3%BB%E5%88%97/" rel="tag"><i class="fa fa-tag"></i> 数仓实战系列</a>
           </div>
 
         
@@ -531,7 +539,7 @@ NexT.utils.loadComments('#gitalk-container', () => {
       repo        : 'jtLiBrain.github.io',
       owner       : 'jtLiBrain',
       admin       : ['jtLiBrain'],
-      id          : 'fbd522816a0399597035420989a8bf7b',
+      id          : '54e04d44aa6d4b470e4f0d3584a99d0f',
         language: 'en',
       distractionFreeMode: true
     });
