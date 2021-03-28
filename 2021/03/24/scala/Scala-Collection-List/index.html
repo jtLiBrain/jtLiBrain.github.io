@@ -23,12 +23,12 @@
     var CONFIG = {"hostname":"jtlibrain.github.io","root":"/","scheme":"Gemini","version":"8.0.0-rc.5","exturl":false,"sidebar":{"position":"left","display":"hide","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false};
   </script>
 
-  <meta name="description" content="List是我们使用最为广泛集合类型，用好List在一定程序度来讲就用好了Scala一半的集合类型，本篇我们从原理、使用和性能的角度来详细介绍如何用好Scala中的List。">
+  <meta name="description" content="List是我们使用最为广泛集合类型，用好List在一定程序度来讲是进入Scala集合世界的第一步，本篇我们从原理、使用和性能的角度来详细介绍如何用好Scala中的List。">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Scala学习系列-集合2：用好List">
 <meta property="og:url" content="https://jtlibrain.github.io/2021/03/24/scala/Scala-Collection-List/index.html">
 <meta property="og:site_name" content="jtLiBrain">
-<meta property="og:description" content="List是我们使用最为广泛集合类型，用好List在一定程序度来讲就用好了Scala一半的集合类型，本篇我们从原理、使用和性能的角度来详细介绍如何用好Scala中的List。">
+<meta property="og:description" content="List是我们使用最为广泛集合类型，用好List在一定程序度来讲是进入Scala集合世界的第一步，本篇我们从原理、使用和性能的角度来详细介绍如何用好Scala中的List。">
 <meta property="og:locale" content="en_US">
 <meta property="og:image" content="https://jtlibrain.github.io/images/scala/collection-list-structure.svg">
 <meta property="og:image" content="https://jtlibrain.github.io/images/scala/collection-list-classes.svg">
@@ -38,7 +38,7 @@
 <meta property="og:image" content="https://jtlibrain.github.io/images/scala/collection-list-reduce.svg">
 <meta property="og:image" content="https://jtlibrain.github.io/images/scala/collection-list-scan.svg">
 <meta property="article:published_time" content="2021-03-24T14:41:54.000Z">
-<meta property="article:modified_time" content="2021-03-28T10:43:12.489Z">
+<meta property="article:modified_time" content="2021-03-28T13:48:56.836Z">
 <meta property="article:author" content="JT Li">
 <meta property="article:tag" content="Scala学习系列">
 <meta name="twitter:card" content="summary">
@@ -205,7 +205,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">34</span>
+          <span class="site-state-item-count">35</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
@@ -292,7 +292,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2021-03-28 18:43:12" itemprop="dateModified" datetime="2021-03-28T18:43:12+08:00">2021-03-28</time>
+                <time title="Modified: 2021-03-28 21:48:56" itemprop="dateModified" datetime="2021-03-28T21:48:56+08:00">2021-03-28</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -320,7 +320,7 @@
     
     
     <div class="post-body" itemprop="articleBody">
-        <p>List是我们使用最为广泛集合类型，用好List在一定程序度来讲就用好了Scala一半的集合类型，本篇我们从原理、使用和性能的角度来详细介绍如何用好Scala中的List。</p>
+        <p>List是我们使用最为广泛集合类型，用好List在一定程序度来讲是进入Scala集合世界的第一步，本篇我们从原理、使用和性能的角度来详细介绍如何用好Scala中的List。</p>
 <a id="more"></a>
 
 <h1 id="List的性质"><a href="#List的性质" class="headerlink" title="List的性质"></a>List的性质</h1><h2 id="列表是不可变的"><a href="#列表是不可变的" class="headerlink" title="列表是不可变的"></a>列表是不可变的</h2><h2 id="列表是递归的链表"><a href="#列表是递归的链表" class="headerlink" title="列表是递归的链表"></a>列表是递归的链表</h2><p>列表内部是递归的，它的数据结构是链表</p>
@@ -389,7 +389,7 @@
 <td>length: Int</td>
 <td>scala&gt; List(1, 2).length<br/>res2: Int = 2</td>
 <td>返回列表长度</td>
-<td>时间复杂度为n，n为列表长度</td>
+<td>O(n)，n为列表长度</td>
 </tr>
 <tr>
 <td></td>
@@ -398,16 +398,16 @@
 <td></td>
 </tr>
 <tr>
-<td>::[B &gt;: A] (x: B): List[B]</td>
+<td>::[B &gt;: A](x: B): List[B]</td>
 <td>scala&gt; 1 :: List(2, 3)<br/>res0: List[Int] = List(1, 2, 3)</td>
 <td>在列表前部添加元素</td>
 <td>常量</td>
 </tr>
 <tr>
-<td>:::[B &gt;: A] (prefix: List[B]): List[B]</td>
+<td>:::[B &gt;: A](prefix: List[B]): List[B]</td>
 <td>scala&gt; List(1, 2) ::: List(3, 4)<br/>res1: List[Int] = List(1, 2, 3, 4)</td>
 <td>拼接两个链表</td>
-<td>时间复杂度为n，n为参数prefix的长度</td>
+<td>O(n)，n为参数prefix的长度</td>
 </tr>
 <tr>
 <td></td>
@@ -431,13 +431,13 @@
 <td>init: Repr</td>
 <td>scala&gt; List(1, 2, 3).init<br/>res6: List[Int] = List(1, 2)</td>
 <td>返回除最后一个元素外的所有其它元素</td>
-<td>时间复杂度为n，n为列表长度</td>
+<td>O(n)，n为列表长度</td>
 </tr>
 <tr>
 <td>last: A</td>
 <td>scala&gt; List(1, 2, 3).last<br/>res7: Int = 3</td>
 <td>返回最后一个元素</td>
-<td>时间复杂度为n，n为列表长度</td>
+<td>O(n)，n为列表长度</td>
 </tr>
 <tr>
 <td></td>
@@ -449,7 +449,7 @@
 <td>apply(n: Int): A</td>
 <td>scala&gt; List(1, 2, 3).apply(1)<br/>res15: Int = 2</td>
 <td>返回指定索引位置的元素</td>
-<td>时间复杂度为n，n为索引位置</td>
+<td>O(n)，n为索引位置</td>
 </tr>
 <tr>
 <td>indices: Range</td>
@@ -467,19 +467,19 @@
 <td>take(n: Int): List[A]</td>
 <td>scala&gt; List(1, 2, 3).take(2)<br/>res9: List[Int] = List(1, 2)</td>
 <td>返回列表的前n个元素</td>
-<td>时间复杂度为n，n为要获取的元素个数</td>
+<td>O(n)，n为要获取的元素个数</td>
 </tr>
 <tr>
 <td>drop(n: Int): List[A]</td>
 <td>scala&gt; List(1, 2, 3).drop(2)<br/>res10: List[Int] = List(3)</td>
 <td>丢弃列表中前n个元素</td>
-<td>时间复杂度为n，n为要丢弃掉的元素个数</td>
+<td>O(n)，n为要丢弃掉的元素个数</td>
 </tr>
 <tr>
 <td>splitAt(n: Int): (List[A], List[A])</td>
 <td>scala&gt; List(1, 2, 3).splitAt(1)<br/>res14: (List[Int], List[Int]) = (List(1),List(2, 3))</td>
 <td>从指定位置切分列表</td>
-<td>时间复杂度为n，n为切分位置的索引</td>
+<td>O(n)，n为切分位置的索引</td>
 </tr>
 <tr>
 <td></td>
@@ -491,7 +491,7 @@
 <td>reverse: List[A]</td>
 <td>scala&gt; List(1, 2, 3).reverse<br/>res8: List[Int] = List(3, 2, 1)</td>
 <td>将列表中元素按顺序反转</td>
-<td>时间复杂度为n，n为列表长度</td>
+<td>O(n)，n为列表长度</td>
 </tr>
 <tr>
 <td>flatten[B]: CC[B]</td>
@@ -515,13 +515,31 @@
 <td>zip[A1 &gt;: A, B, That] (that: GenIterable[B]): That</td>
 <td>scala&gt; List(1, 2, 3).zip(List(“a”, “b”))<br/>res19: List[(Int, String)] = List((1,a), (2,b))</td>
 <td>对两个列表执行拉链操作</td>
-<td>时间复杂度为n，n为长度较小的列表长度</td>
+<td>O(n)，n为长度较小的列表长度</td>
 </tr>
 <tr>
-<td>unzip[A1, A2] (CC[A1], CC[A2])</td>
+<td>unzip[A1, A2](CC[A1], CC[A2])</td>
 <td>scala&gt; List((1,”a”), (2,”b”)).unzip<br/>res21: (List[Int], List[String]) = (List(1, 2),List(a, b))</td>
 <td>对列表执行解拉链操作</td>
-<td>时间复杂度为n，n为列表长度</td>
+<td>O(n)，n为列表长度</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>copyToArray[B &gt;: A](xs: Array[B], start: Int, len: Int)</td>
+<td></td>
+<td>将列表中的元素复制到数组，start为数组的起始索引</td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
 </tr>
 </tbody></table>
 <h2 id="高阶方法"><a href="#高阶方法" class="headerlink" title="高阶方法"></a>高阶方法</h2><h3 id="fold操作"><a href="#fold操作" class="headerlink" title="fold操作"></a>fold操作</h3><p>如下图，<code>List</code>和<code>LinearSeqOptimized</code>都间接继承自<code>TraversableOnce</code>：</p>
@@ -775,7 +793,7 @@
 </tr>
 </tbody></table>
 <h1 id="ListBuffer类型"><a href="#ListBuffer类型" class="headerlink" title="ListBuffer类型"></a>ListBuffer类型</h1><p>TODO</p>
-<h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><p>1.《Programming in Scala Third Edition》</p>
+<h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><p>1.《Programming in Scala Third Edition》16章、22章</p>
 
     </div>
 
@@ -797,7 +815,10 @@
     <a href="/2021/03/20/warehouse/Data-Warehouse-SCD-Type2/" rel="prev" title="数仓实战系列：缓慢变化维度-Type2（历史拉链维度表）">
       <i class="fa fa-chevron-left"></i> 数仓实战系列：缓慢变化维度-Type2（历史拉链维度表）
     </a></div>
-      <div class="post-nav-item"></div>
+      <div class="post-nav-item">
+    <a href="/2021/03/28/scala/Scala-Object-Oriented-Trait/" rel="next" title="Scala学习系列-面向对象1：Trait">
+      Scala学习系列-面向对象1：Trait <i class="fa fa-chevron-right"></i>
+    </a></div>
     </div>
       </footer>
     
