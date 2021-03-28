@@ -23,17 +23,22 @@
     var CONFIG = {"hostname":"jtlibrain.github.io","root":"/","scheme":"Gemini","version":"8.0.0-rc.5","exturl":false,"sidebar":{"position":"left","display":"hide","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false};
   </script>
 
-  <meta name="description" content="(草稿)">
+  <meta name="description" content="（草稿）List是我们使用最为广泛集合类型，用好List在一定程序度来讲就用好了Scala一半的集合类型，本篇我们从原理、使用和性能的角度来详细介绍如何用好Scala中的List。">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Scala学习系列2：用好List">
+<meta property="og:title" content="Scala学习系列-集合2：用好List">
 <meta property="og:url" content="https://jtlibrain.github.io/2021/03/24/scala/Scala-Collection-List/index.html">
 <meta property="og:site_name" content="jtLiBrain">
-<meta property="og:description" content="(草稿)">
+<meta property="og:description" content="（草稿）List是我们使用最为广泛集合类型，用好List在一定程序度来讲就用好了Scala一半的集合类型，本篇我们从原理、使用和性能的角度来详细介绍如何用好Scala中的List。">
 <meta property="og:locale" content="en_US">
 <meta property="og:image" content="https://jtlibrain.github.io/images/scala/collection-list-structure.svg">
 <meta property="og:image" content="https://jtlibrain.github.io/images/scala/collection-list-classes.svg">
+<meta property="og:image" content="https://jtlibrain.github.io/images/scala/collection-list-fold.svg">
+<meta property="og:image" content="https://jtlibrain.github.io/images/scala/collection-list-fold-left.svg">
+<meta property="og:image" content="https://jtlibrain.github.io/images/scala/collection-list-fold-right.svg">
+<meta property="og:image" content="https://jtlibrain.github.io/images/scala/collection-list-reduce.svg">
+<meta property="og:image" content="https://jtlibrain.github.io/images/scala/collection-list-scan.svg">
 <meta property="article:published_time" content="2021-03-24T14:41:54.000Z">
-<meta property="article:modified_time" content="2021-03-25T16:06:07.676Z">
+<meta property="article:modified_time" content="2021-03-28T06:39:32.506Z">
 <meta property="article:author" content="JT Li">
 <meta property="article:tag" content="Scala学习系列">
 <meta name="twitter:card" content="summary">
@@ -52,7 +57,7 @@
   };
 </script>
 
-  <title>Scala学习系列2：用好List | jtLiBrain</title>
+  <title>Scala学习系列-集合2：用好List | jtLiBrain</title>
   
 
 
@@ -186,7 +191,7 @@
 
       <!--noindex-->
       <section class="post-toc-wrap sidebar-panel">
-          <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#List%E7%9A%84%E6%80%A7%E8%B4%A8"><span class="nav-number">1.</span> <span class="nav-text">List的性质</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%97%E8%A1%A8%E6%98%AF%E4%B8%8D%E5%8F%AF%E5%8F%98%E7%9A%84"><span class="nav-number">1.1.</span> <span class="nav-text">列表是不可变的</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%97%E8%A1%A8%E6%98%AF%E9%80%92%E5%BD%92%E7%9A%84%E9%93%BE%E8%A1%A8"><span class="nav-number">1.2.</span> <span class="nav-text">列表是递归的链表</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%97%E8%A1%A8%E5%85%83%E7%B4%A0%E6%98%AF%E5%8D%8F%E5%8F%98%E7%9A%84"><span class="nav-number">1.3.</span> <span class="nav-text">列表元素是协变的</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#List%E7%B1%BB%E5%9E%8B"><span class="nav-number">2.</span> <span class="nav-text">List类型</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%8A%BD%E8%B1%A1%E7%B1%BBList"><span class="nav-number">2.1.</span> <span class="nav-text">抽象类List</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#case%E7%B1%BB"><span class="nav-number">2.2.</span> <span class="nav-text">case类::</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AF%B9%E8%B1%A1Nil"><span class="nav-number">2.3.</span> <span class="nav-text">对象Nil</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#List%E7%9A%84%E6%A8%A1%E5%BC%8F"><span class="nav-number">3.</span> <span class="nav-text">List的模式</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#ListBuffer%E7%B1%BB%E5%9E%8B"><span class="nav-number">4.</span> <span class="nav-text">ListBuffer类型</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%94%A8%E6%B3%95"><span class="nav-number">5.</span> <span class="nav-text">用法</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%82%E8%80%83"><span class="nav-number">6.</span> <span class="nav-text">参考</span></a></li></ol></div>
+          <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#List%E7%9A%84%E6%80%A7%E8%B4%A8"><span class="nav-number">1.</span> <span class="nav-text">List的性质</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%97%E8%A1%A8%E6%98%AF%E4%B8%8D%E5%8F%AF%E5%8F%98%E7%9A%84"><span class="nav-number">1.1.</span> <span class="nav-text">列表是不可变的</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%97%E8%A1%A8%E6%98%AF%E9%80%92%E5%BD%92%E7%9A%84%E9%93%BE%E8%A1%A8"><span class="nav-number">1.2.</span> <span class="nav-text">列表是递归的链表</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%97%E8%A1%A8%E5%85%83%E7%B4%A0%E6%98%AF%E5%8D%8F%E5%8F%98%E7%9A%84"><span class="nav-number">1.3.</span> <span class="nav-text">列表元素是协变的</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#List%E7%9A%84%E7%B1%BB%E5%9E%8B"><span class="nav-number">2.</span> <span class="nav-text">List的类型</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%8A%BD%E8%B1%A1%E7%B1%BBList"><span class="nav-number">2.1.</span> <span class="nav-text">抽象类List</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#case%E7%B1%BB"><span class="nav-number">2.2.</span> <span class="nav-text">case类::</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AF%B9%E8%B1%A1Nil"><span class="nav-number">2.3.</span> <span class="nav-text">对象Nil</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#List%E7%9A%84%E6%A8%A1%E5%BC%8F%E5%8C%B9%E9%85%8D"><span class="nav-number">3.</span> <span class="nav-text">List的模式匹配</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#List%E4%B8%AD%E7%9A%84%E6%96%B9%E6%B3%95"><span class="nav-number">4.</span> <span class="nav-text">List中的方法</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%9D%E9%98%B6%E6%96%B9%E6%B3%95"><span class="nav-number">4.1.</span> <span class="nav-text">初阶方法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%AB%98%E9%98%B6%E6%96%B9%E6%B3%95"><span class="nav-number">4.2.</span> <span class="nav-text">高阶方法</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#fold%E6%93%8D%E4%BD%9C"><span class="nav-number">4.2.1.</span> <span class="nav-text">fold操作</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#reduce%E6%93%8D%E4%BD%9C"><span class="nav-number">4.2.2.</span> <span class="nav-text">reduce操作</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#scan%E6%93%8D%E4%BD%9C"><span class="nav-number">4.2.3.</span> <span class="nav-text">scan操作</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%AB%98%E9%98%B6%E6%96%B9%E6%B3%95%E6%B1%87%E6%80%BB"><span class="nav-number">4.2.4.</span> <span class="nav-text">高阶方法汇总</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#ListBuffer%E7%B1%BB%E5%9E%8B"><span class="nav-number">5.</span> <span class="nav-text">ListBuffer类型</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%82%E8%80%83"><span class="nav-number">6.</span> <span class="nav-text">参考</span></a></li></ol></div>
       </section>
       <!--/noindex-->
 
@@ -270,7 +275,7 @@
     
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          Scala学习系列2：用好List
+          Scala学习系列-集合2：用好List
         </h1>
 
         <div class="post-meta">
@@ -287,7 +292,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2021-03-26 00:06:07" itemprop="dateModified" datetime="2021-03-26T00:06:07+08:00">2021-03-26</time>
+                <time title="Modified: 2021-03-28 14:39:32" itemprop="dateModified" datetime="2021-03-28T14:39:32+08:00">2021-03-28</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -315,12 +320,12 @@
     
     
     <div class="post-body" itemprop="articleBody">
-        <p>(草稿)</p>
+        <p>（草稿）List是我们使用最为广泛集合类型，用好List在一定程序度来讲就用好了Scala一半的集合类型，本篇我们从原理、使用和性能的角度来详细介绍如何用好Scala中的List。</p>
 <a id="more"></a>
 
 <h1 id="List的性质"><a href="#List的性质" class="headerlink" title="List的性质"></a>List的性质</h1><h2 id="列表是不可变的"><a href="#列表是不可变的" class="headerlink" title="列表是不可变的"></a>列表是不可变的</h2><h2 id="列表是递归的链表"><a href="#列表是递归的链表" class="headerlink" title="列表是递归的链表"></a>列表是递归的链表</h2><p>列表内部是递归的，它的数据结构是链表</p>
 <p><img src="/images/scala/collection-list-structure.svg"></p>
-<h2 id="列表元素是协变的"><a href="#列表元素是协变的" class="headerlink" title="列表元素是协变的"></a>列表元素是协变的</h2><h1 id="List类型"><a href="#List类型" class="headerlink" title="List类型"></a>List类型</h1><p><img src="/images/scala/collection-list-classes.svg"></p>
+<h2 id="列表元素是协变的"><a href="#列表元素是协变的" class="headerlink" title="列表元素是协变的"></a>列表元素是协变的</h2><h1 id="List的类型"><a href="#List的类型" class="headerlink" title="List的类型"></a>List的类型</h1><p><img src="/images/scala/collection-list-classes.svg"></p>
 <h2 id="抽象类List"><a href="#抽象类List" class="headerlink" title="抽象类List"></a>抽象类List</h2><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">sealed</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">List</span>[+<span class="type">A</span>] <span class="keyword">extends</span> <span class="title">AbstractSeq</span>[<span class="type">A</span>]</span></span><br><span class="line"><span class="class">                                  <span class="keyword">with</span> <span class="title">LinearSeq</span>[<span class="type">A</span>]</span></span><br><span class="line"><span class="class">                                  <span class="keyword">with</span> <span class="title">Product</span></span></span><br><span class="line"><span class="class">                                  <span class="keyword">with</span> <span class="title">GenericTraversableTemplate</span>[<span class="type">A</span>, <span class="type">List</span>]</span></span><br><span class="line"><span class="class">                                  <span class="keyword">with</span> <span class="title">LinearSeqOptimized</span>[<span class="type">A</span>, <span class="type">List</span>[<span class="type">A</span>]]</span></span><br><span class="line"><span class="class">                                  <span class="keyword">with</span> <span class="title">Serializable</span> </span>&#123;</span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">isEmpty</span></span>: <span class="type">Boolean</span></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">head</span></span>: <span class="type">A</span></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">tail</span></span>: <span class="type">List</span>[<span class="type">A</span>]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
 
@@ -333,9 +338,403 @@
 
 
 
-<h1 id="List的模式"><a href="#List的模式" class="headerlink" title="List的模式"></a>List的模式</h1><p>TODO</p>
+<h1 id="List的模式匹配"><a href="#List的模式匹配" class="headerlink" title="List的模式匹配"></a>List的模式匹配</h1><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">val</span> fruit = <span class="string">&quot;apples&quot;</span> :: <span class="string">&quot;oranges&quot;</span> :: <span class="string">&quot;pears&quot;</span> :: <span class="type">Nil</span></span><br><span class="line"><span class="keyword">val</span> statuses = <span class="type">List</span>(<span class="number">500</span>, <span class="number">404</span>)</span><br></pre></td></tr></table></figure>
+
+<p>示例1：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">val</span> a :: b :: rest = fruit</span><br></pre></td></tr></table></figure>
+
+
+
+<p>示例2：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">val</span> <span class="type">List</span>(a, b, c) = fruit <span class="comment">// 可行</span></span><br><span class="line"><span class="keyword">val</span> <span class="type">List</span>(_, b, c) = fruit <span class="comment">// 可行</span></span><br><span class="line"><span class="keyword">val</span> <span class="type">List</span>(<span class="string">&quot;apples&quot;</span>, b, c) = fruit <span class="comment">// 可行</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">val</span> <span class="type">List</span>(<span class="string">&quot;N/A&quot;</span>, b, c) = fruit <span class="comment">// 不可行</span></span><br></pre></td></tr></table></figure>
+
+
+
+<p>示例3：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">val</span> msg = statuses <span class="keyword">match</span> &#123;</span><br><span class="line">  <span class="keyword">case</span> <span class="type">List</span>(<span class="number">404</span>, <span class="number">500</span>) =&gt; <span class="string">&quot;not found &amp; error&quot;</span></span><br><span class="line">  <span class="keyword">case</span> <span class="type">List</span>(<span class="number">500</span>, <span class="number">404</span>) =&gt; <span class="string">&quot;error &amp; not found&quot;</span></span><br><span class="line">  <span class="keyword">case</span> <span class="type">List</span>(<span class="number">500</span>, x) =&gt; <span class="string">s&quot;Error followed by <span class="subst">$x</span>&quot;</span></span><br><span class="line">  <span class="keyword">case</span> <span class="type">List</span>(e, x) =&gt; <span class="string">s&quot;<span class="subst">$e</span> was followed by <span class="subst">$x</span>&quot;</span></span><br><span class="line">  <span class="keyword">case</span> _ =&gt; <span class="string">&quot;will not get here&quot;</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<p>示例4：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">val</span> msg = statuses <span class="keyword">match</span> &#123;</span><br><span class="line">  <span class="keyword">case</span> x <span class="keyword">if</span> x contains(<span class="number">500</span>) =&gt; <span class="string">&quot;has error&quot;</span></span><br><span class="line">  <span class="keyword">case</span> _ =&gt; <span class="string">&quot;okay&quot;</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<p>示例5：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">val</span> fruit = <span class="string">&quot;apples&quot;</span> :: <span class="string">&quot;oranges&quot;</span> :: <span class="string">&quot;pears&quot;</span> :: <span class="type">Nil</span></span><br><span class="line"><span class="keyword">val</span> msg = fruit <span class="keyword">match</span> &#123;</span><br><span class="line">  <span class="keyword">case</span> <span class="type">Nil</span> =&gt; <span class="string">&quot;N/A&quot;</span></span><br><span class="line">  <span class="keyword">case</span> x :: xs =&gt; x</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h1 id="List中的方法"><a href="#List中的方法" class="headerlink" title="List中的方法"></a>List中的方法</h1><h2 id="初阶方法"><a href="#初阶方法" class="headerlink" title="初阶方法"></a>初阶方法</h2><p>下表列出了List接口中的一些常用的初阶方法，其中有些方法是在List中直接定义的，有些则是继承自其它接口中的方法，更多可用的方法还有待继续探索。</p>
+<table>
+<thead>
+<tr>
+<th>方法名</th>
+<th>示例</th>
+<th>说明</th>
+<th>时间复杂度</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>isEmpty: Boolean</td>
+<td>scala&gt; List(1, 2).isEmpty<br/>res3: Boolean = false</td>
+<td>检查列表是否为空列表</td>
+<td>常量</td>
+</tr>
+<tr>
+<td>length: Int</td>
+<td>scala&gt; List(1, 2).length<br/>res2: Int = 2</td>
+<td>返回列表长度</td>
+<td>时间复杂度为n，n为列表长度</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>::[B &gt;: A] (x: B): List[B]</td>
+<td>scala&gt; 1 :: List(2, 3)<br/>res0: List[Int] = List(1, 2, 3)</td>
+<td>在列表前部添加元素</td>
+<td>常量</td>
+</tr>
+<tr>
+<td>:::[B &gt;: A] (prefix: List[B]): List[B]</td>
+<td>scala&gt; List(1, 2) ::: List(3, 4)<br/>res1: List[Int] = List(1, 2, 3, 4)</td>
+<td>拼接两个链表</td>
+<td>时间复杂度为n，n为参数prefix的长度</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>head: A</td>
+<td>scala&gt; List(1, 2).head<br/>res4: Int = 1</td>
+<td>返回列表中第一个元素</td>
+<td>常量</td>
+</tr>
+<tr>
+<td>tail: List[A]</td>
+<td>scala&gt; List(1, 2, 3).tail<br/>res5: List[Int] = List(2, 3)</td>
+<td>返回列表中除第一个元素外的所有其它元素</td>
+<td>常量</td>
+</tr>
+<tr>
+<td>init: Repr</td>
+<td>scala&gt; List(1, 2, 3).init<br/>res6: List[Int] = List(1, 2)</td>
+<td>返回除最后一个元素外的所有其它元素</td>
+<td>时间复杂度为n，n为列表长度</td>
+</tr>
+<tr>
+<td>last: A</td>
+<td>scala&gt; List(1, 2, 3).last<br/>res7: Int = 3</td>
+<td>返回最后一个元素</td>
+<td>时间复杂度为n，n为列表长度</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>apply(n: Int): A</td>
+<td>scala&gt; List(1, 2, 3).apply(1)<br/>res15: Int = 2</td>
+<td>返回指定索引位置的元素</td>
+<td>时间复杂度为n，n为索引位置</td>
+</tr>
+<tr>
+<td>indices: Range</td>
+<td>scala&gt; List(1, 2, 3).indices<br/>res18: scala.collection.immutable.Range = Range 0 until 3</td>
+<td>创建一个表示列表索引的Range</td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>take(n: Int): List[A]</td>
+<td>scala&gt; List(1, 2, 3).take(2)<br/>res9: List[Int] = List(1, 2)</td>
+<td>返回列表的前n个元素</td>
+<td>时间复杂度为n，n为要获取的元素个数</td>
+</tr>
+<tr>
+<td>drop(n: Int): List[A]</td>
+<td>scala&gt; List(1, 2, 3).drop(2)<br/>res10: List[Int] = List(3)</td>
+<td>丢弃列表中前n个元素</td>
+<td>时间复杂度为n，n为要丢弃掉的元素个数</td>
+</tr>
+<tr>
+<td>splitAt(n: Int): (List[A], List[A])</td>
+<td>scala&gt; List(1, 2, 3).splitAt(1)<br/>res14: (List[Int], List[Int]) = (List(1),List(2, 3))</td>
+<td>从指定位置切分列表</td>
+<td>时间复杂度为n，n为切分位置的索引</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>reverse: List[A]</td>
+<td>scala&gt; List(1, 2, 3).reverse<br/>res8: List[Int] = List(3, 2, 1)</td>
+<td>将列表中元素按顺序反转</td>
+<td>时间复杂度为n，n为列表长度</td>
+</tr>
+<tr>
+<td>flatten[B]: CC[B]</td>
+<td>scala&gt; List(Set(1, 2),Set(1, 2)).flatten<br/>res16: List[Int] = List(1, 2, 1, 2)</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>zipWithIndex[A1 &gt;: A, That]: That</td>
+<td>scala&gt; List(1, 2, 3).zipWithIndex<br/>res17: List[(Int, Int)] = List((1,0), (2,1), (3,2))</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>zip[A1 &gt;: A, B, That] (that: GenIterable[B]): That</td>
+<td>scala&gt; List(1, 2, 3).zip(List(“a”, “b”))<br/>res19: List[(Int, String)] = List((1,a), (2,b))</td>
+<td>对两个列表执行拉链操作</td>
+<td>时间复杂度为n，n为长度较小的列表长度</td>
+</tr>
+<tr>
+<td>unzip[A1, A2] (CC[A1], CC[A2])</td>
+<td>scala&gt; List((1,”a”), (2,”b”)).unzip<br/>res21: (List[Int], List[String]) = (List(1, 2),List(a, b))</td>
+<td>对列表执行解拉链操作</td>
+<td>时间复杂度为n，n为列表长度</td>
+</tr>
+</tbody></table>
+<h2 id="高阶方法"><a href="#高阶方法" class="headerlink" title="高阶方法"></a>高阶方法</h2><h3 id="fold操作"><a href="#fold操作" class="headerlink" title="fold操作"></a>fold操作</h3><p>如下图，<code>List</code>和<code>LinearSeqOptimized</code>都间接继承自<code>TraversableOnce</code>：</p>
+<ul>
+<li><code>TraversableOnce</code>中同时定义了fold、foldLeft和foldRight三个方法；</li>
+<li><code>LinearSeqOptimized</code>提供了优化过的foldLeft和foldRight实现；</li>
+<li><code>List</code>中直接定义了foldRight；</li>
+<li>这样对于<code>List</code>而言，fold、foldLeft和foldRight分别来自<code>TraversableOnce</code>、<code>LinearSeqOptimized</code>和<code>List</code>中的定义（如，下图中绿色字体所标识）；</li>
+</ul>
+<img src="/images/scala/collection-list-fold.svg" style="zoom:80%;" />
+
+
+
+<p>我们先来看<code>TraversableOnce.fold()</code>的定义（如下），它直接调用了<code>foldLeft</code>，对于List而言，也就是<code>LinearSeqOptimized</code>中定义的<code>foldLeft()</code>：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">fold</span></span>[<span class="type">A1</span> &gt;: <span class="type">A</span>](z: <span class="type">A1</span>)(op: (<span class="type">A1</span>, <span class="type">A1</span>) =&gt; <span class="type">A1</span>): <span class="type">A1</span> = foldLeft(z)(op)</span><br></pre></td></tr></table></figure>
+
+
+
+<p>对于<code>List.foldRight()</code>（如下），它通过将列表进行反转操作之后再进行<code>foldLeft()</code>来实现，也最终落实到了<code>LinearSeqOptimized</code>中定义的<code>foldLeft()</code>，<font color="red">（注意：因为要想将列表进行反转操作，反转操作需要一定的开销，所以在使用这个方法时要考虑到这一点）</font>：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">override</span> <span class="function"><span class="keyword">def</span> <span class="title">foldRight</span></span>[<span class="type">B</span>](z: <span class="type">B</span>)(op: (<span class="type">A</span>, <span class="type">B</span>) =&gt; <span class="type">B</span>): <span class="type">B</span> =</span><br><span class="line">  reverse.foldLeft(z)((right, left) =&gt; op(left, right))</span><br></pre></td></tr></table></figure>
+
+
+
+<p>接下来，我们看<code>LinearSeqOptimized.foldLeft()</code>的定义（如下），通过迭代，将<code>op()</code>函数的计算结果作为每次迭代的临时结果，临时结果又作为下一次迭代的输出，以最后一次<code>op()</code>函数的计算结果作为最终结果并返回：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">override</span> <span class="comment">/*TraversableLike*/</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">foldLeft</span></span>[<span class="type">B</span>](z: <span class="type">B</span>)(<span class="meta">@deprecatedName</span>(<span class="symbol">&#x27;f</span>) op: (<span class="type">B</span>, <span class="type">A</span>) =&gt; <span class="type">B</span>): <span class="type">B</span> = &#123;</span><br><span class="line">  <span class="keyword">var</span> acc = z</span><br><span class="line">  <span class="keyword">var</span> these = <span class="keyword">this</span></span><br><span class="line">  <span class="keyword">while</span> (!these.isEmpty) &#123;</span><br><span class="line">    acc = op(acc, these.head)</span><br><span class="line">    these = these.tail</span><br><span class="line">  &#125;</span><br><span class="line">  acc</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<p>总结如下：</p>
+<table>
+<thead>
+<tr>
+<th>方法名</th>
+<th>图示</th>
+<th>说明</th>
+<th>时间复杂度</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>fold()</td>
+<td></td>
+<td>1.方法的“零值”数据类型<code>A1</code>必须是当前列表元素下界（即，必须是列表元素同类型或为其父类型）；<br/>2.方法的输出结果的数据类型与<code>零值</code>的数据类型<code>A1</code>是一致的；</td>
+<td></td>
+</tr>
+<tr>
+<td>foldLeft()</td>
+<td><img src="/images/scala/collection-list-fold-left.svg"/></td>
+<td>1.方法的“零值”数据类型<code>B</code>可以是任何数据类型；<br/>2.方法的输出结果的数据类型与“零值”的数据类型<code>B</code>是一致的；<br/>3.方法迭代<code>op()</code>函数是按列表由前向后进行的；<br/>4.<code>op: (B, A) =&gt; B</code></td>
+<td></td>
+</tr>
+<tr>
+<td>foldRight()</td>
+<td><img src="/images/scala/collection-list-fold-right.svg"></td>
+<td>1.方法的“零值”数据类型<code>B</code>可以是任何数据类型；<br/>2.方法的输出结果的数据类型与“零值”的数据类型<code>B</code>是一致的；<br/>3.方法迭代<code>op()</code>函数是按列表由后向前进行的，因为需要先进行列表的反转，因为需要考虑反转操作带来的性能开销；<br/>4.<code>op: (A, B) =&gt; B</code>：参数类型与foldLeft()中op() 参数类型相反，这是为了保持代表零值的类型和中间聚合的类型，靠右侧，以代表是右向进行的；</td>
+<td></td>
+</tr>
+</tbody></table>
+<h3 id="reduce操作"><a href="#reduce操作" class="headerlink" title="reduce操作"></a>reduce操作</h3><img src="/images/scala/collection-list-reduce.svg" style="zoom:80%;" />
+
+<p>我们先来看<code>TraversableOnce.reduce()</code>的定义（如下），它直接调用了<code>reduceLeft</code>，对于List而言，也就是<code>LinearSeqOptimized</code>中定义的<code>reduceLeft()</code>：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">reduce</span></span>[<span class="type">A1</span> &gt;: <span class="type">A</span>](op: (<span class="type">A1</span>, <span class="type">A1</span>) =&gt; <span class="type">A1</span>): <span class="type">A1</span> = reduceLeft(op)</span><br></pre></td></tr></table></figure>
+
+
+
+<p>对于<code>LinearSeqOptimized.reduceLeft()</code>（如下），它直接使用的了<code>foldLeft()</code>进行实现：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">override</span> <span class="comment">/*TraversableLike*/</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">reduceLeft</span></span>[<span class="type">B</span> &gt;: <span class="type">A</span>](<span class="meta">@deprecatedName</span>(<span class="symbol">&#x27;f</span>) op: (<span class="type">B</span>, <span class="type">A</span>) =&gt; <span class="type">B</span>): <span class="type">B</span> =</span><br><span class="line">  <span class="keyword">if</span> (isEmpty) <span class="keyword">throw</span> <span class="keyword">new</span> <span class="type">UnsupportedOperationException</span>(<span class="string">&quot;empty.reduceLeft&quot;</span>)</span><br><span class="line">  <span class="keyword">else</span> tail.foldLeft[<span class="type">B</span>](head)(op)</span><br></pre></td></tr></table></figure>
+
+
+
+<p>对于<code>LinearSeqOptimized.reduceRight()</code>（如下），它采用了递归调用<code>op()</code>函数的方式进行实现，没有进行反转的操作，所以该方法相对于foldRight()会有一定执行效率优势，但考虑到采用递归的方式，所以对于大规模的数据可能会存在一定的性能风险：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">override</span> <span class="comment">/*IterableLike*/</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">reduceRight</span></span>[<span class="type">B</span> &gt;: <span class="type">A</span>](op: (<span class="type">A</span>, <span class="type">B</span>) =&gt; <span class="type">B</span>): <span class="type">B</span> =</span><br><span class="line">  <span class="keyword">if</span> (isEmpty) <span class="keyword">throw</span> <span class="keyword">new</span> <span class="type">UnsupportedOperationException</span>(<span class="string">&quot;Nil.reduceRight&quot;</span>)</span><br><span class="line">  <span class="keyword">else</span> <span class="keyword">if</span> (tail.isEmpty) head</span><br><span class="line">  <span class="keyword">else</span> op(head, tail.reduceRight(op))</span><br></pre></td></tr></table></figure>
+
+
+
+<p>总结如下：</p>
+<table>
+<thead>
+<tr>
+<th>方法名</th>
+<th>图示</th>
+<th>说明</th>
+<th>时间复杂度</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>reduce()</td>
+<td></td>
+<td>1.方法的“零值”数据类型<code>A1</code>必须是当前列表元素下界（即，必须是列表元素同类型或为其父类型）；<br/>2.方法的输出结果的数据类型与<code>零值</code>的数据类型<code>A1</code>是一致的；</td>
+<td></td>
+</tr>
+<tr>
+<td>reduceLeft()</td>
+<td>参考foldLeft()图示</td>
+<td>1.使用<code>foldLeft()</code>进行实现的；<br/>2.方法的“零值”数据类型<code>B</code>可以是任何数据类型；<br/>3.方法的输出结果的数据类型与“零值”的数据类型<code>B</code>是一致的；<br/>4.方法迭代<code>op()</code>函数是按列表由前向后进行的；<br/>5.<code>op: (B, A) =&gt; B</code></td>
+<td></td>
+</tr>
+<tr>
+<td>reduceRight()</td>
+<td>参考foldRight()图示</td>
+<td>1.使用递归的方式进行实现的；<br/>2.方法的“零值”数据类型<code>B</code>可以是任何数据类型；<br/>3.方法的输出结果的数据类型与“零值”的数据类型<code>B</code>是一致的；<br/>4.<code>op: (A, B) =&gt; B</code>：参数类型与reduceRight()中op() 参数类型相反，这是为了保持代表零值的类型和中间聚合的类型，靠右侧，以代表是右向进行的；</td>
+<td></td>
+</tr>
+</tbody></table>
+<h3 id="scan操作"><a href="#scan操作" class="headerlink" title="scan操作"></a>scan操作</h3><p>scan操作的语义不同于fold和reduce操作：fold和reduce操作最终返回的是最后一次迭代中<code>op</code>函数结果，而scan操作则返回的是由每一次迭代中<code>op</code>函数结果所组成的一个集合，零值为集合中的第一项，即它记录了每一次迭代的结果。</p>
+<img src="/images/scala/collection-list-scan.svg" style="zoom:80%;" />
+
+
+
+<p><code>TraversableLike.scan()</code>：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">scan</span></span>[<span class="type">B</span> &gt;: <span class="type">A</span>, <span class="type">That</span>](z: <span class="type">B</span>)(op: (<span class="type">B</span>, <span class="type">B</span>) =&gt; <span class="type">B</span>)(<span class="keyword">implicit</span> cbf: <span class="type">CanBuildFrom</span>[<span class="type">Repr</span>, <span class="type">B</span>, <span class="type">That</span>]): <span class="type">That</span> = scanLeft(z)(op)</span><br></pre></td></tr></table></figure>
+
+
+
+<p><code>TraversableLike.scanLeft()</code>：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">scanLeft</span></span>[<span class="type">B</span>, <span class="type">That</span>](z: <span class="type">B</span>)(op: (<span class="type">B</span>, <span class="type">A</span>) =&gt; <span class="type">B</span>)(<span class="keyword">implicit</span> bf: <span class="type">CanBuildFrom</span>[<span class="type">Repr</span>, <span class="type">B</span>, <span class="type">That</span>]): <span class="type">That</span> = &#123;</span><br><span class="line">  <span class="keyword">val</span> b = bf(repr)</span><br><span class="line">  b.sizeHint(<span class="keyword">this</span>, <span class="number">1</span>)</span><br><span class="line">  <span class="keyword">var</span> acc = z</span><br><span class="line">  b += acc</span><br><span class="line">  <span class="keyword">for</span> (x &lt;- <span class="keyword">this</span>) &#123; acc = op(acc, x); b += acc &#125;</span><br><span class="line">  b.result</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<p><code>TraversableLike.scanRight()</code>，该方法先进行一次反转，再进行了一次迭代计算，最后进行了一次结果的拼装：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">scanRight</span></span>[<span class="type">B</span>, <span class="type">That</span>](z: <span class="type">B</span>)(op: (<span class="type">A</span>, <span class="type">B</span>) =&gt; <span class="type">B</span>)(<span class="keyword">implicit</span> bf: <span class="type">CanBuildFrom</span>[<span class="type">Repr</span>, <span class="type">B</span>, <span class="type">That</span>]): <span class="type">That</span> = &#123;</span><br><span class="line">  <span class="keyword">var</span> scanned = <span class="type">List</span>(z)</span><br><span class="line">  <span class="keyword">var</span> acc = z</span><br><span class="line">  <span class="keyword">for</span> (x &lt;- reversed) &#123;</span><br><span class="line">    acc = op(x, acc)</span><br><span class="line">    scanned ::= acc</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">val</span> b = bf(repr)</span><br><span class="line">  <span class="keyword">for</span> (elem &lt;- scanned) b += elem</span><br><span class="line">  b.result</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<p>总结如下：</p>
+<table>
+<thead>
+<tr>
+<th>方法名</th>
+<th>图示</th>
+<th>说明</th>
+<th>时间复杂度</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>scan()</td>
+<td></td>
+<td>1.方法的“零值”数据类型<code>A1</code>必须是当前列表元素下界（即，必须是列表元素同类型或为其父类型）；<br/>2.方法的输出结果是元素类型与<code>零值</code>的数据类型<code>A1</code>是一致的元素组成的集合；</td>
+<td></td>
+</tr>
+<tr>
+<td>scanLeft()</td>
+<td>参考foldLeft()图示</td>
+<td>1.方法的“零值”数据类型<code>B</code>可以是任何数据类型；<br/>2.方法的输出结果是元素类型与<code>零值</code>的数据类型<code>B</code>是一致的元素组成的集合；<br/>3.方法迭代<code>op()</code>函数是按列表由前向后进行的；<br/>4.<code>op: (B, A) =&gt; B</code></td>
+<td></td>
+</tr>
+<tr>
+<td>scanRight()</td>
+<td>参考foldRight()图示</td>
+<td>1.使用三次迭代的方式进行实现的；<br/>2.方法的“零值”数据类型<code>B</code>可以是任何数据类型；<br/>3.方法的输出结果是元素类型与<code>零值</code>的数据类型<code>B</code>是一致的元素组成的集合；<br/>4.<code>op: (A, B) =&gt; B</code>：参数类型与scanLeft()中op() 参数类型相反，这是为了保持代表零值的类型和中间聚合的类型，靠右侧，以代表是右向进行的；</td>
+<td></td>
+</tr>
+</tbody></table>
+<h3 id="高阶方法汇总"><a href="#高阶方法汇总" class="headerlink" title="高阶方法汇总"></a>高阶方法汇总</h3><table>
+<thead>
+<tr>
+<th>方法名</th>
+<th>示例</th>
+<th>说明</th>
+<th>时间复杂度</th>
+</tr>
+</thead>
+<tbody><tr>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody></table>
 <h1 id="ListBuffer类型"><a href="#ListBuffer类型" class="headerlink" title="ListBuffer类型"></a>ListBuffer类型</h1><p>TODO</p>
-<h1 id="用法"><a href="#用法" class="headerlink" title="用法"></a>用法</h1><p>TODO</p>
 <h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><p>1.《Programming in Scala Third Edition》</p>
 
     </div>
