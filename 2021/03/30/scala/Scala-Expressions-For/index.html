@@ -23,19 +23,23 @@
     var CONFIG = {"hostname":"jtlibrain.github.io","root":"/","scheme":"Gemini","version":"8.0.0-rc.5","exturl":false,"sidebar":{"position":"left","display":"hide","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false};
   </script>
 
-  <meta name="description" content="本文列举Scala编程中常用的工具。">
+  <meta name="description" content="草稿">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Scala Tookit">
-<meta property="og:url" content="https://jtlibrain.github.io/2020/12/16/scala/Scala-Toolkit/index.html">
+<meta property="og:title" content="Scala学习系列-表达式1：for表达式">
+<meta property="og:url" content="https://jtlibrain.github.io/2021/03/30/scala/Scala-Expressions-For/index.html">
 <meta property="og:site_name" content="jtLiBrain">
-<meta property="og:description" content="本文列举Scala编程中常用的工具。">
+<meta property="og:description" content="草稿">
 <meta property="og:locale" content="en_US">
-<meta property="article:published_time" content="2020-12-16T13:20:59.000Z">
-<meta property="article:modified_time" content="2020-12-16T13:47:31.471Z">
+<meta property="og:image" content="https://jtlibrain.github.io/images/scala/expressions-for.svg">
+<meta property="og:image" content="https://jtlibrain.github.io/images/scala/expressions-for-generator.svg">
+<meta property="article:published_time" content="2021-03-30T14:37:53.000Z">
+<meta property="article:modified_time" content="2021-03-30T16:16:06.826Z">
 <meta property="article:author" content="JT Li">
+<meta property="article:tag" content="Scala学习系列">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://jtlibrain.github.io/images/scala/expressions-for.svg">
 
-<link rel="canonical" href="https://jtlibrain.github.io/2020/12/16/scala/Scala-Toolkit/">
+<link rel="canonical" href="https://jtlibrain.github.io/2021/03/30/scala/Scala-Expressions-For/">
 
 
 <script class="page-configurations">
@@ -48,7 +52,7 @@
   };
 </script>
 
-  <title>Scala Tookit | jtLiBrain</title>
+  <title>Scala学习系列-表达式1：for表达式 | jtLiBrain</title>
   
 
 
@@ -182,7 +186,7 @@
 
       <!--noindex-->
       <section class="post-toc-wrap sidebar-panel">
-          <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%85%8D%E7%BD%AE%E7%9B%B8%E5%85%B3"><span class="nav-number">1.</span> <span class="nav-text">配置相关</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9B%B8%E5%85%B3"><span class="nav-number">2.</span> <span class="nav-text">数据库相关</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#HTTP%E7%9B%B8%E5%85%B3"><span class="nav-number">3.</span> <span class="nav-text">HTTP相关</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%82%E8%80%83"><span class="nav-number">4.</span> <span class="nav-text">参考</span></a></li></ol></div>
+          <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#for%E8%A1%A8%E8%BE%BE%E5%BC%8F%E7%9A%84%E4%B8%80%E8%88%AC%E5%BC%8F"><span class="nav-number">1.</span> <span class="nav-text">for表达式的一般式</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%94%9F%E6%88%90%E5%99%A8"><span class="nav-number">1.1.</span> <span class="nav-text">生成器</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%9A%E4%B9%89"><span class="nav-number">1.2.</span> <span class="nav-text">定义</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%BF%87%E6%BB%A4%E5%99%A8"><span class="nav-number">1.3.</span> <span class="nav-text">过滤器</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%BF%BB%E8%AF%91for%E8%A1%A8%E8%BE%BE%E5%BC%8F"><span class="nav-number">2.</span> <span class="nav-text">翻译for表达式</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%82%E8%80%83"><span class="nav-number">3.</span> <span class="nav-text">参考</span></a></li></ol></div>
       </section>
       <!--/noindex-->
 
@@ -251,7 +255,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="https://jtlibrain.github.io/2020/12/16/scala/Scala-Toolkit/">
+    <link itemprop="mainEntityOfPage" href="https://jtlibrain.github.io/2021/03/30/scala/Scala-Expressions-For/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -266,7 +270,7 @@
     
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          Scala Tookit
+          Scala学习系列-表达式1：for表达式
         </h1>
 
         <div class="post-meta">
@@ -275,10 +279,16 @@
                 <i class="far fa-calendar"></i>
               </span>
               <span class="post-meta-item-text">Posted on</span>
-              
 
-              <time title="Created: 2020-12-16 21:20:59 / Modified: 21:47:31" itemprop="dateCreated datePublished" datetime="2020-12-16T21:20:59+08:00">2020-12-16</time>
+              <time title="Created: 2021-03-30 22:37:53" itemprop="dateCreated datePublished" datetime="2021-03-30T22:37:53+08:00">2021-03-30</time>
             </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2021-03-31 00:16:06" itemprop="dateModified" datetime="2021-03-31T00:16:06+08:00">2021-03-31</time>
+              </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
                 <i class="far fa-folder"></i>
@@ -305,32 +315,62 @@
     
     
     <div class="post-body" itemprop="articleBody">
-        <p>本文列举Scala编程中常用的工具。</p>
+        <p>草稿</p>
 <a id="more"></a>
 
-<h1 id="配置相关"><a href="#配置相关" class="headerlink" title="配置相关"></a>配置相关</h1><ol>
-<li><p>PureConfig</p>
-<p><a target="_blank" rel="noopener" href="https://pureconfig.github.io/">网站</a>&nbsp; <a target="_blank" rel="noopener" href="https://github.com/pureconfig/pureconfig">GitHub</a> &nbsp;<a target="_blank" rel="noopener" href="https://index.scala-lang.org/pureconfig/pureconfig/pureconfig">Scaladex</a></p>
-</li>
-<li><p>Typesafe Config</p>
-<p><a target="_blank" rel="noopener" href="https://lightbend.github.io/config/">网站</a>&nbsp; <a target="_blank" rel="noopener" href="https://github.com/lightbend/config">GitHub</a></p>
-</li>
-<li></li>
-</ol>
-<h1 id="数据库相关"><a href="#数据库相关" class="headerlink" title="数据库相关"></a>数据库相关</h1><ol>
-<li><p>ScalikeJDBC</p>
-<p><a target="_blank" rel="noopener" href="http://scalikejdbc.org/">网站</a> &nbsp;<a target="_blank" rel="noopener" href="https://github.com/scalikejdbc/scalikejdbc">GitHub</a> &nbsp;<a target="_blank" rel="noopener" href="https://index.scala-lang.org/scalikejdbc/scalikejdbc/scalikejdbc">Scaladex</a></p>
-</li>
-<li></li>
-</ol>
-<h1 id="HTTP相关"><a href="#HTTP相关" class="headerlink" title="HTTP相关"></a>HTTP相关</h1><ol>
-<li><p>scalaj-http</p>
-<p><a target="_blank" rel="noopener" href="https://github.com/scalaj/scalaj-http">GitHub</a> &nbsp;<a target="_blank" rel="noopener" href="https://index.scala-lang.org/scalaj/scalaj-http/scalaj-http">Scaladex</a></p>
-</li>
-<li></li>
-</ol>
+<h1 id="for表达式的一般式"><a href="#for表达式的一般式" class="headerlink" title="for表达式的一般式"></a>for表达式的一般式</h1><p><img src="/images/scala/expressions-for.svg"></p>
+<p>其中：</p>
+<ul>
+<li>带<code>yield</code>关键字的for表达式我们称为for推导式，不带<code>yield</code>关键字的for表达式我们称为for循环；</li>
+<li><code>seq</code>代表的是生成器、定义、过滤器所组成的序列，它们之间用分号进行风格，并且<code>seq</code>必须以生成器作为开始元素。</li>
+</ul>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> (p &lt;- persons; n = p.name; <span class="keyword">if</span> (n startsWith <span class="string">&quot;To&quot;</span>))</span><br><span class="line">  <span class="keyword">yield</span> n</span><br></pre></td></tr></table></figure>
+
+<p>或者</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> &#123;</span><br><span class="line">  p &lt;- persons            <span class="comment">// 生成器</span></span><br><span class="line">  n = p.name              <span class="comment">// 定义</span></span><br><span class="line">  <span class="keyword">if</span> (n startsWith <span class="string">&quot;To&quot;</span>)  <span class="comment">// 过滤器</span></span><br><span class="line">&#125; <span class="keyword">yield</span> n</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="生成器"><a href="#生成器" class="headerlink" title="生成器"></a>生成器</h2><p><img src="/images/scala/expressions-for-generator.svg"></p>
+<h2 id="定义"><a href="#定义" class="headerlink" title="定义"></a>定义</h2><h2 id="过滤器"><a href="#过滤器" class="headerlink" title="过滤器"></a>过滤器</h2><h1 id="翻译for表达式"><a href="#翻译for表达式" class="headerlink" title="翻译for表达式"></a>翻译for表达式</h1><table>
+    <thead>
+        <tr>
+            <th rowspan="1"></th>
+            <th colspan="2" rowspan="1">for推导式</th>
+            <th colspan="2" rowspan="1">for循环</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td></td>
+            <td>翻译前</td>
+            <td>翻译后</td>
+            <td>翻译前</td>
+            <td>翻译后</td>
+        </tr>
+        <tr>
+            <td>一个生成器</td>
+            <td>for (p &lt;- e) yield e&prime;</td>
+            <td>e.map { case p =&gt; e&prime; }</td>
+            <td>for (p &lt;- e) yield e&prime;</td>
+            <td>e.foreach { case p =&gt; e&prime; }</td>
+        </tr>
+        <tr>
+            <td>两个生成器</td>
+            <td>for (p &lt;- e; p&prime; &lt;- e&prime;; &hellip;) yield e&Prime;</td>
+            <td>e.flatMap { case p =&gt; for (p&prime; &lt;- e&prime;; &hellip;) yield e&Prime; }</td>
+            <td>for (p &lt;- e; p&prime; &lt;- e&prime;; &hellip;) yield e&Prime;</td>
+            <td>e.foreach { case p =&gt; for (p&prime; &lt;- e&prime;; &hellip;) e&Prime; }</td>
+        </tr>
+    </tbody>
+</table>
+
+
+
 <h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><ol>
-<li><a target="_blank" rel="noopener" href="https://index.scala-lang.org/">https://index.scala-lang.org/</a></li>
+<li><a target="_blank" rel="noopener" href="https://scala-lang.org/files/archive/spec/2.12/06-expressions.html#for-comprehensions-and-for-loops">https://scala-lang.org/files/archive/spec/2.12/06-expressions.html#for-comprehensions-and-for-loops</a></li>
+<li><a target="_blank" rel="noopener" href="https://docs.scala-lang.org/tour/for-comprehensions.html">https://docs.scala-lang.org/tour/for-comprehensions.html</a></li>
+<li>《Scala编程 第3版》23章</li>
 </ol>
 
     </div>
@@ -340,6 +380,9 @@
     
 
       <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Scala%E5%AD%A6%E4%B9%A0%E7%B3%BB%E5%88%97/" rel="tag"><i class="fa fa-tag"></i> Scala学习系列</a>
+          </div>
 
         
 
@@ -347,13 +390,10 @@
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/2020/11/27/scala/Scala-project-code-quality/" rel="prev" title="Scala项目代码质量">
-      <i class="fa fa-chevron-left"></i> Scala项目代码质量
+    <a href="/2021/03/24/scala/Scala-Collection-List/" rel="prev" title="Scala学习系列-集合2：用好List">
+      <i class="fa fa-chevron-left"></i> Scala学习系列-集合2：用好List
     </a></div>
-      <div class="post-nav-item">
-    <a href="/2020/12/17/python/Python-How-to-get-milliseconds-represented-by-datetime/" rel="next" title="Python：如何获取时间对象所表示的毫秒数">
-      Python：如何获取时间对象所表示的毫秒数 <i class="fa fa-chevron-right"></i>
-    </a></div>
+      <div class="post-nav-item"></div>
     </div>
       </footer>
     
@@ -490,7 +530,7 @@ NexT.utils.loadComments('#gitalk-container', () => {
       repo        : 'jtLiBrain.github.io',
       owner       : 'jtLiBrain',
       admin       : ['jtLiBrain'],
-      id          : '3ecff727b82cf074e3c0a1d2330307b5',
+      id          : '380872e28290712f144bcbbed6dd46d3',
         language: 'en',
       distractionFreeMode: true
     });
