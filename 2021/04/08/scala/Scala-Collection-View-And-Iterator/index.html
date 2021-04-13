@@ -23,15 +23,15 @@
     var CONFIG = {"hostname":"jtlibrain.github.io","root":"/","scheme":"Gemini","version":"8.0.0-rc.5","exturl":false,"sidebar":{"position":"left","display":"hide","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false};
   </script>
 
-  <meta name="description" content="TODO">
+  <meta name="description" content="(未完)">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Scala学习系列-集合3：视图和迭代器">
 <meta property="og:url" content="https://jtlibrain.github.io/2021/04/08/scala/Scala-Collection-View-And-Iterator/index.html">
 <meta property="og:site_name" content="jtLiBrain">
-<meta property="og:description" content="TODO">
+<meta property="og:description" content="(未完)">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2021-04-08T15:16:01.000Z">
-<meta property="article:modified_time" content="2021-04-08T15:21:59.818Z">
+<meta property="article:modified_time" content="2021-04-13T15:55:24.345Z">
 <meta property="article:author" content="JT Li">
 <meta property="article:tag" content="Scala学习系列">
 <meta name="twitter:card" content="summary">
@@ -171,7 +171,7 @@
 
   <aside class="sidebar">
 
-    <div class="sidebar-inner sidebar-overview-active">
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
       <ul class="sidebar-nav">
         <li class="sidebar-nav-toc">
           Table of Contents
@@ -183,6 +183,7 @@
 
       <!--noindex-->
       <section class="post-toc-wrap sidebar-panel">
+          <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%A7%86%E5%9B%BE-view"><span class="nav-number">1.</span> <span class="nav-text">视图(view)</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%97%AE%E9%A2%98%E7%9A%84%E4%BA%A7%E7%94%9F"><span class="nav-number">1.1.</span> <span class="nav-text">问题的产生</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8%E8%A7%86%E5%9B%BE"><span class="nav-number">1.2.</span> <span class="nav-text">使用视图</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%A7%86%E5%9B%BE%E6%9E%B6%E6%9E%84"><span class="nav-number">1.3.</span> <span class="nav-text">视图架构</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%BF%AD%E4%BB%A3%E5%99%A8-Iterator"><span class="nav-number">2.</span> <span class="nav-text">迭代器(Iterator)</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%82%E8%80%83"><span class="nav-number">3.</span> <span class="nav-text">参考</span></a></li></ol></div>
       </section>
       <!--/noindex-->
 
@@ -275,10 +276,16 @@
                 <i class="far fa-calendar"></i>
               </span>
               <span class="post-meta-item-text">Posted on</span>
-              
 
-              <time title="Created: 2021-04-08 23:16:01 / Modified: 23:21:59" itemprop="dateCreated datePublished" datetime="2021-04-08T23:16:01+08:00">2021-04-08</time>
+              <time title="Created: 2021-04-08 23:16:01" itemprop="dateCreated datePublished" datetime="2021-04-08T23:16:01+08:00">2021-04-08</time>
             </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2021-04-13 23:55:24" itemprop="dateModified" datetime="2021-04-13T23:55:24+08:00">2021-04-13</time>
+              </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
                 <i class="far fa-folder"></i>
@@ -305,9 +312,57 @@
     
     
     <div class="post-body" itemprop="articleBody">
-        <p>TODO</p>
+        <p>(未完)</p>
 <a id="more"></a>
 
+<h1 id="视图-view"><a href="#视图-view" class="headerlink" title="视图(view)"></a>视图(view)</h1><h2 id="问题的产生"><a href="#问题的产生" class="headerlink" title="问题的产生"></a>问题的产生</h2><p>我们首先来看一下下面这两行代码背后发生了什么：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">val</span> v = <span class="type">Vector</span>(<span class="number">1</span> to <span class="number">10</span>: _*)</span><br><span class="line">v.map(_ + <span class="number">1</span>).map(_ * <span class="number">2</span>)</span><br></pre></td></tr></table></figure>
+
+
+
+<p><code>immutable.Vector</code>的<code>map()</code>方法继承自特质<code>TraversableLike</code>中的<code>map()</code>，其定义如下：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">map</span></span>[<span class="type">B</span>, <span class="type">That</span>](f: <span class="type">A</span> =&gt; <span class="type">B</span>)(<span class="keyword">implicit</span> bf: <span class="type">CanBuildFrom</span>[<span class="type">Repr</span>, <span class="type">B</span>, <span class="type">That</span>]): <span class="type">That</span> = &#123;</span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">builder</span> </span>= &#123; <span class="comment">// extracted to keep method size under 35 bytes, so that it can be JIT-inlined</span></span><br><span class="line">    <span class="keyword">val</span> b = bf(repr)</span><br><span class="line">    b.sizeHint(<span class="keyword">this</span>)</span><br><span class="line">    b</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">val</span> b = builder</span><br><span class="line">  <span class="keyword">for</span> (x &lt;- <span class="keyword">this</span>) b += f(x)</span><br><span class="line">  b.result</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>可以看出，对于每次<code>map()</code>调用，都会有一个新的数据结构生成出来。所以代码行<code>v.map(_ + 1).map(_ * 2)</code>会有两个数据结构生成出来，其中：</p>
+<ul>
+<li><code>v.map(_ + 1)</code>会生成一份数据<code>X</code>；</li>
+<li><code>.map(_ * 2)</code>在结果<code>X</code>基础上做进一步转换，生成最后的数据<code>Y</code>；</li>
+</ul>
+<p>显然，如果向量<code>v</code>是一份巨量数据，那么对于这条数据链路：<code>v-&gt;X-&gt;Y</code>，其性能开销（存储和计算开销）将会是非常可观的。那么有没有途径可以将其简化为：<code>v-&gt;Y</code>呢？</p>
+<p>一种解决思路是将两次map变换合并为一次map变换，即<code>v.map((_ + 1) * 2)</code>，这对我们的例子程序是完全可行的，因为我们对于代码有完全的掌控能力。但是假如在团队合作或使用了第三方类库时，我们有时是不能完全掌控代码的，这时就该视图上场了！</p>
+<h2 id="使用视图"><a href="#使用视图" class="headerlink" title="使用视图"></a>使用视图</h2><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">val</span> vv = v.view</span><br></pre></td></tr></table></figure>
+
+
+
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">val</span> vvm = vv.map.(_ + <span class="number">1</span>)</span><br></pre></td></tr></table></figure>
+
+
+
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">val</span> vvmm = map (_ * <span class="number">2</span>)</span><br></pre></td></tr></table></figure>
+
+
+
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vvmm.force</span><br></pre></td></tr></table></figure>
+
+
+
+
+
+<h2 id="视图架构"><a href="#视图架构" class="headerlink" title="视图架构"></a>视图架构</h2><p>集合中有很多方法可以实现<code>集合到集合</code>的转换，如map、filter和++等，我们将这样的<code>集合到集合</code>的转换操作称之为“转换器(transformer)”。实现“转换器”主要有两种方式，严格的和非严格的(惰性的)，其中：</p>
+<ul>
+<li>采用严格的方式，新集合的所有元素作为“转换器”的结果被完全构造出来；</li>
+<li>采用非严格/惰性的方式，构造的只是作为结果集合的代理，其元素只在需要它们时才会被构造；</li>
+</ul>
+<p>Scala中的集合默认都是采用严格方式来定义它们的“转换器”。</p>
+<p>特质<code>SeqLike</code>：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">override</span> <span class="function"><span class="keyword">def</span> <span class="title">view</span> </span>= <span class="keyword">new</span> <span class="type">SeqView</span>[<span class="type">A</span>, <span class="type">Repr</span>] &#123;</span><br><span class="line">  <span class="keyword">protected</span> <span class="keyword">lazy</span> <span class="keyword">val</span> underlying = self.repr</span><br><span class="line">  <span class="keyword">override</span> <span class="function"><span class="keyword">def</span> <span class="title">iterator</span> </span>= self.iterator</span><br><span class="line">  <span class="keyword">override</span> <span class="function"><span class="keyword">def</span> <span class="title">length</span> </span>= self.length</span><br><span class="line">  <span class="keyword">override</span> <span class="function"><span class="keyword">def</span> <span class="title">apply</span></span>(idx: <span class="type">Int</span>) = self.apply(idx)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h1 id="迭代器-Iterator"><a href="#迭代器-Iterator" class="headerlink" title="迭代器(Iterator)"></a>迭代器(Iterator)</h1><h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><ol>
+<li><a target="_blank" rel="noopener" href="https://docs.scala-lang.org/overviews/collections-2.13/views.html">https://docs.scala-lang.org/overviews/collections-2.13/views.html</a></li>
+<li><a target="_blank" rel="noopener" href="https://docs.scala-lang.org/overviews/collections-2.13/iterators.html">https://docs.scala-lang.org/overviews/collections-2.13/iterators.html</a></li>
+</ol>
 
     </div>
 
