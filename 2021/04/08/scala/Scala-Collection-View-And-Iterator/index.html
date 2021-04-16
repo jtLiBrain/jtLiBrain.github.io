@@ -31,7 +31,7 @@
 <meta property="og:description" content="(未完)">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2021-04-08T15:16:01.000Z">
-<meta property="article:modified_time" content="2021-04-15T15:48:02.732Z">
+<meta property="article:modified_time" content="2021-04-16T15:03:34.369Z">
 <meta property="article:author" content="JT Li">
 <meta property="article:tag" content="Scala学习系列">
 <meta name="twitter:card" content="summary">
@@ -183,7 +183,7 @@
 
       <!--noindex-->
       <section class="post-toc-wrap sidebar-panel">
-          <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%A7%86%E5%9B%BE-View"><span class="nav-number">1.</span> <span class="nav-text">视图(View)</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%97%AE%E9%A2%98%E7%9A%84%E4%BA%A7%E7%94%9F"><span class="nav-number">1.1.</span> <span class="nav-text">问题的产生</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8%E8%A7%86%E5%9B%BE"><span class="nav-number">1.2.</span> <span class="nav-text">使用视图</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%A7%86%E5%9B%BE%E5%8E%9F%E7%90%86"><span class="nav-number">1.3.</span> <span class="nav-text">视图原理</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%BF%AD%E4%BB%A3%E5%99%A8-Iterator"><span class="nav-number">2.</span> <span class="nav-text">迭代器(Iterator)</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%82%E8%80%83"><span class="nav-number">3.</span> <span class="nav-text">参考</span></a></li></ol></div>
+          <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%A7%86%E5%9B%BE-View"><span class="nav-number">1.</span> <span class="nav-text">视图(View)</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%97%AE%E9%A2%98%E7%9A%84%E4%BA%A7%E7%94%9F"><span class="nav-number">1.1.</span> <span class="nav-text">问题的产生</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8%E8%A7%86%E5%9B%BE"><span class="nav-number">1.2.</span> <span class="nav-text">使用视图</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%A7%86%E5%9B%BE%E5%8E%9F%E7%90%86"><span class="nav-number">1.3.</span> <span class="nav-text">视图原理</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%BF%AD%E4%BB%A3%E5%99%A8-Iterator"><span class="nav-number">2.</span> <span class="nav-text">迭代器(Iterator)</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%A4%BA%E4%BE%8B1"><span class="nav-number">2.1.</span> <span class="nav-text">示例1</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%82%E8%80%83"><span class="nav-number">3.</span> <span class="nav-text">参考</span></a></li></ol></div>
       </section>
       <!--/noindex-->
 
@@ -197,7 +197,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">38</span>
+          <span class="site-state-item-count">39</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
@@ -284,7 +284,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2021-04-15 23:48:02" itemprop="dateModified" datetime="2021-04-15T23:48:02+08:00">2021-04-15</time>
+                <time title="Modified: 2021-04-16 23:03:34" itemprop="dateModified" datetime="2021-04-16T23:03:34+08:00">2021-04-16</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -392,7 +392,47 @@
 
 
 <p>TODO</p>
-<h1 id="迭代器-Iterator"><a href="#迭代器-Iterator" class="headerlink" title="迭代器(Iterator)"></a>迭代器(Iterator)</h1><p>TODO</p>
+<h1 id="迭代器-Iterator"><a href="#迭代器-Iterator" class="headerlink" title="迭代器(Iterator)"></a>迭代器(Iterator)</h1><p>迭代器并不是集合，它是逐个访问集合元素的一种方式。<code>Iterator</code>特质中有两个基本方法：<code>next()</code>和<code>hasNext</code>，该特质中的其它方法都是依赖这两个方法进行实现，其中：</p>
+<ul>
+<li><code>it.hasNext</code>检查迭代器是否还有元素；</li>
+<li><code>it.next()</code>返回迭代器的下一个元素，并推进迭代器的状态；如果没有元素可以被返回了，那么将抛出<code>NoSuchElementException</code>异常；</li>
+</ul>
+<p>遍历迭代器的一般形式如下：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">while</span> (it.hasNext)</span><br><span class="line">  it.next()</span><br></pre></td></tr></table></figure>
+
+<p>这个一般形式与<code>Iterator.foreach()</code>效果是一样的，以下是<code>foreach()</code>的定义：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">foreach</span></span>[<span class="type">U</span>](f: <span class="type">A</span> =&gt; <span class="type">U</span>) &#123; <span class="keyword">while</span> (hasNext) f(next()) &#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="示例1"><a href="#示例1" class="headerlink" title="示例1"></a>示例1</h2><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">map</span></span>[<span class="type">B</span>](f: <span class="type">A</span> =&gt; <span class="type">B</span>): <span class="type">Iterator</span>[<span class="type">B</span>] = <span class="keyword">new</span> <span class="type">AbstractIterator</span>[<span class="type">B</span>] &#123;</span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">hasNext</span> </span>= self.hasNext</span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">next</span></span>() = f(self.next())</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 <h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><ol>
 <li><a target="_blank" rel="noopener" href="https://docs.scala-lang.org/overviews/collections-2.13/views.html">https://docs.scala-lang.org/overviews/collections-2.13/views.html</a></li>
 <li><a target="_blank" rel="noopener" href="https://docs.scala-lang.org/overviews/collections-2.13/iterators.html">https://docs.scala-lang.org/overviews/collections-2.13/iterators.html</a></li>
