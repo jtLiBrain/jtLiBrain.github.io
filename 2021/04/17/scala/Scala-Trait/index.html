@@ -23,19 +23,22 @@
     var CONFIG = {"hostname":"jtlibrain.github.io","root":"/","scheme":"Gemini","version":"8.0.0-rc.5","exturl":false,"sidebar":{"position":"left","display":"hide","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false};
   </script>
 
-  <meta name="description" content="RDD、Dependency、Stage是Spark中极其重要的概念，它们之间有着天然的联系。本篇将对它们以及它们之间的联系进行简单介绍。">
+  <meta name="description" content="TODO">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Spark中的RDD、依赖、stage以及它们之间的联系">
-<meta property="og:url" content="https://jtlibrain.github.io/2020/08/28/spark/Spark-RDD-dependency-stage-relation/index.html">
+<meta property="og:title" content="Scala学习系列-特质(trait)">
+<meta property="og:url" content="https://jtlibrain.github.io/2021/04/17/scala/Scala-Trait/index.html">
 <meta property="og:site_name" content="jtLiBrain">
-<meta property="og:description" content="RDD、Dependency、Stage是Spark中极其重要的概念，它们之间有着天然的联系。本篇将对它们以及它们之间的联系进行简单介绍。">
+<meta property="og:description" content="TODO">
 <meta property="og:locale" content="en_US">
-<meta property="article:published_time" content="2020-08-28T03:38:06.000Z">
-<meta property="article:modified_time" content="2020-08-28T07:28:12.466Z">
+<meta property="og:image" content="https://jtlibrain.github.io/images/scala/trait-linearization.svg">
+<meta property="article:published_time" content="2021-04-17T13:52:42.000Z">
+<meta property="article:modified_time" content="2021-04-17T15:47:06.603Z">
 <meta property="article:author" content="JT Li">
+<meta property="article:tag" content="Scala学习系列">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://jtlibrain.github.io/images/scala/trait-linearization.svg">
 
-<link rel="canonical" href="https://jtlibrain.github.io/2020/08/28/spark/Spark-RDD-dependency-stage-relation/">
+<link rel="canonical" href="https://jtlibrain.github.io/2021/04/17/scala/Scala-Trait/">
 
 
 <script class="page-configurations">
@@ -48,7 +51,7 @@
   };
 </script>
 
-  <title>Spark中的RDD、依赖、stage以及它们之间的联系 | jtLiBrain</title>
+  <title>Scala学习系列-特质(trait) | jtLiBrain</title>
   
 
 
@@ -182,7 +185,7 @@
 
       <!--noindex-->
       <section class="post-toc-wrap sidebar-panel">
-          <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#RDD"><span class="nav-number">1.</span> <span class="nav-text">RDD</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Dependency"><span class="nav-number">2.</span> <span class="nav-text">Dependency</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Stage"><span class="nav-number">3.</span> <span class="nav-text">Stage</span></a></li></ol></div>
+          <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%BA%BF%E6%80%A7%E5%8C%96"><span class="nav-number">1.</span> <span class="nav-text">线性化</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Notes"><span class="nav-number">2.</span> <span class="nav-text">Notes</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%82%E8%80%83"><span class="nav-number">3.</span> <span class="nav-text">参考</span></a></li></ol></div>
       </section>
       <!--/noindex-->
 
@@ -251,7 +254,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="https://jtlibrain.github.io/2020/08/28/spark/Spark-RDD-dependency-stage-relation/">
+    <link itemprop="mainEntityOfPage" href="https://jtlibrain.github.io/2021/04/17/scala/Scala-Trait/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -266,7 +269,7 @@
     
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          Spark中的RDD、依赖、stage以及它们之间的联系
+          Scala学习系列-特质(trait)
         </h1>
 
         <div class="post-meta">
@@ -277,7 +280,7 @@
               <span class="post-meta-item-text">Posted on</span>
               
 
-              <time title="Created: 2020-08-28 11:38:06 / Modified: 15:28:12" itemprop="dateCreated datePublished" datetime="2020-08-28T11:38:06+08:00">2020-08-28</time>
+              <time title="Created: 2021-04-17 21:52:42 / Modified: 23:47:06" itemprop="dateCreated datePublished" datetime="2021-04-17T21:52:42+08:00">2021-04-17</time>
             </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -285,7 +288,7 @@
               </span>
               <span class="post-meta-item-text">In</span>
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/spark/" itemprop="url" rel="index"><span itemprop="name">spark</span></a>
+                  <a href="/categories/scala/" itemprop="url" rel="index"><span itemprop="name">scala</span></a>
                 </span>
             </span>
 
@@ -305,10 +308,19 @@
     
     
     <div class="post-body" itemprop="articleBody">
-        <p>RDD、Dependency、Stage是Spark中极其重要的概念，它们之间有着天然的联系。本篇将对它们以及它们之间的联系进行简单介绍。</p>
+        <p>TODO</p>
 <a id="more"></a>
 
-<h1 id="RDD"><a href="#RDD" class="headerlink" title="RDD"></a>RDD</h1><h1 id="Dependency"><a href="#Dependency" class="headerlink" title="Dependency"></a>Dependency</h1><h1 id="Stage"><a href="#Stage" class="headerlink" title="Stage"></a>Stage</h1>
+<h1 id="线性化"><a href="#线性化" class="headerlink" title="线性化"></a>线性化</h1><img src="/images/scala/trait-linearization.svg" style="zoom:80%;" />
+
+<h1 id="Notes"><a href="#Notes" class="headerlink" title="Notes"></a>Notes</h1><p>本文基于Scala2.12.13</p>
+<h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><ol>
+<li><a target="_blank" rel="noopener" href="https://docs.scala-lang.org/tour/traits.html">https://docs.scala-lang.org/tour/traits.html</a></li>
+<li><a target="_blank" rel="noopener" href="https://docs.scala-lang.org/tour/self-types.html">https://docs.scala-lang.org/tour/self-types.html</a></li>
+<li><a target="_blank" rel="noopener" href="https://scala-lang.org/files/archive/spec/2.12/05-classes-and-objects.html#traits">https://scala-lang.org/files/archive/spec/2.12/05-classes-and-objects.html#traits</a></li>
+<li><a target="_blank" rel="noopener" href="https://scala-lang.org/files/archive/spec/2.12/05-classes-and-objects.html#class-linearization">https://scala-lang.org/files/archive/spec/2.12/05-classes-and-objects.html#class-linearization</a></li>
+</ol>
+
     </div>
 
     
@@ -316,6 +328,9 @@
     
 
       <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Scala%E5%AD%A6%E4%B9%A0%E7%B3%BB%E5%88%97/" rel="tag"><i class="fa fa-tag"></i> Scala学习系列</a>
+          </div>
 
         
 
@@ -323,13 +338,10 @@
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/2020/08/24/spark/Spark-submit-job-details/" rel="prev" title="Spark提交作业原理">
-      <i class="fa fa-chevron-left"></i> Spark提交作业原理
+    <a href="/2021/04/16/scala/Scala-Implicit-Conversions-And-Parameters/" rel="prev" title="Scala学习系列-隐式转换和隐式参数">
+      <i class="fa fa-chevron-left"></i> Scala学习系列-隐式转换和隐式参数
     </a></div>
-      <div class="post-nav-item">
-    <a href="/2020/08/28/spark/Spark-run-task-details/" rel="next" title="Spark运行任务原理">
-      Spark运行任务原理 <i class="fa fa-chevron-right"></i>
-    </a></div>
+      <div class="post-nav-item"></div>
     </div>
       </footer>
     
@@ -466,7 +478,7 @@ NexT.utils.loadComments('#gitalk-container', () => {
       repo        : 'jtLiBrain.github.io',
       owner       : 'jtLiBrain',
       admin       : ['jtLiBrain'],
-      id          : '2bf39f579c8a64380346498b68435a48',
+      id          : '56ee6724df3a68fa95ee3b7a597f15ce',
         language: 'en',
       distractionFreeMode: true
     });
