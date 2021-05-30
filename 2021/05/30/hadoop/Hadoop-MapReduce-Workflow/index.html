@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.0.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.14.0/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css">
+
+<script class="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"jtlibrain.github.io","root":"/","scheme":"Gemini","version":"8.0.0-rc.5","exturl":false,"sidebar":{"position":"left","display":"hide","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false};
+  </script>
+
+  <meta name="description" content="一图彻底理解Map-Reduce。（待续）">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Hadoop MapReduce原理">
+<meta property="og:url" content="https://jtlibrain.github.io/2021/05/30/hadoop/Hadoop-MapReduce-Workflow/index.html">
+<meta property="og:site_name" content="jtLiBrain">
+<meta property="og:description" content="一图彻底理解Map-Reduce。（待续）">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://jtlibrain.github.io/images/hadoop/mr-mapreduce-workflow.svg">
+<meta property="article:published_time" content="2021-05-29T16:26:52.000Z">
+<meta property="article:modified_time" content="2021-05-30T15:39:29.915Z">
+<meta property="article:author" content="JT Li">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://jtlibrain.github.io/images/hadoop/mr-mapreduce-workflow.svg">
+
+<link rel="canonical" href="https://jtlibrain.github.io/2021/05/30/hadoop/Hadoop-MapReduce-Workflow/">
+
+
+<script class="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>Hadoop MapReduce原理 | jtLiBrain</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  body { margin-top: 2rem; }
+
+  .use-motion .menu-item,
+  .use-motion .sidebar,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header {
+    visibility: visible;
+  }
+
+  .use-motion .header,
+  .use-motion .site-brand-container .toggle,
+  .use-motion .footer { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle,
+  .use-motion .custom-logo-image {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line {
+    transform: scaleX(1);
+  }
+
+  .search-pop-overlay, .sidebar-nav { display: none; }
+  .sidebar-panel { display: block; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <main class="main">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+        <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">jtLiBrain</h1>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">任何伟大的事都不会一蹴而就，三分智慧，七分韧性</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <section class="post-toc-wrap sidebar-panel">
+          <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%A6%82%E8%BF%B0"><span class="nav-number">1.</span> <span class="nav-text">概述</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BB%A3%E7%A0%81%E5%88%86%E6%9E%90"><span class="nav-number">2.</span> <span class="nav-text">代码分析</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Mapper%E7%AB%AF"><span class="nav-number">2.1.</span> <span class="nav-text">Mapper端</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#MapTask"><span class="nav-number">2.1.1.</span> <span class="nav-text">MapTask</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#TaskAttemptContextImpl"><span class="nav-number">2.1.2.</span> <span class="nav-text">TaskAttemptContextImpl</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#NewOutputCollector"><span class="nav-number">2.1.3.</span> <span class="nav-text">NewOutputCollector</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#MapOutputBuffer"><span class="nav-number">2.1.4.</span> <span class="nav-text">MapOutputBuffer</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Reducer%E7%AB%AF"><span class="nav-number">2.2.</span> <span class="nav-text">Reducer端</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#ReduceTask"><span class="nav-number">2.2.1.</span> <span class="nav-text">ReduceTask</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Shuffle"><span class="nav-number">2.2.2.</span> <span class="nav-text">Shuffle</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#MergeManagerImpl"><span class="nav-number">2.2.3.</span> <span class="nav-text">MergeManagerImpl</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Notes"><span class="nav-number">3.</span> <span class="nav-text">Notes</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%82%E8%80%83"><span class="nav-number">4.</span> <span class="nav-text">参考</span></a></li></ol></div>
+      </section>
+      <!--/noindex-->
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">JT Li</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">42</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">12</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="mailto:jtli.brain@hotmail.com" title="E-Mail → mailto:jtli.brain@hotmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </section>
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </header>
+
+      
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div id="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+      <div class="main-inner">
+        
+
+        <div class="content post posts-expand">
+          
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://jtlibrain.github.io/2021/05/30/hadoop/Hadoop-MapReduce-Workflow/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="JT Li">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="jtLiBrain">
+    </span>
+
+    
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Hadoop MapReduce原理
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+              
+
+              <time title="Created: 2021-05-30 00:26:52 / Modified: 23:39:29" itemprop="dateCreated datePublished" datetime="2021-05-30T00:26:52+08:00">2021-05-30</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/hadoop/" itemprop="url" rel="index"><span itemprop="name">hadoop</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="Views" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">Views: </span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p>一图彻底理解Map-Reduce。（待续）</p>
+<a id="more"></a>
+
+<h1 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h1><img src="/images/hadoop/mr-mapreduce-workflow.svg" style="zoom:70%;" />
+
+<h1 id="代码分析"><a href="#代码分析" class="headerlink" title="代码分析"></a>代码分析</h1><h2 id="Mapper端"><a href="#Mapper端" class="headerlink" title="Mapper端"></a>Mapper端</h2><h3 id="MapTask"><a href="#MapTask" class="headerlink" title="MapTask"></a>MapTask</h3><ul>
+<li><a target="_blank" rel="noopener" href="https://github.com/apache/hadoop/blob/1827467c9a56f133025f28557bfc2c562d78e816/hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-core/src/main/java/org/apache/hadoop/mapred/MapTask.java#L739">MapTask.runNewMapper()</a></li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">runNewMapper</span><span class="params">(<span class="keyword">final</span> JobConf job,</span></span></span><br><span class="line"><span class="function"><span class="params">                  <span class="keyword">final</span> TaskSplitIndex splitIndex,</span></span></span><br><span class="line"><span class="function"><span class="params">                  <span class="keyword">final</span> TaskUmbilicalProtocol umbilical,</span></span></span><br><span class="line"><span class="function"><span class="params">                  TaskReporter reporter</span></span></span><br><span class="line"><span class="function"><span class="params">                  )</span> <span class="keyword">throws</span> IOException, ClassNotFoundException,</span></span><br><span class="line"><span class="function">                           InterruptedException </span>&#123;</span><br><span class="line">  <span class="comment">// make a task context so we can get the classes</span></span><br><span class="line">  org.apache.hadoop.mapreduce.TaskAttemptContext taskContext =</span><br><span class="line">    <span class="keyword">new</span> org.apache.hadoop.mapreduce.task.TaskAttemptContextImpl(job, </span><br><span class="line">                                                                getTaskID(),</span><br><span class="line">                                                                reporter);</span><br><span class="line">  <span class="comment">// make a mapper</span></span><br><span class="line">  org.apache.hadoop.mapreduce.Mapper&lt;INKEY,INVALUE,OUTKEY,OUTVALUE&gt; mapper =</span><br><span class="line">    (org.apache.hadoop.mapreduce.Mapper&lt;INKEY,INVALUE,OUTKEY,OUTVALUE&gt;)</span><br><span class="line">      ReflectionUtils.newInstance(taskContext.getMapperClass(), job);</span><br><span class="line">  <span class="comment">// make the input format</span></span><br><span class="line">  org.apache.hadoop.mapreduce.InputFormat&lt;INKEY,INVALUE&gt; inputFormat =</span><br><span class="line">    (org.apache.hadoop.mapreduce.InputFormat&lt;INKEY,INVALUE&gt;)</span><br><span class="line">      ReflectionUtils.newInstance(taskContext.getInputFormatClass(), job);</span><br><span class="line">  <span class="comment">// rebuild the input split</span></span><br><span class="line">  org.apache.hadoop.mapreduce.InputSplit split = <span class="keyword">null</span>;</span><br><span class="line">  split = getSplitDetails(<span class="keyword">new</span> Path(splitIndex.getSplitLocation()),</span><br><span class="line">      splitIndex.getStartOffset());</span><br><span class="line">  LOG.info(<span class="string">&quot;Processing split: &quot;</span> + split);</span><br><span class="line"></span><br><span class="line">  org.apache.hadoop.mapreduce.RecordReader&lt;INKEY,INVALUE&gt; input =</span><br><span class="line">    <span class="keyword">new</span> NewTrackingRecordReader&lt;INKEY,INVALUE&gt;</span><br><span class="line">      (split, inputFormat, reporter, taskContext);</span><br><span class="line">  </span><br><span class="line">  job.setBoolean(JobContext.SKIP_RECORDS, isSkipping());</span><br><span class="line">  org.apache.hadoop.mapreduce.RecordWriter output = <span class="keyword">null</span>;</span><br><span class="line">  </span><br><span class="line">  <span class="comment">// get an output object</span></span><br><span class="line">  <span class="keyword">if</span> (job.getNumReduceTasks() == <span class="number">0</span>) &#123;</span><br><span class="line">    output = </span><br><span class="line">      <span class="keyword">new</span> NewDirectOutputCollector(taskContext, job, umbilical, reporter);</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    output = <span class="keyword">new</span> NewOutputCollector(taskContext, job, umbilical, reporter);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  org.apache.hadoop.mapreduce.MapContext&lt;INKEY, INVALUE, OUTKEY, OUTVALUE&gt; </span><br><span class="line">  mapContext = </span><br><span class="line">    <span class="keyword">new</span> MapContextImpl&lt;INKEY, INVALUE, OUTKEY, OUTVALUE&gt;(job, getTaskID(), </span><br><span class="line">        input, output, </span><br><span class="line">        committer, </span><br><span class="line">        reporter, split);</span><br><span class="line"></span><br><span class="line">  org.apache.hadoop.mapreduce.Mapper&lt;INKEY,INVALUE,OUTKEY,OUTVALUE&gt;.Context </span><br><span class="line">      mapperContext = </span><br><span class="line">        <span class="keyword">new</span> WrappedMapper&lt;INKEY, INVALUE, OUTKEY, OUTVALUE&gt;().getMapContext(</span><br><span class="line">            mapContext);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">try</span> &#123;</span><br><span class="line">    input.initialize(split, mapperContext);</span><br><span class="line">    mapper.run(mapperContext);</span><br><span class="line">    mapPhase.complete();</span><br><span class="line">    setPhase(TaskStatus.Phase.SORT);</span><br><span class="line">    statusUpdate(umbilical);</span><br><span class="line">    input.close();</span><br><span class="line">    input = <span class="keyword">null</span>;</span><br><span class="line">    output.close(mapperContext);</span><br><span class="line">    output = <span class="keyword">null</span>;</span><br><span class="line">  &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">    closeQuietly(input);</span><br><span class="line">    closeQuietly(output, mapperContext);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="TaskAttemptContextImpl"><a href="#TaskAttemptContextImpl" class="headerlink" title="TaskAttemptContextImpl"></a>TaskAttemptContextImpl</h3><ul>
+<li>JobContextImpl.getPartitionerClass()</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> Class&lt;? extends Partitioner&lt;?,?&gt;&gt; getPartitionerClass() </span><br><span class="line">   <span class="keyword">throws</span> ClassNotFoundException &#123;</span><br><span class="line">  <span class="keyword">return</span> (Class&lt;? extends Partitioner&lt;?,?&gt;&gt;) </span><br><span class="line">    conf.getClass(PARTITIONER_CLASS_ATTR, HashPartitioner.class);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="NewOutputCollector"><a href="#NewOutputCollector" class="headerlink" title="NewOutputCollector"></a>NewOutputCollector</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">write</span><span class="params">(K key, V value)</span> <span class="keyword">throws</span> IOException, InterruptedException </span>&#123;</span><br><span class="line">  collector.collect(key, value,</span><br><span class="line">                    partitioner.getPartition(key, value, partitions));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="MapOutputBuffer"><a href="#MapOutputBuffer" class="headerlink" title="MapOutputBuffer"></a>MapOutputBuffer</h3><ul>
+<li>collect()</li>
+</ul>
+<ul>
+<li>compare()</li>
+</ul>
+<ul>
+<li>sortAndSpill()</li>
+</ul>
+<h2 id="Reducer端"><a href="#Reducer端" class="headerlink" title="Reducer端"></a>Reducer端</h2><h3 id="ReduceTask"><a href="#ReduceTask" class="headerlink" title="ReduceTask"></a>ReduceTask</h3><h3 id="Shuffle"><a href="#Shuffle" class="headerlink" title="Shuffle"></a>Shuffle</h3><ul>
+<li><a target="_blank" rel="noopener" href="https://github.com/apache/hadoop/blob/1827467c9a56f133025f28557bfc2c562d78e816/hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-core/src/main/java/org/apache/hadoop/mapreduce/task/reduce/Shuffle.java#L95">run()</a></li>
+</ul>
+<h3 id="MergeManagerImpl"><a href="#MergeManagerImpl" class="headerlink" title="MergeManagerImpl"></a>MergeManagerImpl</h3><ul>
+<li><a target="_blank" rel="noopener" href="https://github.com/apache/hadoop/blob/1827467c9a56f133025f28557bfc2c562d78e816/hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-core/src/main/java/org/apache/hadoop/mapreduce/task/reduce/MergeManagerImpl.java#L703">finalMerge()</a></li>
+</ul>
+<h1 id="Notes"><a href="#Notes" class="headerlink" title="Notes"></a>Notes</h1><p>本文基于Hadoop 2.10.1</p>
+<h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><ol>
+<li><a target="_blank" rel="noopener" href="http://blog.ditullio.fr/2015/12/28/hadoop-basics-secondary-sort-in-mapreduce/">http://blog.ditullio.fr/2015/12/28/hadoop-basics-secondary-sort-in-mapreduce/</a></li>
+</ol>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/04/26/scala/Scala-Type/" rel="prev" title="Scala学习系列-Scala的类型系统">
+      <i class="fa fa-chevron-left"></i> Scala学习系列-Scala的类型系统
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+        </div>
+        
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">JT Li</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="Total Visitors">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="Total Views">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="//cdn.jsdelivr.net/npm/animejs@3.2.0/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1.6.2/dist/gitalk.css">
+
+<script>
+NexT.utils.loadComments('#gitalk-container', () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1.6.2/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : 'c94aa78cf2eda71757bf',
+      clientSecret: '01e1353b3f8eac54aafb1224c784b7af0305ce8c',
+      repo        : 'jtLiBrain.github.io',
+      owner       : 'jtLiBrain',
+      admin       : ['jtLiBrain'],
+      id          : '3f90bf6fabd429e118ef1b80843aa135',
+        language: 'en',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+</body>
+</html>
