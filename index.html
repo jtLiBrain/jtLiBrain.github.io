@@ -270,10 +270,16 @@
                 <i class="far fa-calendar"></i>
               </span>
               <span class="post-meta-item-text">Posted on</span>
-              
 
-              <time title="Created: 2021-08-22 23:02:32 / Modified: 23:14:45" itemprop="dateCreated datePublished" datetime="2021-08-22T23:02:32+08:00">2021-08-22</time>
+              <time title="Created: 2021-08-22 23:02:32" itemprop="dateCreated datePublished" datetime="2021-08-22T23:02:32+08:00">2021-08-22</time>
             </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2021-08-23 23:44:38" itemprop="dateModified" datetime="2021-08-23T23:44:38+08:00">2021-08-23</time>
+              </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
                 <i class="far fa-folder"></i>
@@ -584,7 +590,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2021-08-22 23:22:41" itemprop="dateModified" datetime="2021-08-22T23:22:41+08:00">2021-08-22</time>
+                <time title="Modified: 2021-08-23 22:40:25" itemprop="dateModified" datetime="2021-08-23T22:40:25+08:00">2021-08-23</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -606,14 +612,72 @@
     
     <div class="post-body" itemprop="articleBody">
           <p>（待续）</p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2021/08/17/flink/Flink-Table-and-SQL/#more" rel="contents">
-                Read more &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
+<h1 id="Table-API-和-SQL-程序的结构"><a href="#Table-API-和-SQL-程序的结构" class="headerlink" title="Table API 和 SQL 程序的结构"></a>Table API 和 SQL 程序的结构</h1><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// create a TableEnvironment for specific planner batch or streaming</span></span><br><span class="line"><span class="keyword">val</span> tableEnv = ... <span class="comment">// see &quot;Create a TableEnvironment&quot; section</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// create an input Table</span></span><br><span class="line">tableEnv.executeSql(<span class="string">&quot;CREATE TEMPORARY TABLE table1 ... WITH ( &#x27;connector&#x27; = ... )&quot;</span>)</span><br><span class="line"><span class="comment">// register an output Table</span></span><br><span class="line">tableEnv.executeSql(<span class="string">&quot;CREATE TEMPORARY TABLE outputTable ... WITH ( &#x27;connector&#x27; = ... )&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">// create a Table from a Table API query</span></span><br><span class="line"><span class="keyword">val</span> table2 = tableEnv.from(<span class="string">&quot;table1&quot;</span>).select(...)</span><br><span class="line"><span class="comment">// create a Table from a SQL query</span></span><br><span class="line"><span class="keyword">val</span> table3 = tableEnv.sqlQuery(<span class="string">&quot;SELECT ... FROM table1 ...&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">// emit a Table API result Table to a TableSink, same for SQL result</span></span><br><span class="line"><span class="keyword">val</span> tableResult = table2.executeInsert(<span class="string">&quot;outputTable&quot;</span>)</span><br><span class="line">tableResult...</span><br></pre></td></tr></table></figure>
+
+
+
+
+
+<h1 id="创建-TableEnvironment"><a href="#创建-TableEnvironment" class="headerlink" title="创建 TableEnvironment"></a>创建 TableEnvironment</h1><h1 id="创建表"><a href="#创建表" class="headerlink" title="创建表"></a>创建表</h1><h2 id="Connector-Tables"><a href="#Connector-Tables" class="headerlink" title="Connector Tables"></a>Connector Tables</h2><h3 id="Table-API"><a href="#Table-API" class="headerlink" title="Table API"></a>Table API</h3><ul>
+<li>一般形式：</li>
+</ul>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">tableEnvironment</span><br><span class="line">  .connect(...)</span><br><span class="line">  .withFormat(...)</span><br><span class="line">  .withSchema(...)</span><br><span class="line">  .inAppendMode()</span><br><span class="line">  .createTemporaryTable(<span class="string">&quot;MyTable&quot;</span>)</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>示例</li>
+</ul>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"></span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="SQL"><a href="#SQL" class="headerlink" title="SQL"></a>SQL</h3><ul>
+<li>一般形式：</li>
+</ul>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">tableEnvironment.executeSql(<span class="string">&quot;CREATE [TEMPORARY] TABLE MyTable (...) WITH (...)&quot;</span>)</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>示例</li>
+</ul>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"></span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="虚拟表"><a href="#虚拟表" class="headerlink" title="虚拟表"></a>虚拟表</h2><h1 id="注册表"><a href="#注册表" class="headerlink" title="注册表"></a>注册表</h1><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// get a TableEnvironment</span></span><br><span class="line"><span class="keyword">val</span> tEnv: <span class="type">TableEnvironment</span> = ...;</span><br><span class="line">tEnv.useCatalog(<span class="string">&quot;custom_catalog&quot;</span>)</span><br><span class="line">tEnv.useDatabase(<span class="string">&quot;custom_database&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">val</span> table: <span class="type">Table</span> = ...;</span><br><span class="line"></span><br><span class="line"><span class="comment">// register the view named &#x27;exampleView&#x27; in the catalog named &#x27;custom_catalog&#x27;</span></span><br><span class="line"><span class="comment">// in the database named &#x27;custom_database&#x27; </span></span><br><span class="line">tableEnv.createTemporaryView(<span class="string">&quot;exampleView&quot;</span>, table)</span><br><span class="line"></span><br><span class="line"><span class="comment">// register the view named &#x27;exampleView&#x27; in the catalog named &#x27;custom_catalog&#x27;</span></span><br><span class="line"><span class="comment">// in the database named &#x27;other_database&#x27; </span></span><br><span class="line">tableEnv.createTemporaryView(<span class="string">&quot;other_database.exampleView&quot;</span>, table)</span><br><span class="line"></span><br><span class="line"><span class="comment">// register the view named &#x27;example.View&#x27; in the catalog named &#x27;custom_catalog&#x27;</span></span><br><span class="line"><span class="comment">// in the database named &#x27;custom_database&#x27; </span></span><br><span class="line">tableEnv.createTemporaryView(<span class="string">&quot;`example.View`&quot;</span>, table)</span><br><span class="line"></span><br><span class="line"><span class="comment">// register the view named &#x27;exampleView&#x27; in the catalog named &#x27;other_catalog&#x27;</span></span><br><span class="line"><span class="comment">// in the database named &#x27;other_database&#x27; </span></span><br><span class="line">tableEnv.createTemporaryView(<span class="string">&quot;other_catalog.other_database.exampleView&quot;</span>, table)</span><br></pre></td></tr></table></figure>
+
+
+
+<h1 id="查询表"><a href="#查询表" class="headerlink" title="查询表"></a>查询表</h1><h2 id="Table-API-1"><a href="#Table-API-1" class="headerlink" title="Table API"></a>Table API</h2><ul>
+<li>示例</li>
+</ul>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// compute revenue for all customers from France</span></span><br><span class="line"><span class="keyword">val</span> revenue = orders</span><br><span class="line">  .filter($<span class="string">&quot;cCountry&quot;</span> === <span class="string">&quot;FRANCE&quot;</span>)</span><br><span class="line">  .groupBy($<span class="string">&quot;cID&quot;</span>, $<span class="string">&quot;cName&quot;</span>)</span><br><span class="line">  .select($<span class="string">&quot;cID&quot;</span>, $<span class="string">&quot;cName&quot;</span>, $<span class="string">&quot;revenue&quot;</span>.sum <span class="type">AS</span> <span class="string">&quot;revSum&quot;</span>)</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="SQL-1"><a href="#SQL-1" class="headerlink" title="SQL"></a>SQL</h2><ul>
+<li>示例</li>
+</ul>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// compute revenue for all customers from France</span></span><br><span class="line"><span class="keyword">val</span> revenue = tableEnv.sqlQuery(<span class="string">&quot;&quot;</span><span class="string">&quot;</span></span><br><span class="line"><span class="string">  |SELECT cID, cName, SUM(revenue) AS revSum</span></span><br><span class="line"><span class="string">  |FROM Orders</span></span><br><span class="line"><span class="string">  |WHERE cCountry = &#x27;FRANCE&#x27;</span></span><br><span class="line"><span class="string">  |GROUP BY cID, cName</span></span><br><span class="line"><span class="string">  &quot;</span><span class="string">&quot;&quot;</span>.stripMargin)</span><br></pre></td></tr></table></figure>
+
+
+
+<h1 id="输出表"><a href="#输出表" class="headerlink" title="输出表"></a>输出表</h1><h2 id="Table-API-2"><a href="#Table-API-2" class="headerlink" title="Table API"></a>Table API</h2><ul>
+<li>示例</li>
+</ul>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// create an output Table</span></span><br><span class="line"><span class="keyword">val</span> schema = <span class="keyword">new</span> <span class="type">Schema</span>()</span><br><span class="line">    .field(<span class="string">&quot;a&quot;</span>, <span class="type">DataTypes</span>.<span class="type">INT</span>())</span><br><span class="line">    .field(<span class="string">&quot;b&quot;</span>, <span class="type">DataTypes</span>.<span class="type">STRING</span>())</span><br><span class="line">    .field(<span class="string">&quot;c&quot;</span>, <span class="type">DataTypes</span>.<span class="type">BIGINT</span>())</span><br><span class="line"></span><br><span class="line">tableEnv.connect(<span class="keyword">new</span> <span class="type">FileSystem</span>().path(<span class="string">&quot;/path/to/file&quot;</span>))</span><br><span class="line">    .withFormat(<span class="keyword">new</span> <span class="type">Csv</span>().fieldDelimiter(&#x27;|&#x27;).deriveSchema())</span><br><span class="line">    .withSchema(schema)</span><br><span class="line">    .createTemporaryTable(<span class="string">&quot;CsvSinkTable&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">// compute a result Table using Table API operators and/or SQL queries</span></span><br><span class="line"><span class="keyword">val</span> result: <span class="type">Table</span> = ...</span><br><span class="line"></span><br><span class="line"><span class="comment">// emit the result Table to the registered TableSink</span></span><br><span class="line">result.executeInsert(<span class="string">&quot;CsvSinkTable&quot;</span>)</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="SQL-2"><a href="#SQL-2" class="headerlink" title="SQL"></a>SQL</h2><ul>
+<li>示例</li>
+</ul>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// compute revenue for all customers from France and emit to &quot;RevenueFrance&quot;</span></span><br><span class="line">tableEnv.executeSql(<span class="string">&quot;&quot;</span><span class="string">&quot;</span></span><br><span class="line"><span class="string">  |INSERT INTO RevenueFrance</span></span><br><span class="line"><span class="string">  |SELECT cID, cName, SUM(revenue) AS revSum</span></span><br><span class="line"><span class="string">  |FROM Orders</span></span><br><span class="line"><span class="string">  |WHERE cCountry = &#x27;FRANCE&#x27;</span></span><br><span class="line"><span class="string">  |GROUP BY cID, cName</span></span><br><span class="line"><span class="string">  &quot;</span><span class="string">&quot;&quot;</span>.stripMargin)</span><br></pre></td></tr></table></figure>
+
+
+
+<h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><ol>
+<li><a target="_blank" rel="noopener" href="https://ci.apache.org/projects/flink/flink-docs-release-1.13/zh/docs/dev/table/common/">https://ci.apache.org/projects/flink/flink-docs-release-1.13/zh/docs/dev/table/common/</a></li>
+</ol>
+
       
     </div>
 
