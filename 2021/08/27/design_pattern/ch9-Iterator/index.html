@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.0.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.14.0/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css">
+
+<script class="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"jtlibrain.github.io","root":"/","scheme":"Gemini","version":"8.0.0-rc.5","exturl":false,"sidebar":{"position":"left","display":"hide","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false};
+  </script>
+
+  <meta name="description" content="（TODO）">
+<meta property="og:type" content="article">
+<meta property="og:title" content="《Head First Design Patterns》：第9章，迭代器（Iterator）模式">
+<meta property="og:url" content="https://jtlibrain.github.io/2021/08/27/design_pattern/ch9-Iterator/index.html">
+<meta property="og:site_name" content="jtLiBrain">
+<meta property="og:description" content="（TODO）">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://jtlibrain.github.io/images/design_pattern/ch9_iterator_example_impl.svg">
+<meta property="article:published_time" content="2021-08-27T15:56:00.000Z">
+<meta property="article:modified_time" content="2021-08-29T15:23:03.037Z">
+<meta property="article:author" content="JT Li">
+<meta property="article:tag" content="《Head First Design Patterns》">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://jtlibrain.github.io/images/design_pattern/ch9_iterator_example_impl.svg">
+
+<link rel="canonical" href="https://jtlibrain.github.io/2021/08/27/design_pattern/ch9-Iterator/">
+
+
+<script class="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>《Head First Design Patterns》：第9章，迭代器（Iterator）模式 | jtLiBrain</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  body { margin-top: 2rem; }
+
+  .use-motion .menu-item,
+  .use-motion .sidebar,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header {
+    visibility: visible;
+  }
+
+  .use-motion .header,
+  .use-motion .site-brand-container .toggle,
+  .use-motion .footer { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle,
+  .use-motion .custom-logo-image {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line {
+    transform: scaleX(1);
+  }
+
+  .search-pop-overlay, .sidebar-nav { display: none; }
+  .sidebar-panel { display: block; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <main class="main">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+        <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">jtLiBrain</h1>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">任何伟大的事都不会一蹴而就，三分智慧，七分韧性</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <section class="post-toc-wrap sidebar-panel">
+          <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%9C%BA%E6%99%AF"><span class="nav-number">1.</span> <span class="nav-text">场景</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%9C%BA%E6%99%AF%E6%8F%8F%E8%BF%B0"><span class="nav-number">2.</span> <span class="nav-text">场景描述</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%96%B9%E6%A1%88"><span class="nav-number">3.</span> <span class="nav-text">方案</span></a></li></ol></div>
+      </section>
+      <!--/noindex-->
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">JT Li</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">57</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">7</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="mailto:jtli.brain@hotmail.com" title="E-Mail → mailto:jtli.brain@hotmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </section>
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </header>
+
+      
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div id="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+      <div class="main-inner">
+        
+
+        <div class="content post posts-expand">
+          
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://jtlibrain.github.io/2021/08/27/design_pattern/ch9-Iterator/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="JT Li">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="jtLiBrain">
+    </span>
+
+    
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          《Head First Design Patterns》：第9章，迭代器（Iterator）模式
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-08-27 23:56:00" itemprop="dateCreated datePublished" datetime="2021-08-27T23:56:00+08:00">2021-08-27</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2021-08-29 23:23:03" itemprop="dateModified" datetime="2021-08-29T23:23:03+08:00">2021-08-29</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/design-pattern/" itemprop="url" rel="index"><span itemprop="name">design pattern</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="Views" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">Views: </span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p>（TODO）</p>
+<a id="more"></a>
+
+<h1 id="场景"><a href="#场景" class="headerlink" title="场景"></a>场景</h1><p>餐厅和煎饼屋合并</p>
+<h1 id="场景描述"><a href="#场景描述" class="headerlink" title="场景描述"></a>场景描述</h1><p>餐厅和煎饼屋合并了，煎饼屋负责提供早餐，餐厅负责提供午餐。已知：a）煎饼屋和餐厅都有各自的菜单，菜单上有多个菜单项，菜单项是统一的（包含名称、描述、价格）；b）但煎饼屋和餐厅的菜单存储菜单项的方式是不同的：煎饼屋使用的是ArrayList，餐厅使用的是数组。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">PancakeHouseMenu</span> </span>&#123;</span><br><span class="line">    List&lt;MenuItem&gt; menuItems;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">PancakeHouseMenu</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        menuItems = <span class="keyword">new</span> ArrayList&lt;MenuItem&gt;();</span><br><span class="line">        addItem(<span class="string">&quot;K&amp;B&#x27;s Pancake Breakfast&quot;</span>,</span><br><span class="line">                <span class="string">&quot;Pancakes with scrambled eggs and toast&quot;</span>,</span><br><span class="line">                <span class="keyword">true</span>,</span><br><span class="line">                <span class="number">2.99</span>);</span><br><span class="line">        addItem(<span class="string">&quot;Regular Pancake Breakfast&quot;</span>,</span><br><span class="line">                <span class="string">&quot;Pancakes with fried eggs, sausage&quot;</span>,</span><br><span class="line">                <span class="keyword">false</span>,</span><br><span class="line">                <span class="number">2.99</span>);</span><br><span class="line">        addItem(<span class="string">&quot;Blueberry Pancakes&quot;</span>,</span><br><span class="line">                <span class="string">&quot;Pancakes made with fresh blueberries&quot;</span>,</span><br><span class="line">                <span class="keyword">true</span>,</span><br><span class="line">                <span class="number">3.49</span>);</span><br><span class="line">        addItem(<span class="string">&quot;Waffles&quot;</span>,</span><br><span class="line">                <span class="string">&quot;Waffles with your choice of blueberries or strawberries&quot;</span>,</span><br><span class="line">                <span class="keyword">true</span>,</span><br><span class="line">                <span class="number">3.59</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">addItem</span><span class="params">(String name, String description,</span></span></span><br><span class="line"><span class="function"><span class="params">                        <span class="keyword">boolean</span> vegetarian, <span class="keyword">double</span> price)</span> </span>&#123;</span><br><span class="line">        MenuItem menuItem = <span class="keyword">new</span> MenuItem(name, description, vegetarian, price);</span><br><span class="line">        menuItems.add(menuItem);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> ArrayList&lt;MenuItem&gt; <span class="title">getMenuItems</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> menuItems;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// other menu methods here</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">DinerMenu</span> </span>&#123;</span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> MAX_ITEMS = <span class="number">6</span>;</span><br><span class="line">    <span class="keyword">int</span> numberOfItems = <span class="number">0</span>;</span><br><span class="line">    MenuItem[] menuItems;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">DinerMenu</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        menuItems = <span class="keyword">new</span> MenuItem[MAX_ITEMS];</span><br><span class="line">        addItem(<span class="string">&quot;Vegetarian BLT&quot;</span>,</span><br><span class="line">                <span class="string">&quot;(Fakin&#x27;) Bacon with lettuce &amp; tomato on whole wheat&quot;</span>, <span class="keyword">true</span>, <span class="number">2.99</span>);</span><br><span class="line">        addItem(<span class="string">&quot;BLT&quot;</span>,</span><br><span class="line">                <span class="string">&quot;Bacon with lettuce &amp; tomato on whole wheat&quot;</span>, <span class="keyword">false</span>, <span class="number">2.99</span>);</span><br><span class="line">        addItem(<span class="string">&quot;Soup of the day&quot;</span>,</span><br><span class="line">                <span class="string">&quot;Soup of the day, with a side of potato salad&quot;</span>, <span class="keyword">false</span>, <span class="number">3.29</span>);</span><br><span class="line">        addItem(<span class="string">&quot;Hotdog&quot;</span>,</span><br><span class="line">                <span class="string">&quot;A hot dog, with sauerkraut, relish, onions, topped with cheese&quot;</span>,</span><br><span class="line">                <span class="keyword">false</span>, <span class="number">3.05</span>);</span><br><span class="line">        <span class="comment">// a couple of other Diner Menu items added here</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">addItem</span><span class="params">(String name, String description,</span></span></span><br><span class="line"><span class="function"><span class="params">                        <span class="keyword">boolean</span> vegetarian, <span class="keyword">double</span> price)</span> </span>&#123;</span><br><span class="line">        MenuItem menuItem = <span class="keyword">new</span> MenuItem(name, description, vegetarian, price);</span><br><span class="line">        <span class="keyword">if</span> (numberOfItems &gt;= MAX_ITEMS) &#123;</span><br><span class="line">            System.err.println(<span class="string">&quot;Sorry, menu is full! Can&#x27;t add item to menu&quot;</span>);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            menuItems[numberOfItems] = menuItem;</span><br><span class="line">            numberOfItems = numberOfItems + <span class="number">1</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> MenuItem[] getMenuItems() &#123;</span><br><span class="line">        <span class="keyword">return</span> menuItems;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// other menu methods here</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>既然已经合并了，需要统一下所提供的菜单规格，否则如果要实现打印菜单的功能<code>printMenu()</code>，需要如下步骤：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">PancakeHouseMenu pancakeHouseMenu = <span class="keyword">new</span> PancakeHouseMenu();</span><br><span class="line">ArrayList&lt;MenuItem&gt; breakfastItems = pancakeHouseMenu.getMenuItems();</span><br><span class="line"></span><br><span class="line">DinerMenu dinerMenu = <span class="keyword">new</span> DinerMenu();</span><br><span class="line">MenuItem[] lunchItems = dinerMenu.getMenuItems();</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">// 打印早餐</span></span><br><span class="line"><span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; breakfastItems.size(); i++) &#123;</span><br><span class="line">    MenuItem menuItem = breakfastItems.get(i);</span><br><span class="line">    System.out.print(menuItem.getName() + <span class="string">&quot; &quot;</span>);</span><br><span class="line">    System.out.println(menuItem.getPrice() + <span class="string">&quot; &quot;</span>);</span><br><span class="line">    System.out.println(menuItem.getDescription());</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 打印午餐</span></span><br><span class="line"><span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; lunchItems.length; i++) &#123;</span><br><span class="line">    MenuItem menuItem = lunchItems[i];</span><br><span class="line">    System.out.print(menuItem.getName() + <span class="string">&quot; &quot;</span>);</span><br><span class="line">    System.out.println(menuItem.getPrice() + <span class="string">&quot; &quot;</span>);</span><br><span class="line">    System.out.println(menuItem.getDescription());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>如上代码，总是需要处理两种菜单，用两个循环遍历这些菜单项。这只是实现<code>printMenu()</code>一个功能，可以想象其它类似方法的实现同样要进行两个这样的循环遍历。</p>
+<h1 id="方案"><a href="#方案" class="headerlink" title="方案"></a>方案</h1><p>上例中变化的部分是由不同集合类型所造成的遍历。能否将遍历封装起来？</p>
+<p>使用迭代器可以实现对各种对象集合进行迭代。在<code>PancakeHouseMenu</code>类可以实现</p>
+<img src="/images/design_pattern/ch9_iterator_example_impl.svg" style="zoom:80%;" />
+
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">Iterator</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">boolean</span> <span class="title">hasNext</span><span class="params">()</span></span>;</span><br><span class="line">    <span class="function">MenuItem <span class="title">next</span><span class="params">()</span></span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">DinerMenuIterator</span> <span class="keyword">implements</span> <span class="title">Iterator</span> </span>&#123;</span><br><span class="line">    MenuItem[] items;</span><br><span class="line">    <span class="keyword">int</span> position = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">DinerMenuIterator</span><span class="params">(MenuItem[] items)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.items = items;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> MenuItem <span class="title">next</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        MenuItem menuItem = items[position];</span><br><span class="line">        position = position + <span class="number">1</span>;</span><br><span class="line">        <span class="keyword">return</span> menuItem;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">hasNext</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (position &gt;= items.length || items[position] == <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">DinerMenu</span> </span>&#123;</span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> MAX_ITEMS = <span class="number">6</span>;</span><br><span class="line">    <span class="keyword">int</span> numberOfItems = <span class="number">0</span>;</span><br><span class="line">    MenuItem[] menuItems;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// constructor here</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// addItem here</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> MenuItem[] getMenuItems() &#123;</span><br><span class="line">        <span class="keyword">return</span> menuItems;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Iterator <span class="title">createIterator</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> DinerMenuIterator(menuItems);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// other menu methods here</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Waitress</span> </span>&#123;</span><br><span class="line">    PancakeHouseMenu pancakeHouseMenu;</span><br><span class="line">    DinerMenu dinerMenu;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">Waitress</span><span class="params">(PancakeHouseMenu pancakeHouseMenu, DinerMenu dinerMenu)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.pancakeHouseMenu = pancakeHouseMenu;</span><br><span class="line">        <span class="keyword">this</span>.dinerMenu = dinerMenu;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">printMenu</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        Iterator pancakeIterator = pancakeHouseMenu.createIterator();</span><br><span class="line">        Iterator dinerIterator = dinerMenu.createIterator();</span><br><span class="line"></span><br><span class="line">        System.out.println(<span class="string">&quot;MENU\n----\nBREAKFAST&quot;</span>);</span><br><span class="line">        printMenu(pancakeIterator);</span><br><span class="line"></span><br><span class="line">        System.out.println(<span class="string">&quot;\nLUNCH&quot;</span>);</span><br><span class="line">        printMenu(dinerIterator);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">printMenu</span><span class="params">(Iterator iterator)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">while</span> (iterator.hasNext()) &#123;</span><br><span class="line">            MenuItem menuItem = iterator.next();</span><br><span class="line">            System.out.print(menuItem.getName() + <span class="string">&quot;, &quot;</span>);</span><br><span class="line">            System.out.print(menuItem.getPrice() + <span class="string">&quot; -- &quot;</span>);</span><br><span class="line">            System.out.println(menuItem.getDescription());</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// other methods here</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E3%80%8AHead-First-Design-Patterns%E3%80%8B/" rel="tag"><i class="fa fa-tag"></i> 《Head First Design Patterns》</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/08/27/design_pattern/ch8-Template-Method/" rel="prev" title="《Head First Design Patterns》：第8章，模板方法（Template Method）模式">
+      <i class="fa fa-chevron-left"></i> 《Head First Design Patterns》：第8章，模板方法（Template Method）模式
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/08/29/design_pattern/ch9-Composite/" rel="next" title="《Head First Design Patterns》：第9章，组合（Composite）模式">
+      《Head First Design Patterns》：第9章，组合（Composite）模式 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+        </div>
+        
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">JT Li</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="Total Visitors">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="Total Views">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="//cdn.jsdelivr.net/npm/animejs@3.2.0/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1.6.2/dist/gitalk.css">
+
+<script>
+NexT.utils.loadComments('#gitalk-container', () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1.6.2/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : 'c94aa78cf2eda71757bf',
+      clientSecret: '01e1353b3f8eac54aafb1224c784b7af0305ce8c',
+      repo        : 'jtLiBrain.github.io',
+      owner       : 'jtLiBrain',
+      admin       : ['jtLiBrain'],
+      id          : '18d1ca36d7042e8bb73333847cb2cfed',
+        language: 'en',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+</body>
+</html>

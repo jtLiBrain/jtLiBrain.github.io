@@ -25,20 +25,18 @@
 
   <meta name="description" content="（TODO）">
 <meta property="og:type" content="article">
-<meta property="og:title" content="《Head First Design Patterns》：第7章，适配器（Adapter）模式">
-<meta property="og:url" content="https://jtlibrain.github.io/2021/08/26/design_pattern/ch7_adapter/index.html">
+<meta property="og:title" content="《Head First Design Patterns》：第2章，观察者（Observer）模式">
+<meta property="og:url" content="https://jtlibrain.github.io/2021/08/22/design_pattern/ch2-Observer/index.html">
 <meta property="og:site_name" content="jtLiBrain">
 <meta property="og:description" content="（TODO）">
 <meta property="og:locale" content="en_US">
-<meta property="og:image" content="https://jtlibrain.github.io/images/design_pattern/ch7_adapter_definition_object.svg">
-<meta property="article:published_time" content="2021-08-26T09:56:00.000Z">
-<meta property="article:modified_time" content="2021-08-27T15:40:57.540Z">
+<meta property="article:published_time" content="2021-08-22T15:01:35.000Z">
+<meta property="article:modified_time" content="2021-08-22T15:17:23.578Z">
 <meta property="article:author" content="JT Li">
 <meta property="article:tag" content="《Head First Design Patterns》">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://jtlibrain.github.io/images/design_pattern/ch7_adapter_definition_object.svg">
 
-<link rel="canonical" href="https://jtlibrain.github.io/2021/08/26/design_pattern/ch7_adapter/">
+<link rel="canonical" href="https://jtlibrain.github.io/2021/08/22/design_pattern/ch2-Observer/">
 
 
 <script class="page-configurations">
@@ -51,7 +49,7 @@
   };
 </script>
 
-  <title>《Head First Design Patterns》：第7章，适配器（Adapter）模式 | jtLiBrain</title>
+  <title>《Head First Design Patterns》：第2章，观察者（Observer）模式 | jtLiBrain</title>
   
 
 
@@ -185,7 +183,7 @@
 
       <!--noindex-->
       <section class="post-toc-wrap sidebar-panel">
-          <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%9C%BA%E6%99%AF%E6%8F%8F%E8%BF%B0"><span class="nav-number">1.</span> <span class="nav-text">场景描述</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%96%B9%E6%A1%88"><span class="nav-number">2.</span> <span class="nav-text">方案</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%80%82%E9%85%8D%E5%99%A8%E6%A8%A1%E5%BC%8F%E7%9A%84%E5%AE%9A%E4%B9%89"><span class="nav-number">3.</span> <span class="nav-text">适配器模式的定义</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%80%82%E9%85%8D%E5%99%A8%E6%A8%A1%E5%BC%8FVS%E8%A3%85%E9%A5%B0%E8%80%85%E6%A8%A1%E5%BC%8F"><span class="nav-number">4.</span> <span class="nav-text">适配器模式VS装饰者模式</span></a></li></ol></div>
+          <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%82%E8%80%83"><span class="nav-number">1.</span> <span class="nav-text">参考</span></a></li></ol></div>
       </section>
       <!--/noindex-->
 
@@ -199,7 +197,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">54</span>
+          <span class="site-state-item-count">57</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
@@ -254,7 +252,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="https://jtlibrain.github.io/2021/08/26/design_pattern/ch7_adapter/">
+    <link itemprop="mainEntityOfPage" href="https://jtlibrain.github.io/2021/08/22/design_pattern/ch2-Observer/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -269,7 +267,7 @@
     
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          《Head First Design Patterns》：第7章，适配器（Adapter）模式
+          《Head First Design Patterns》：第2章，观察者（Observer）模式
         </h1>
 
         <div class="post-meta">
@@ -278,16 +276,10 @@
                 <i class="far fa-calendar"></i>
               </span>
               <span class="post-meta-item-text">Posted on</span>
+              
 
-              <time title="Created: 2021-08-26 17:56:00" itemprop="dateCreated datePublished" datetime="2021-08-26T17:56:00+08:00">2021-08-26</time>
+              <time title="Created: 2021-08-22 23:01:35 / Modified: 23:17:23" itemprop="dateCreated datePublished" datetime="2021-08-22T23:01:35+08:00">2021-08-22</time>
             </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2021-08-27 23:40:57" itemprop="dateModified" datetime="2021-08-27T23:40:57+08:00">2021-08-27</time>
-              </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
                 <i class="far fa-folder"></i>
@@ -317,25 +309,12 @@
         <p>（TODO）</p>
 <a id="more"></a>
 
-<h1 id="场景描述"><a href="#场景描述" class="headerlink" title="场景描述"></a>场景描述</h1><p>鸭子数量不够，使用火鸡冒充鸭子</p>
-<h1 id="方案"><a href="#方案" class="headerlink" title="方案"></a>方案</h1><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">Duck</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">quack</span><span class="params">()</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">fly</span><span class="params">()</span></span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MallardDuck</span> <span class="keyword">implements</span> <span class="title">Duck</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">quack</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;Quack&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">fly</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;I&#x27;m flying&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
 
+<h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><ol>
+<li><a target="_blank" rel="noopener" href="https://wickedlysmart.com/head-first-design-patterns/">https://wickedlysmart.com/head-first-design-patterns/</a></li>
+</ol>
 
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">Turkey</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">gobble</span><span class="params">()</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">fly</span><span class="params">()</span></span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">WildTurkey</span> <span class="keyword">implements</span> <span class="title">Turkey</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">gobble</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;Gobble gobble&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">fly</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;I&#x27;m flying a short distance&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-
-
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">TurkeyAdapter</span> <span class="keyword">implements</span> <span class="title">Duck</span> </span>&#123;</span><br><span class="line">    Turkey turkey;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">TurkeyAdapter</span><span class="params">(Turkey turkey)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.turkey = turkey;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">quack</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        turkey.gobble();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">fly</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">0</span>; i &lt; <span class="number">5</span>; i++) &#123;</span><br><span class="line">            turkey.fly();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-
-
-<h1 id="适配器模式的定义"><a href="#适配器模式的定义" class="headerlink" title="适配器模式的定义"></a>适配器模式的定义</h1><p>将一个类中的接口转换成客户期望的另一个接口。适配器让原本接口不兼容的类可以合作无间。</p>
-<img src="/images/design_pattern/ch7_adapter_definition_object.svg" style="zoom:80%;" />
-
-
-
-<h1 id="适配器模式VS装饰者模式"><a href="#适配器模式VS装饰者模式" class="headerlink" title="适配器模式VS装饰者模式"></a>适配器模式VS装饰者模式</h1>
     </div>
 
     
@@ -353,12 +332,12 @@
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/2021/08/26/design_pattern/ch6_command/" rel="prev" title="《Head First Design Patterns》：第6章，命令（Command）模式">
-      <i class="fa fa-chevron-left"></i> 《Head First Design Patterns》：第6章，命令（Command）模式
+    <a href="/2021/08/19/design_pattern/ch1-Strategy/" rel="prev" title="《Head First Design Patterns》：第1章，策略（Strategy）模式">
+      <i class="fa fa-chevron-left"></i> 《Head First Design Patterns》：第1章，策略（Strategy）模式
     </a></div>
       <div class="post-nav-item">
-    <a href="/2021/08/26/design_pattern/ch7_facade/" rel="next" title="《Head First Design Patterns》：第7章，外观（Facade）模式">
-      《Head First Design Patterns》：第7章，外观（Facade）模式 <i class="fa fa-chevron-right"></i>
+    <a href="/2021/08/22/design_pattern/ch3-Decorator/" rel="next" title="《Head First Design Patterns》：第3章，装饰器（Decorator）模式">
+      《Head First Design Patterns》：第3章，装饰器（Decorator）模式 <i class="fa fa-chevron-right"></i>
     </a></div>
     </div>
       </footer>
@@ -496,7 +475,7 @@ NexT.utils.loadComments('#gitalk-container', () => {
       repo        : 'jtLiBrain.github.io',
       owner       : 'jtLiBrain',
       admin       : ['jtLiBrain'],
-      id          : '85339c749ae20961709f88c6cc2e6a62',
+      id          : 'f85512d023bbc55c2eb03fd33db00b17',
         language: 'en',
       distractionFreeMode: true
     });
