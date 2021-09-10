@@ -29,7 +29,7 @@
 <meta property="og:description" content="（TODO）">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2021-09-09T14:37:32.000Z">
-<meta property="article:modified_time" content="2021-09-09T15:35:01.027Z">
+<meta property="article:modified_time" content="2021-09-10T15:42:13.357Z">
 <meta property="article:author" content="JT Li">
 <meta name="twitter:card" content="summary">
 
@@ -212,10 +212,16 @@
         <i class="far fa-calendar"></i>
       </span>
       <span class="post-meta-item-text">Posted on</span>
-      
 
-      <time title="Created: 2021-09-09 22:37:32 / Modified: 23:35:01" itemprop="dateCreated datePublished" datetime="2021-09-09T22:37:32+08:00">2021-09-09</time>
+      <time title="Created: 2021-09-09 22:37:32" itemprop="dateCreated datePublished" datetime="2021-09-09T22:37:32+08:00">2021-09-09</time>
     </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">Edited on</span>
+        <time title="Modified: 2021-09-10 23:42:13" itemprop="dateModified" datetime="2021-09-10T23:42:13+08:00">2021-09-10</time>
+      </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
         <i class="far fa-folder"></i>
@@ -250,7 +256,7 @@
 
 <h1 id="Driver预加载维度数据"><a href="#Driver预加载维度数据" class="headerlink" title="Driver预加载维度数据"></a>Driver预加载维度数据</h1><ul>
 <li>实现方式：通过Distributed Cache分发本地维度文件到Task Manager后加载到内存关联。</li>
-<li>优点：</li>
+<li>优点：略</li>
 <li>缺点：仅支持小数据量的维度，更新的维度数据需要重启作业才能被使用</li>
 <li>适用场景：维度数据时文件形式、数据量小、更新频率极低</li>
 </ul>
@@ -260,6 +266,11 @@
 <li>缺点：仅支持小数据量的维度</li>
 <li>适用场景：维度小且变更频率低，对变更及时性要求低</li>
 </ul>
+<p>示例：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">DimFlatMapFunction</span> <span class="keyword">extends</span> <span class="title">RichFlatMapFunction</span>[(<span class="type">Int</span>, <span class="type">String</span>), (<span class="type">Int</span>, <span class="type">String</span>, <span class="type">String</span>)] </span>&#123;</span><br><span class="line">  <span class="keyword">val</span> <span class="type">LOG</span> = <span class="type">LoggerFactory</span>.getLogger(classOf[<span class="type">DimFlatMapFunction</span>])</span><br><span class="line"></span><br><span class="line">  <span class="keyword">var</span> dim: <span class="type">Map</span>[<span class="type">Int</span>, <span class="type">String</span>] = <span class="type">Map</span>()</span><br><span class="line">  <span class="keyword">var</span> conn: <span class="type">Connection</span> = _</span><br><span class="line"></span><br><span class="line">  <span class="keyword">override</span> <span class="function"><span class="keyword">def</span> <span class="title">open</span></span>(parameters: <span class="type">Configuration</span>): <span class="type">Unit</span> = &#123;</span><br><span class="line">    <span class="comment">// initialize the connection</span></span><br><span class="line">    conn = ... ...</span><br><span class="line"></span><br><span class="line">    <span class="keyword">val</span> sql = <span class="string">&quot;select pid, pname from dim_product&quot;</span></span><br><span class="line">    <span class="keyword">val</span> stat = conn.createStatement()</span><br><span class="line"></span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">      <span class="keyword">val</span> resultSet = stat.executeQuery(sql)</span><br><span class="line">      <span class="keyword">while</span> (resultSet.next()) &#123;</span><br><span class="line">        <span class="keyword">val</span> pId = resultSet.getInt(<span class="string">&quot;pid&quot;</span>)</span><br><span class="line">        <span class="keyword">val</span> pName = resultSet.getString(<span class="string">&quot;pname&quot;</span>)</span><br><span class="line"></span><br><span class="line">        dim += pId -&gt; pName</span><br><span class="line">      &#125;</span><br><span class="line">    &#125; <span class="keyword">catch</span> &#123;</span><br><span class="line">      <span class="keyword">case</span> e: <span class="type">Exception</span> =&gt; <span class="type">LOG</span>.error(<span class="literal">null</span>, e)</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// close stat and conn</span></span><br><span class="line">    ... ...</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">override</span> <span class="function"><span class="keyword">def</span> <span class="title">flatMap</span></span>(in: (<span class="type">Int</span>, <span class="type">String</span>), collector: <span class="type">Collector</span>[(<span class="type">Int</span>, <span class="type">String</span>, <span class="type">String</span>)]): <span class="type">Unit</span> = &#123;</span><br><span class="line">    <span class="keyword">val</span> pidInProbe = in._1</span><br><span class="line">    <span class="keyword">if</span>(dim.contains(pidInProbe)) &#123; <span class="comment">// implement as Inner-Join</span></span><br><span class="line">      collector.collect((in._1, in._2, dim.get(pidInProbe).get))</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
 <h1 id="关联热存储上的维度数据"><a href="#关联热存储上的维度数据" class="headerlink" title="关联热存储上的维度数据"></a>关联热存储上的维度数据</h1><ul>
 <li>实现方式：实时流与热存储上维度数据进行关联，并且在实时流端使用缓存技术来减轻对热存储的访问压力。具体的，将维度数据导入热存储（Redis/Tair/HBase/ES）通过异步IO查询热存储，实时流端使用缓存技术将维度数据缓存在内存</li>
 <li>优点：维度数据不受限<code>Task Manager</code>所分配的内存，能支持更多的维度数据</li>

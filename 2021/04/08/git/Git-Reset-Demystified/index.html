@@ -37,8 +37,11 @@
 <meta property="og:image" content="https://jtlibrain.github.io/images/git/checkout-branch-step1.svg">
 <meta property="og:image" content="https://git-scm.com/book/en/v2/images/reset-checkout.png">
 <meta property="og:image" content="https://jtlibrain.github.io/images/git/checkout-branch-step2.svg">
+<meta property="og:image" content="https://jtlibrain.github.io/images/git/revert-commit-step0.svg">
+<meta property="og:image" content="https://jtlibrain.github.io/images/git/revert-commit-step1.svg">
+<meta property="og:image" content="https://jtlibrain.github.io/images/git/revert-commit-step2.svg">
 <meta property="article:published_time" content="2021-04-08T15:33:21.000Z">
-<meta property="article:modified_time" content="2021-04-13T15:57:54.728Z">
+<meta property="article:modified_time" content="2021-09-10T14:14:21.598Z">
 <meta property="article:author" content="JT Li">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="https://jtlibrain.github.io/images/git/reset-commit-step0.svg">
@@ -131,7 +134,7 @@
       <div class="sidebar-panel-container">
         <!--noindex-->
         <div class="post-toc-wrap sidebar-panel">
-            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%89%8D%E6%8F%90%E7%9F%A5%E8%AF%86"><span class="nav-number">1.</span> <span class="nav-text">前提知识</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#git-reset"><span class="nav-number">2.</span> <span class="nav-text">git reset</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#reset-commit"><span class="nav-number">2.1.</span> <span class="nav-text">reset+commit</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1%E6%AD%A5%EF%BC%9A%E7%A7%BB%E5%8A%A8HEAD"><span class="nav-number">2.1.1.</span> <span class="nav-text">1步：移动HEAD</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2%E6%AD%A5%EF%BC%9A%E7%A7%BB%E5%8A%A8HEAD-%E6%9B%B4%E6%96%B0%E6%9A%82%E5%AD%98%E5%8C%BA"><span class="nav-number">2.1.2.</span> <span class="nav-text">2步：移动HEAD+更新暂存区</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3%E6%AD%A5%EF%BC%9A%E7%A7%BB%E5%8A%A8HEAD-%E6%9B%B4%E6%96%B0%E6%9A%82%E5%AD%98%E5%8C%BA-%E6%9B%B4%E6%96%B0%E5%B7%A5%E4%BD%9C%E5%8C%BA"><span class="nav-number">2.1.3.</span> <span class="nav-text">3步：移动HEAD+更新暂存区+更新工作区</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#reset-path"><span class="nav-number">2.2.</span> <span class="nav-text">reset+path</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#git-checkout"><span class="nav-number">3.</span> <span class="nav-text">git checkout</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#checkout-branch"><span class="nav-number">3.1.</span> <span class="nav-text">checkout+branch</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#checkout-path"><span class="nav-number">3.2.</span> <span class="nav-text">checkout+path</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#git-revert"><span class="nav-number">4.</span> <span class="nav-text">git revert</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%82%E8%80%83"><span class="nav-number">5.</span> <span class="nav-text">参考</span></a></li></ol></div>
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%89%8D%E6%8F%90%E7%9F%A5%E8%AF%86"><span class="nav-number">1.</span> <span class="nav-text">前提知识</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#git-reset"><span class="nav-number">2.</span> <span class="nav-text">git reset</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#reset-commit"><span class="nav-number">2.1.</span> <span class="nav-text">reset+commit</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1%E6%AD%A5%EF%BC%9A%E7%A7%BB%E5%8A%A8HEAD"><span class="nav-number">2.1.1.</span> <span class="nav-text">1步：移动HEAD</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2%E6%AD%A5%EF%BC%9A%E7%A7%BB%E5%8A%A8HEAD-%E6%9B%B4%E6%96%B0%E6%9A%82%E5%AD%98%E5%8C%BA"><span class="nav-number">2.1.2.</span> <span class="nav-text">2步：移动HEAD+更新暂存区</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3%E6%AD%A5%EF%BC%9A%E7%A7%BB%E5%8A%A8HEAD-%E6%9B%B4%E6%96%B0%E6%9A%82%E5%AD%98%E5%8C%BA-%E6%9B%B4%E6%96%B0%E5%B7%A5%E4%BD%9C%E5%8C%BA"><span class="nav-number">2.1.3.</span> <span class="nav-text">3步：移动HEAD+更新暂存区+更新工作区</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#reset-path"><span class="nav-number">2.2.</span> <span class="nav-text">reset+path</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#git-checkout"><span class="nav-number">3.</span> <span class="nav-text">git checkout</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#checkout-branch"><span class="nav-number">3.1.</span> <span class="nav-text">checkout+branch</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#checkout-path"><span class="nav-number">3.2.</span> <span class="nav-text">checkout+path</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#git-revert"><span class="nav-number">4.</span> <span class="nav-text">git revert</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%92%A4%E9%94%80%E5%90%8E%E7%9B%B4%E6%8E%A5%E6%8F%90%E4%BA%A4"><span class="nav-number">4.1.</span> <span class="nav-text">撤销后直接提交</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%92%A4%E9%94%80%E5%90%8E%E4%B8%8D%E7%9B%B4%E6%8E%A5%E6%8F%90%E4%BA%A4"><span class="nav-number">4.2.</span> <span class="nav-text">撤销后不直接提交</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%82%E8%80%83"><span class="nav-number">5.</span> <span class="nav-text">参考</span></a></li></ol></div>
         </div>
         <!--/noindex-->
 
@@ -230,7 +233,7 @@
           <i class="far fa-calendar-check"></i>
         </span>
         <span class="post-meta-item-text">Edited on</span>
-        <time title="Modified: 2021-04-13 23:57:54" itemprop="dateModified" datetime="2021-04-13T23:57:54+08:00">2021-04-13</time>
+        <time title="Modified: 2021-09-10 22:14:21" itemprop="dateModified" datetime="2021-09-10T22:14:21+08:00">2021-09-10</time>
       </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -338,12 +341,37 @@
 <img src="/images/git/checkout-branch-step2.svg" style="zoom:80%;" />
 
 <p>特例：<code>git checkout -- path </code>实际对应的<code>git checkout HEAD -- path </code>。</p>
-<h1 id="git-revert"><a href="#git-revert" class="headerlink" title="git revert"></a>git revert</h1><p>TODO</p>
+<h1 id="git-revert"><a href="#git-revert" class="headerlink" title="git revert"></a>git revert</h1><p><code>revert</code>可以理解为<code>撤销</code>的意思，该命令的基本语义是：对当前分支，撤销某次提交所对应的变更，并使用一次新的提交来合并因撤销提交所造成的影响。理解该命令需要注意几点：</p>
+<ol>
+<li>在执行该命令时，要求工作区是<font color="green"><code>clean</code></font>状态；</li>
+<li>它不是真正撤销某次提交，而是撤销某次提交所对应的变更，直观上，在该命令执行完成后，被撤销的提交仍然在提交的拓扑图中；</li>
+</ol>
+<p>示例数据准备：master分支分别进行3次新建文件、提交；dev分支进行一次修改、提交，形成如下提交拓扑图：</p>
+<img src="/images/git/revert-commit-step0.svg" style="zoom:80%;" />
+
+<h2 id="撤销后直接提交"><a href="#撤销后直接提交" class="headerlink" title="撤销后直接提交"></a>撤销后直接提交</h2><p>使用<code>git revert [--edit] &lt;commit&gt;</code>或<code>git revert [-e] &lt;commit&gt;</code>命令将指定的提交影响进行撤销，并且<code>--edit</code>或<code>-e</code>选项允许在提交合并的结果之前来编辑提交信息（<font color="red">注意，如果在<code>revert</code>某次提交期间，导致在Git处理合并有冲突时，需要我们手动解决完冲突，然后再进行手动commit操作</font>）。</p>
+<p>示例：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git revert da814a2</span><br></pre></td></tr></table></figure>
+
+<img src="/images/git/revert-commit-step1.svg" style="zoom:80%;" />
+
+
+
+<p>当然，如果我们不想自己来编辑<code>revert</code>命令衍生新提交的提交信息，可以使用<code>--no-edit</code>选项，该选项会自动为新提交创建提交信息，格式为：Resert + 被撤销的信息。</p>
+<h2 id="撤销后不直接提交"><a href="#撤销后不直接提交" class="headerlink" title="撤销后不直接提交"></a>撤销后不直接提交</h2><p>使用<code>git revert -n &lt;commit&gt;</code>或<code>git revert --no-commit &lt;commit&gt;</code>命令只将撤销合并后的结果放到工作区和暂存区，不会提交到仓库中。</p>
+<p>示例：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git revert -n da814a2</span><br></pre></td></tr></table></figure>
+
+<img src="/images/git/revert-commit-step2.svg" style="zoom:80%;" />
+
+
+
 <h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><ol>
 <li><a target="_blank" rel="noopener" href="https://git-scm.com/book/zh/v2/Git-%E5%B7%A5%E5%85%B7-%E9%87%8D%E7%BD%AE%E6%8F%AD%E5%AF%86">https://git-scm.com/book/zh/v2/Git-%E5%B7%A5%E5%85%B7-%E9%87%8D%E7%BD%AE%E6%8F%AD%E5%AF%86</a></li>
 <li><a target="_blank" rel="noopener" href="https://git-scm.com/book/en/v2/Git-Tools-Reset-Demystified">https://git-scm.com/book/en/v2/Git-Tools-Reset-Demystified</a></li>
 <li><a target="_blank" rel="noopener" href="https://git-scm.com/docs/git-reset">https://git-scm.com/docs/git-reset</a></li>
 <li><a target="_blank" rel="noopener" href="https://git-scm.com/docs/git-checkout">https://git-scm.com/docs/git-checkout</a></li>
+<li><a target="_blank" rel="noopener" href="https://git-scm.com/docs/git-revert">https://git-scm.com/docs/git-revert</a></li>
 </ol>
 
     </div>
