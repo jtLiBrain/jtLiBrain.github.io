@@ -34,7 +34,7 @@
 <meta property="og:image" content="https://jtlibrain.github.io/images/flink/checkpointing.svg">
 <meta property="og:image" content="https://jtlibrain.github.io/images/flink/stream_aligning.svg">
 <meta property="article:published_time" content="2021-01-08T13:45:29.000Z">
-<meta property="article:modified_time" content="2021-03-14T04:28:14.912Z">
+<meta property="article:modified_time" content="2021-09-16T13:32:54.271Z">
 <meta property="article:author" content="JT Li">
 <meta property="article:tag" content="Flink入门系列">
 <meta name="twitter:card" content="summary">
@@ -227,7 +227,7 @@
           <i class="far fa-calendar-check"></i>
         </span>
         <span class="post-meta-item-text">Edited on</span>
-        <time title="Modified: 2021-03-14 12:28:14" itemprop="dateModified" datetime="2021-03-14T12:28:14+08:00">2021-03-14</time>
+        <time title="Modified: 2021-09-16 21:32:54" itemprop="dateModified" datetime="2021-09-16T21:32:54+08:00">2021-09-16</time>
       </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -279,7 +279,7 @@
 <li>快照(Snapshot)：是对全局一致性的Flink作业状态镜像的通用术语。一个快照包括：每个数据源中的指针位置（例如，文件或Kafka分区中的偏移量）、以及每个有状态的算子通过处理这些位置之前的事件所构造出来的状态的一份状态拷贝。通俗地讲就是：<code>每个数据源的指针位置</code> + <code>所有算子状态的一份拷贝</code>。</li>
 <li>检查点(Checkpoint)：是由 Flink 自动执行的快照，其目的是能够从故障中恢复。检查点可以是增量的，它是为了快速恢复所进行的优化。</li>
 <li>外部检查点(Externalized Checkpoint)：通常 checkpoints 是不需要由用户干预的。Flink 只保留作业运行时最近的 <em>n</em> 个 checkpoints(<em>n</em> 可配置)，并在作业被取消时将它们删除。但你可以配置将它们保留下来，这样，你可以手动从它们进行恢复。</li>
-<li>保存点(Savepoint)：出于某种运维的目的(例如有状态的重新部署/升级/缩放操作)，由用户手动(或 API 调用)触发的快照。Savepoints 始终是完整的，并且针对操作灵活性进行了优化。保存点技术是依赖检查点的技术直线的，使用了检查点的程序都能从保存点恢复执行。保存点类似于检查点，不同的是保存点是有人来处罚的，并且当有新的检查点完成后，保存点是不会自动过期的。</li>
+<li>保存点(Savepoint)：出于某种运维的目的(例如有状态的重新部署/升级/缩放操作)，由用户手动(或 API 调用)触发的快照。Savepoints 始终是完整的，并且针对操作灵活性进行了优化。保存点技术是依赖检查点的技术实现的，使用了检查点的程序都能从保存点恢复执行。保存点类似于检查点，不同的是保存点是人为触发的，并且当有新的检查点完成后，保存点是不会自动过期的。</li>
 </ul>
 <h2 id="状态快照如何工作"><a href="#状态快照如何工作" class="headerlink" title="状态快照如何工作"></a>状态快照如何工作</h2><p>Flink容错机制的核心是获取分布式数据流和算子状态的一致性快照。获取这些快照的机制在“<a target="_blank" rel="noopener" href="http://arxiv.org/abs/1506.08603">分布式数据流的轻量异步快照</a>”中有描述。该论文受标准的<a target="_blank" rel="noopener" href="http://research.microsoft.com/en-us/um/people/lamport/pubs/chandy.pdf">Chandy-Lamport</a>算法的启发，对Flink执行模型做了定制处理。</p>
 <p>记住，checkpoint过程是异步的。分界线不会进行锁定，运算可以异步对它们的状态进行快照。</p>
@@ -301,8 +301,8 @@
 <h3 id="分界线对齐"><a href="#分界线对齐" class="headerlink" title="分界线对齐"></a>分界线对齐</h3><p>有些算子接收多个输入流，这样的算子需要按快照分界线对输入流进行对齐。如下图显示的：</p>
 <ul>
 <li>当算子从其中一个输入流接收到了快照n的分界线，它将不能再往下处理该输入流的记录了，直到它从其它数据流中都收到了快照n的分界线。否则，会混合属于快照n和快照n+1的记录。</li>
-<li>报告了快照n分界线的输入流会被临时搁置。这些输入流中的记录不会被继续处理，但会被置于输入缓存中。</li>
-<li>一旦从最后一个输入流收到了分界线n，该算子会发送出所有等待输出的记录(注意，这部分输出是前面输入流中属于快照n的记录所产生的，而不是前面输入流中被缓存下来的数据所产生的)，然后也会发送快照n本身的分界线。</li>
+<li>报告了快照n分界线的输入流会被临时搁置。这些输入流中的记录不会被继续处理，但会被置于输入缓存中。如下左图，数值流已经报告了元素<code>1</code>前面的分界线，但英文字符流还没有报告相应的分界线，所以数值流中的元素<code>1</code>、<code>2</code>、<code>3</code>依次被缓存到了算子的输入缓存中。</li>
+<li>一旦从最后一个输入流收到了分界线n，该算子会发送出所有等待输出的记录(注意，这部分输出是前面输入流中属于快照n的记录所产生的，而不是前面输入流中被缓存下来的数据所产生的)，然后也会发送快照n本身的分界线。如下中图，两个流中元素<code>1</code>和元素<code>e</code>前的分界线已经对齐了。如下右图，算子向下游发出两个流中元素<code>1</code>和元素<code>e</code>前的分界线。</li>
 <li>在这之后，该算子恢复处理来自所有输入流的记录，优先处理输入缓冲中的记录，再处理输入流中的记录。</li>
 </ul>
 <p><img src="/images/flink/stream_aligning.svg"></p>

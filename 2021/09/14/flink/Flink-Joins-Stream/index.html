@@ -33,7 +33,7 @@
 <meta property="og:image" content="https://nightlies.apache.org/flink/flink-docs-release-1.13/fig/session-window-join.svg">
 <meta property="og:image" content="https://nightlies.apache.org/flink/flink-docs-release-1.13/fig/interval-join.svg">
 <meta property="article:published_time" content="2021-09-14T13:42:27.000Z">
-<meta property="article:modified_time" content="2021-09-15T15:34:42.122Z">
+<meta property="article:modified_time" content="2021-09-16T14:23:48.670Z">
 <meta property="article:author" content="JT Li">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="https://nightlies.apache.org/flink/flink-docs-release-1.13/fig/tumbling-window-join.svg">
@@ -225,7 +225,7 @@
           <i class="far fa-calendar-check"></i>
         </span>
         <span class="post-meta-item-text">Edited on</span>
-        <time title="Modified: 2021-09-15 23:34:42" itemprop="dateModified" datetime="2021-09-15T23:34:42+08:00">2021-09-15</time>
+        <time title="Modified: 2021-09-16 22:23:48" itemprop="dateModified" datetime="2021-09-16T22:23:48+08:00">2021-09-16</time>
       </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -257,7 +257,7 @@
         <p>（TODO）</p>
 <a id="more"></a>
 
-<h1 id="Window-Join"><a href="#Window-Join" class="headerlink" title="Window Join"></a>Window Join</h1><p>窗口Join的语义是：连接两个流中落在同一窗口内的、具有相同键的元素进行Join。</p>
+<h1 id="Window-Join"><a href="#Window-Join" class="headerlink" title="Window Join"></a>Window Join</h1><p>窗口Join的语义：对两个流中落在同一窗口内的、具有相同键的元素计算笛卡尔积。</p>
 <p>使用方式：</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">stream.join(otherStream)</span><br><span class="line">    .where(&lt;KeySelector&gt;)</span><br><span class="line">    .equalTo(&lt;KeySelector&gt;)</span><br><span class="line">    .window(&lt;WindowAssigner&gt;)</span><br><span class="line">    .apply(&lt;JoinFunction|FlatJoinFunction&gt;)</span><br></pre></td></tr></table></figure>
 
@@ -304,7 +304,20 @@
 
 <figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> org.apache.flink.streaming.api.functions.co.<span class="type">ProcessJoinFunction</span>;</span><br><span class="line"><span class="keyword">import</span> org.apache.flink.streaming.api.windowing.time.<span class="type">Time</span>;</span><br><span class="line"></span><br><span class="line">...</span><br><span class="line"></span><br><span class="line"><span class="keyword">val</span> orangeStream: <span class="type">DataStream</span>[<span class="type">Integer</span>] = ...</span><br><span class="line"><span class="keyword">val</span> greenStream: <span class="type">DataStream</span>[<span class="type">Integer</span>] = ...</span><br><span class="line"></span><br><span class="line">orangeStream</span><br><span class="line">    .keyBy(elem =&gt; <span class="comment">/* select key */</span>)</span><br><span class="line">    .intervalJoin(greenStream.keyBy(elem =&gt; <span class="comment">/* select key */</span>))</span><br><span class="line">    .between(<span class="type">Time</span>.milliseconds(<span class="number">-2</span>), <span class="type">Time</span>.milliseconds(<span class="number">1</span>))</span><br><span class="line">    .process(<span class="keyword">new</span> <span class="type">ProcessJoinFunction</span>[<span class="type">Integer</span>, <span class="type">Integer</span>, <span class="type">String</span>] &#123;</span><br><span class="line">        <span class="keyword">override</span> <span class="function"><span class="keyword">def</span> <span class="title">processElement</span></span>(left: <span class="type">Integer</span>, right: <span class="type">Integer</span>, ctx: <span class="type">ProcessJoinFunction</span>[<span class="type">Integer</span>, <span class="type">Integer</span>, <span class="type">String</span>]#<span class="type">Context</span>, out: <span class="type">Collector</span>[<span class="type">String</span>]): <span class="type">Unit</span> = &#123;</span><br><span class="line">         out.collect(left + <span class="string">&quot;,&quot;</span> + right); </span><br><span class="line">        &#125;</span><br><span class="line">      &#125;);</span><br><span class="line">    &#125;);</span><br></pre></td></tr></table></figure>
 
-<h1 id="Window-CoGroup"><a href="#Window-CoGroup" class="headerlink" title="Window CoGroup"></a>Window CoGroup</h1><h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><ol>
+
+
+<h1 id="Window-CoGroup"><a href="#Window-CoGroup" class="headerlink" title="Window CoGroup"></a>Window CoGroup</h1><p>语义：在窗口内，将两个流中的带有相同键的元素分组到一起。</p>
+<p>注意事项：</p>
+<ul>
+<li><span style="background-color: #5bc0de;color:#fff;font-size: 90%;white-space: nowrap;vertical-align: baseline;border-radius: .25em;white-space: nowrap;">从语义上，它与窗口Join在语义上的区别是：coGroup() 强调对原始元素分组到一起，而 join() 则是计算两端元素的笛卡尔积；</span></li>
+<li><code>apply()</code>函数需要提供一个实现了接口<code>CoGroupFunction&lt;IN1, IN2, O&gt;</code>的类实例，该接口只定义了一个方法<code>void coGroup(Iterable&lt;IN1&gt; first, Iterable&lt;IN2&gt; second, Collector&lt;O&gt; out) throws Exception;</code>，其中<code>first</code>表示窗口内第一个流中所有拥有相同健的元素的<code>Iterable</code>，<code>second</code>表示窗口内第二个流中所有拥有相同健的元素的<code>Iterable</code>。</li>
+</ul>
+<p>使用方式：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">dataStream.coGroup(otherStream)</span><br><span class="line">    .where(<span class="number">0</span>).equalTo(<span class="number">1</span>)</span><br><span class="line">    .window(<span class="type">TumblingEventTimeWindows</span>.of(<span class="type">Time</span>.seconds(<span class="number">3</span>)))</span><br><span class="line">    .apply (<span class="keyword">new</span> <span class="type">CoGroupFunction</span> () &#123;...&#125;);</span><br></pre></td></tr></table></figure>
+
+
+
+<h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><ol>
 <li><a target="_blank" rel="noopener" href="https://nightlies.apache.org/flink/flink-docs-release-1.13/zh/docs/dev/datastream/operators/joining/">https://nightlies.apache.org/flink/flink-docs-release-1.13/zh/docs/dev/datastream/operators/joining/</a></li>
 <li><a target="_blank" rel="noopener" href="https://www.slideshare.net/FlinkForward/flink-forward-san-francisco-2019-how-to-join-two-data-streams-piotr-nowojski">https://www.slideshare.net/FlinkForward/flink-forward-san-francisco-2019-how-to-join-two-data-streams-piotr-nowojski</a></li>
 <li><a target="_blank" rel="noopener" href="https://nightlies.apache.org/flink/flink-docs-release-1.13/zh/docs/dev/datastream/operators/overview/#window-join">https://nightlies.apache.org/flink/flink-docs-release-1.13/zh/docs/dev/datastream/operators/overview/#window-join</a></li>
