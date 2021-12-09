@@ -29,7 +29,7 @@
 <meta property="og:description" content="（TODO）">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2021-05-17T08:22:53.000Z">
-<meta property="article:modified_time" content="2021-08-27T15:40:57.542Z">
+<meta property="article:modified_time" content="2021-11-13T14:11:08.874Z">
 <meta property="article:author" content="JT Li">
 <meta property="article:tag" content="Spark SQL应用系列">
 <meta name="twitter:card" content="summary">
@@ -220,7 +220,7 @@
           <i class="far fa-calendar-check"></i>
         </span>
         <span class="post-meta-item-text">Edited on</span>
-        <time title="Modified: 2021-08-27 23:40:57" itemprop="dateModified" datetime="2021-08-27T23:40:57+08:00">2021-08-27</time>
+        <time title="Modified: 2021-11-13 22:11:08" itemprop="dateModified" datetime="2021-11-13T22:11:08+08:00">2021-11-13</time>
       </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -338,7 +338,13 @@
 
 
 <h3 id="聚合函数"><a href="#聚合函数" class="headerlink" title="聚合函数"></a>聚合函数</h3><p>（略）</p>
-<h2 id="应用窗口函数"><a href="#应用窗口函数" class="headerlink" title="应用窗口函数"></a>应用窗口函数</h2><h1 id="定义窗口"><a href="#定义窗口" class="headerlink" title="定义窗口"></a>定义窗口</h1><p>窗口规范定义了哪些行会被包含进给定行所关联的数据帧。窗口规范中包含有三部分：分区定义、排序定义、数据帧定义。</p>
+<h2 id="应用窗口函数"><a href="#应用窗口函数" class="headerlink" title="应用窗口函数"></a>应用窗口函数</h2><ul>
+<li>SQL</li>
+</ul>
+<ul>
+<li>DataFrame</li>
+</ul>
+<h1 id="定义窗口"><a href="#定义窗口" class="headerlink" title="定义窗口"></a>定义窗口</h1><p>窗口规范定义了哪些行会被包含进给定行所关联的数据帧。窗口规范中包含有三部分：分区定义、排序定义、数据帧定义。</p>
 <p><code>OVER (PARTITION BY ... ORDER BY ...)</code></p>
 <h2 id="定义分区"><a href="#定义分区" class="headerlink" title="定义分区"></a>定义分区</h2><p>分区规范控制了哪些行会被分区到一起。如果不指定分区，那么所有数据会被收集到一台机器上。</p>
 <h2 id="定义排序"><a href="#定义排序" class="headerlink" title="定义排序"></a>定义排序</h2><p>排序规范控制了数据在分区内的排序方式，确定了数据在分区内的物理位置。</p>
