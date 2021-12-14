@@ -23,7 +23,7 @@
 <script class="next-config" data-name="main" type="application/json">{"hostname":"jtlibrain.github.io","root":"/","images":"/images","scheme":"Gemini","version":"8.7.1","exturl":false,"sidebar":{"position":"left","display":"hide","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js"></script>
 <meta name="description" content="TODO">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Hive优化系列1：MR&amp;Hive是如何控制map任务和reduce任务的数量的">
+<meta property="og:title" content="Hive优化系列1：MR&amp;Hive如何控制map和reduce任务数量">
 <meta property="og:url" content="https://jtlibrain.github.io/2021/03/09/hive/Hive-Optimization-Control-Map-And-Reduce/index.html">
 <meta property="og:site_name" content="jtLiBrain">
 <meta property="og:description" content="TODO">
@@ -31,7 +31,7 @@
 <meta property="og:image" content="https://jtlibrain.github.io/images/hive/hadoop-FileInputFormat-getSplits.svg">
 <meta property="og:image" content="https://jtlibrain.github.io/images/hive/hadoop-CombineFileInputFormat-getMoreSplits.svg">
 <meta property="article:published_time" content="2021-03-09T14:04:34.000Z">
-<meta property="article:modified_time" content="2021-12-09T13:25:49.763Z">
+<meta property="article:modified_time" content="2021-12-13T14:56:29.269Z">
 <meta property="article:author" content="JT Li">
 <meta property="article:tag" content="Hive优化">
 <meta name="twitter:card" content="summary">
@@ -42,10 +42,10 @@
 
 
 
-<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"en","comments":true,"permalink":"https://jtlibrain.github.io/2021/03/09/hive/Hive-Optimization-Control-Map-And-Reduce/","path":"2021/03/09/hive/Hive-Optimization-Control-Map-And-Reduce/","title":"Hive优化系列1：MR&Hive是如何控制map任务和reduce任务的数量的"}</script>
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"en","comments":true,"permalink":"https://jtlibrain.github.io/2021/03/09/hive/Hive-Optimization-Control-Map-And-Reduce/","path":"2021/03/09/hive/Hive-Optimization-Control-Map-And-Reduce/","title":"Hive优化系列1：MR&Hive如何控制map和reduce任务数量"}</script>
 
 <script class="next-config" data-name="calendar" type="application/json">""</script>
-<title>Hive优化系列1：MR&Hive是如何控制map任务和reduce任务的数量的 | jtLiBrain</title>
+<title>Hive优化系列1：MR&Hive如何控制map和reduce任务数量 | jtLiBrain</title>
   
 
 
@@ -124,7 +124,7 @@
       <div class="sidebar-panel-container">
         <!--noindex-->
         <div class="post-toc-wrap sidebar-panel">
-            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Map%E4%BB%BB%E5%8A%A1%E6%95%B0%E9%87%8F"><span class="nav-number">1.</span> <span class="nav-text">Map任务数量</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#MapReduce%E4%BB%BB%E5%8A%A1"><span class="nav-number">1.1.</span> <span class="nav-text">MapReduce任务</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#FileInputFormat"><span class="nav-number">1.1.1.</span> <span class="nav-text">FileInputFormat</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#getSplits%E6%96%B9%E6%B3%95"><span class="nav-number">1.1.1.1.</span> <span class="nav-text">getSplits方法</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#computeSplitSize%E6%96%B9%E6%B3%95"><span class="nav-number">1.1.1.2.</span> <span class="nav-text">computeSplitSize方法</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#CombineFileInputFormat"><span class="nav-number">1.1.2.</span> <span class="nav-text">CombineFileInputFormat</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Hive-SQL"><span class="nav-number">1.2.</span> <span class="nav-text">Hive SQL</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#HiveInputFormat"><span class="nav-number">1.2.1.</span> <span class="nav-text">HiveInputFormat</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#CombineHiveInputFormat"><span class="nav-number">1.2.2.</span> <span class="nav-text">CombineHiveInputFormat</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Reduce%E4%BB%BB%E5%8A%A1%E6%95%B0%E9%87%8F"><span class="nav-number">2.</span> <span class="nav-text">Reduce任务数量</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#MapReduce%E4%BB%BB%E5%8A%A1-1"><span class="nav-number">2.1.</span> <span class="nav-text">MapReduce任务</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Hive-SQL-1"><span class="nav-number">2.2.</span> <span class="nav-text">Hive SQL</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%82%E8%80%83"><span class="nav-number">3.</span> <span class="nav-text">参考</span></a></li></ol></div>
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Map%E4%BB%BB%E5%8A%A1%E6%95%B0%E9%87%8F"><span class="nav-number">1.</span> <span class="nav-text">Map任务数量</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#MapReduce%E4%BB%BB%E5%8A%A1"><span class="nav-number">1.1.</span> <span class="nav-text">MapReduce任务</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#FileInputFormat"><span class="nav-number">1.1.1.</span> <span class="nav-text">FileInputFormat</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#getSplits%E6%96%B9%E6%B3%95"><span class="nav-number">1.1.1.1.</span> <span class="nav-text">getSplits方法</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#computeSplitSize%E6%96%B9%E6%B3%95"><span class="nav-number">1.1.1.2.</span> <span class="nav-text">computeSplitSize方法</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#CombineFileInputFormat"><span class="nav-number">1.1.2.</span> <span class="nav-text">CombineFileInputFormat</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#getSplits%E6%96%B9%E6%B3%95-1"><span class="nav-number">1.1.2.1.</span> <span class="nav-text">getSplits方法</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#getMoreSplits%E6%96%B9%E6%B3%95"><span class="nav-number">1.1.2.2.</span> <span class="nav-text">getMoreSplits方法</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#createSplits%E6%96%B9%E6%B3%95"><span class="nav-number">1.1.2.3.</span> <span class="nav-text">createSplits方法</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Hive-SQL"><span class="nav-number">1.2.</span> <span class="nav-text">Hive SQL</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#HiveInputFormat"><span class="nav-number">1.2.1.</span> <span class="nav-text">HiveInputFormat</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#CombineHiveInputFormat"><span class="nav-number">1.2.2.</span> <span class="nav-text">CombineHiveInputFormat</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Reduce%E4%BB%BB%E5%8A%A1%E6%95%B0%E9%87%8F"><span class="nav-number">2.</span> <span class="nav-text">Reduce任务数量</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#MapReduce%E4%BB%BB%E5%8A%A1-1"><span class="nav-number">2.1.</span> <span class="nav-text">MapReduce任务</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Hive-SQL-1"><span class="nav-number">2.2.</span> <span class="nav-text">Hive SQL</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#MapRedTask-setNumberOfReducers"><span class="nav-number">2.2.1.</span> <span class="nav-text">MapRedTask.setNumberOfReducers()</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%82%E8%80%83"><span class="nav-number">3.</span> <span class="nav-text">参考</span></a></li></ol></div>
         </div>
         <!--/noindex-->
 
@@ -205,7 +205,7 @@
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          Hive优化系列1：MR&Hive是如何控制map任务和reduce任务的数量的
+          Hive优化系列1：MR&Hive如何控制map和reduce任务数量
         </h1>
 
         <div class="post-meta-container">
@@ -223,7 +223,7 @@
           <i class="far fa-calendar-check"></i>
         </span>
         <span class="post-meta-item-text">Edited on</span>
-        <time title="Modified: 2021-12-09 21:25:49" itemprop="dateModified" datetime="2021-12-09T21:25:49+08:00">2021-12-09</time>
+        <time title="Modified: 2021-12-13 22:56:29" itemprop="dateModified" datetime="2021-12-13T22:56:29+08:00">2021-12-13</time>
       </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -270,24 +270,29 @@
 
 
 <p>有了上面的知识，我们来学习下具体的<code>InputFormat</code>的分片逻辑。</p>
-<h3 id="FileInputFormat"><a href="#FileInputFormat" class="headerlink" title="FileInputFormat"></a>FileInputFormat</h3><p><code>FileInputFormat</code>作为一个抽象类，在Hadoop 1.x和2.x中分别存在于包<code>org.apache.hadoop.mapred</code>和<code>org.apache.hadoop.mapreduce.lib.input</code>内。其具体子类有：</p>
+<h3 id="FileInputFormat"><a href="#FileInputFormat" class="headerlink" title="FileInputFormat"></a>FileInputFormat</h3><p><code>FileInputFormat</code>作为一个抽象类，在Hadoop 1.x和2.x中分别位于包<code>org.apache.hadoop.mapred</code>和<code>org.apache.hadoop.mapreduce.lib.input</code>内。其具体子类有：</p>
 <ul>
-<li><p>TextInputFormat</p>
+<li><p><code>TextInputFormat</code></p>
 </li>
-<li><p>KeyValueTextInputFormat</p>
+<li><p><code>KeyValueTextInputFormat</code></p>
 </li>
-<li><p>SequenceFileInputFormat</p>
+<li><p><code>SequenceFileInputFormat</code></p>
 </li>
-<li><p>FixedLengthInputFormat</p>
+<li><p><code>FixedLengthInputFormat</code></p>
 </li>
 </ul>
-<h4 id="getSplits方法"><a href="#getSplits方法" class="headerlink" title="getSplits方法"></a>getSplits方法</h4><img src="/images/hive/hadoop-FileInputFormat-getSplits.svg" style="zoom:90%;" />
+<h4 id="getSplits方法"><a href="#getSplits方法" class="headerlink" title="getSplits方法"></a>getSplits方法</h4><p>该方法的逻辑比较简单，它遍历每个文件，根据每个文件是否可切分进行分片：</p>
+<ul>
+<li>对于不可切分的文件格式，一个文件划分一个分片；</li>
+<li>对于可切分的文件格式，根据<code>computeSplitSize()</code>计算的分片大小，对该文件进行分片；</li>
+</ul>
+<img src="/images/hive/hadoop-FileInputFormat-getSplits.svg" style="zoom:90%;" />
 
 <h4 id="computeSplitSize方法"><a href="#computeSplitSize方法" class="headerlink" title="computeSplitSize方法"></a>computeSplitSize方法</h4><p>Hadoop 1.x的<code>computeSplitSize()</code>如下，它计算的逻辑分片大小满足：</p>
 <ol>
-<li>分片不会过于小，由<code>mapreduce.input.fileinputformat.split.minsize</code>控制；</li>
-<li>分片不会过于大，不会超过该文件的块大小和目标分片大小；</li>
-<li>其中，$目标分片大小(goalSize) = 输入文件总大小 / 期望的map数$，其中<code>期望的map数</code>在Hadoop 1.x中可以通过 <code>JobConf.setNumMapTasks()</code>设置；</li>
+<li>分片不会过小，由minSize=<code>mapreduce.input.fileinputformat.split.minsize</code>控制；</li>
+<li>分片不会过大，不会超过该文件的块大小和目标分片大小；</li>
+<li>其中，目标分片大小(goalSize) = 输入文件总大小 / 期望的map数，其中<code>期望的map数</code>在Hadoop 1.x中可以通过 <code>JobConf.setNumMapTasks()</code>设置；</li>
 </ol>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// hadoop 1.x</span></span><br><span class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">long</span> <span class="title">computeSplitSize</span><span class="params">(<span class="keyword">long</span> goalSize, <span class="keyword">long</span> minSize,</span></span></span><br><span class="line"><span class="function"><span class="params">                                     <span class="keyword">long</span> blockSize)</span> </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> Math.max(minSize, Math.min(goalSize, blockSize));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
@@ -302,27 +307,36 @@
 
 
 
-
-
-
-
-<h3 id="CombineFileInputFormat"><a href="#CombineFileInputFormat" class="headerlink" title="CombineFileInputFormat"></a>CombineFileInputFormat</h3><ul>
+<h3 id="CombineFileInputFormat"><a href="#CombineFileInputFormat" class="headerlink" title="CombineFileInputFormat"></a>CombineFileInputFormat</h3><p><code>CombineFileInputFormat</code>作为<code>FileInputFormat</code>的子类，它重写了<code>getSplits()</code>了，其子类有：</p>
+<ul>
 <li><p>CombineTextInputFormat</p>
 </li>
 <li><p>CombineSequenceFileInputFormat</p>
 </li>
 </ul>
+<h4 id="getSplits方法-1"><a href="#getSplits方法-1" class="headerlink" title="getSplits方法"></a>getSplits方法</h4><ol>
+<li>该方法首先会校验如下参数：<ul>
+<li><code>minSizeNode</code>=<code>mapreduce.input.fileinputformat.split.minsize.per.node</code></li>
+<li><code>minSizeRack</code>=<code>mapreduce.input.fileinputformat.split.minsize.per.rack</code></li>
+<li><code>maxSize</code>=<code>mapreduce.input.fileinputformat.split.maxsize</code></li>
+</ul>
+</li>
+</ol>
+<p>并且，需要满足：<code>minSizeNode</code> &lt;= <code>minSizeRack</code> &lt;= <code>maxSize</code>；</p>
+<ol start="2">
+<li>针对每个<code>MultiPathFilter</code>，对该filter下的输入文件列表调用<code>getMoreSplits()</code>分配分片；</li>
+</ol>
+<h4 id="getMoreSplits方法"><a href="#getMoreSplits方法" class="headerlink" title="getMoreSplits方法"></a>getMoreSplits方法</h4><ol>
+<li>该方法首先会遍历文件列表，将记账信息填入如下Map中：</li>
+</ol>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// key: 机器节点，value：该节点包含的所有块数据</span></span><br><span class="line">HashMap&lt;String, List&lt;OneBlockInfo&gt;&gt; rackToBlocks = </span><br><span class="line">                          <span class="keyword">new</span> HashMap&lt;String, List&lt;OneBlockInfo&gt;&gt;();</span><br><span class="line"></span><br><span class="line"><span class="comment">// mapping from a block to the nodes on which it has replicas</span></span><br><span class="line">HashMap&lt;OneBlockInfo, String[]&gt; blockToNodes = </span><br><span class="line">                          <span class="keyword">new</span> HashMap&lt;OneBlockInfo, String[]&gt;();</span><br><span class="line"></span><br><span class="line"><span class="comment">// mapping from a node to the list of blocks that it contains</span></span><br><span class="line">HashMap&lt;String, Set&lt;OneBlockInfo&gt;&gt; nodeToBlocks = </span><br><span class="line">                          <span class="keyword">new</span> HashMap&lt;String, Set&lt;OneBlockInfo&gt;&gt;();</span><br></pre></td></tr></table></figure>
 
 
 
-
-
-<p>minSizeNode=mapreduce.input.fileinputformat.split.minsize.per.node</p>
-<p>minSizeRack=mapreduce.input.fileinputformat.split.minsize.per.rack</p>
-<p>maxSize=mapreduce.input.fileinputformat.split.maxsize</p>
-<p>minSizeNode &lt;= minSizeRack &lt;= maxSize</p>
-<p><img src="/images/hive/hadoop-CombineFileInputFormat-getMoreSplits.svg"></p>
+<ol start="2">
+<li>调用<code>createSplits()</code>执行真正的分片逻辑；</li>
+</ol>
+<h4 id="createSplits方法"><a href="#createSplits方法" class="headerlink" title="createSplits方法"></a>createSplits方法</h4><p><img src="/images/hive/hadoop-CombineFileInputFormat-getMoreSplits.svg"></p>
 <ol>
 <li>对于每个节点，对该节点上未分配的数据块进行逐个累计，累计值达到<code>maxSize</code>则创建一个分片，之后不再该节点继续进行分配而是跳至下一个节点执行分配（这样的目的是使得分配到分片更加均匀），如图中<code>M-1</code>和<code>M-3</code>；</li>
 <li>节点上剩余数据块累计值如果大于等于<code>minSizeNode</code>，则创建一个分片，如图中<code>M-2</code>；</li>
@@ -334,7 +348,38 @@
 <li>最后是合并这些<em>Overflow Blocks</em>，累计值每达到<code>maxSize</code>则创建一个分片，如图中<code>M-6</code>；</li>
 </ol>
 <p>​    </p>
-<h2 id="Hive-SQL"><a href="#Hive-SQL" class="headerlink" title="Hive SQL"></a>Hive SQL</h2><h3 id="HiveInputFormat"><a href="#HiveInputFormat" class="headerlink" title="HiveInputFormat"></a>HiveInputFormat</h3><h3 id="CombineHiveInputFormat"><a href="#CombineHiveInputFormat" class="headerlink" title="CombineHiveInputFormat"></a>CombineHiveInputFormat</h3><h1 id="Reduce任务数量"><a href="#Reduce任务数量" class="headerlink" title="Reduce任务数量"></a>Reduce任务数量</h1><h2 id="MapReduce任务-1"><a href="#MapReduce任务-1" class="headerlink" title="MapReduce任务"></a>MapReduce任务</h2><h2 id="Hive-SQL-1"><a href="#Hive-SQL-1" class="headerlink" title="Hive SQL"></a>Hive SQL</h2><h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><ol>
+<h2 id="Hive-SQL"><a href="#Hive-SQL" class="headerlink" title="Hive SQL"></a>Hive SQL</h2><h3 id="HiveInputFormat"><a href="#HiveInputFormat" class="headerlink" title="HiveInputFormat"></a>HiveInputFormat</h3><h3 id="CombineHiveInputFormat"><a href="#CombineHiveInputFormat" class="headerlink" title="CombineHiveInputFormat"></a>CombineHiveInputFormat</h3><h1 id="Reduce任务数量"><a href="#Reduce任务数量" class="headerlink" title="Reduce任务数量"></a>Reduce任务数量</h1><h2 id="MapReduce任务-1"><a href="#MapReduce任务-1" class="headerlink" title="MapReduce任务"></a>MapReduce任务</h2><table>
+<thead>
+<tr>
+<th>API</th>
+<th>配置</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Job.setNumReduceTasks(int tasks)</td>
+<td>mapreduce.job.reduces</td>
+</tr>
+</tbody></table>
+<h2 id="Hive-SQL-1"><a href="#Hive-SQL-1" class="headerlink" title="Hive SQL"></a>Hive SQL</h2><table>
+<thead>
+<tr>
+<th>配置项</th>
+<th>含义</th>
+<th>默认值</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>hive.exec.reducers.bytes.per.reducer</td>
+<td>每个Reducer所处理的输入文件大小</td>
+<td>256 * 1000 * 1000（256Mb）</td>
+</tr>
+<tr>
+<td>hive.exec.reducers.max</td>
+<td>Reducer最大数量</td>
+<td>1009</td>
+</tr>
+</tbody></table>
+<h3 id="MapRedTask-setNumberOfReducers"><a href="#MapRedTask-setNumberOfReducers" class="headerlink" title="MapRedTask.setNumberOfReducers()"></a>MapRedTask.setNumberOfReducers()</h3><h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><ol>
 <li><a target="_blank" rel="noopener" href="https://blog.csdn.net/u013332124/article/details/97373278">https://blog.csdn.net/u013332124/article/details/97373278</a></li>
 <li><a target="_blank" rel="noopener" href="https://blog.csdn.net/u013332124/article/details/100177553?ivk_sa=1026860c">https://blog.csdn.net/u013332124/article/details/100177553?ivk_sa=1026860c</a></li>
 <li><a target="_blank" rel="noopener" href="https://blog.csdn.net/u013332124/article/details/97373278">https://blog.csdn.net/u013332124/article/details/97373278</a></li>
