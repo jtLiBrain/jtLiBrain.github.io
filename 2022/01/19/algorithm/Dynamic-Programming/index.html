@@ -21,27 +21,34 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css" integrity="sha256-Vzbj7sDDS/woiFS3uNKo8eIuni59rjyNGtXfstRzStA=" crossorigin="anonymous">
 
 <script class="next-config" data-name="main" type="application/json">{"hostname":"jtlibrain.github.io","root":"/","images":"/images","scheme":"Gemini","version":"8.7.1","exturl":false,"sidebar":{"position":"left","display":"hide","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js"></script>
-<meta name="description" content="TODO">
+<meta name="description" content="动态规划（Dynamic Programming）是一种通过将最优问题分解为更简单的子问题，并利用了整体问题的最优解取决于其子问题的最优解这一事实来解决最优问题的算法技术。动态规划中的“Programming”指的是表格法，而非编写代码。">
 <meta property="og:type" content="article">
-<meta property="og:title" content="动态规划">
+<meta property="og:title" content="动态规划（Dynamic Programming）">
 <meta property="og:url" content="https://jtlibrain.github.io/2022/01/19/algorithm/Dynamic-Programming/index.html">
 <meta property="og:site_name" content="jtLiBrain">
-<meta property="og:description" content="TODO">
+<meta property="og:description" content="动态规划（Dynamic Programming）是一种通过将最优问题分解为更简单的子问题，并利用了整体问题的最优解取决于其子问题的最优解这一事实来解决最优问题的算法技术。动态规划中的“Programming”指的是表格法，而非编写代码。">
 <meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://jtlibrain.github.io/images/algorithm/dp-q1.svg">
+<meta property="og:image" content="https://jtlibrain.github.io/images/algorithm/dp-q1-expansion.svg">
+<meta property="og:image" content="https://jtlibrain.github.io/images/algorithm/dp-q2.svg">
+<meta property="og:image" content="https://jtlibrain.github.io/images/algorithm/dp-q2-expansion.svg">
+<meta property="og:image" content="https://jtlibrain.github.io/images/algorithm/dp-q3.svg">
+<meta property="og:image" content="https://jtlibrain.github.io/images/algorithm/dp-q3-expansion.svg">
 <meta property="article:published_time" content="2022-01-19T14:15:44.000Z">
-<meta property="article:modified_time" content="2022-01-19T14:27:01.659Z">
+<meta property="article:modified_time" content="2022-02-06T10:38:32.639Z">
 <meta property="article:author" content="JT Li">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://jtlibrain.github.io/images/algorithm/dp-q1.svg">
 
 
 <link rel="canonical" href="https://jtlibrain.github.io/2022/01/19/algorithm/Dynamic-Programming/">
 
 
 
-<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"en","comments":true,"permalink":"https://jtlibrain.github.io/2022/01/19/algorithm/Dynamic-Programming/","path":"2022/01/19/algorithm/Dynamic-Programming/","title":"动态规划"}</script>
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"en","comments":true,"permalink":"https://jtlibrain.github.io/2022/01/19/algorithm/Dynamic-Programming/","path":"2022/01/19/algorithm/Dynamic-Programming/","title":"动态规划（Dynamic Programming）"}</script>
 
 <script class="next-config" data-name="calendar" type="application/json">""</script>
-<title>动态规划 | jtLiBrain</title>
+<title>动态规划（Dynamic Programming） | jtLiBrain</title>
   
 
 
@@ -120,7 +127,7 @@
       <div class="sidebar-panel-container">
         <!--noindex-->
         <div class="post-toc-wrap sidebar-panel">
-            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%82%E8%80%83"><span class="nav-number">1.</span> <span class="nav-text">参考</span></a></li></ol></div>
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8A%A8%E6%80%81%E8%A7%84%E5%88%92"><span class="nav-number">1.</span> <span class="nav-text">动态规划</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8A%A8%E6%80%81%E8%A7%84%E5%88%92%E7%9A%84%E7%89%B9%E5%BE%81"><span class="nav-number">1.1.</span> <span class="nav-text">动态规划的特征</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8A%A8%E6%80%81%E8%A7%84%E5%88%92%E7%9A%84%E6%B1%82%E8%A7%A3%E6%96%B9%E6%B3%95"><span class="nav-number">1.2.</span> <span class="nav-text">动态规划的求解方法</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%87%AA%E5%BA%95%E5%90%91%E4%B8%8A%E7%9A%84%E8%A1%A8%E6%A0%BC%E6%B3%95-Bottom-up-with-Tabulation"><span class="nav-number">1.2.1.</span> <span class="nav-text">自底向上的表格法(Bottom-up with Tabulation)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%87%AA%E9%A1%B6%E5%90%91%E4%B8%8B%E6%B3%95%E7%9A%84%E8%AE%B0%E5%BF%86%E5%BC%8F%E6%96%B9%E6%B3%95-Top-down-with-Memoization"><span class="nav-number">1.2.2.</span> <span class="nav-text">自顶向下法的记忆式方法(Top-down with Memoization)</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8A%A8%E6%80%81%E8%A7%84%E5%88%92%E9%97%AE%E9%A2%98"><span class="nav-number">2.</span> <span class="nav-text">动态规划问题</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%97%AE%E9%A2%981"><span class="nav-number">2.1.</span> <span class="nav-text">问题1</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%97%AE%E9%A2%982"><span class="nav-number">2.2.</span> <span class="nav-text">问题2</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%97%AE%E9%A2%983"><span class="nav-number">2.3.</span> <span class="nav-text">问题3</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%82%E8%80%83"><span class="nav-number">3.</span> <span class="nav-text">参考</span></a></li></ol></div>
         </div>
         <!--/noindex-->
 
@@ -201,7 +208,7 @@
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          动态规划
+          动态规划（Dynamic Programming）
         </h1>
 
         <div class="post-meta-container">
@@ -211,10 +218,16 @@
         <i class="far fa-calendar"></i>
       </span>
       <span class="post-meta-item-text">Posted on</span>
-      
 
-      <time title="Created: 2022-01-19 22:15:44 / Modified: 22:27:01" itemprop="dateCreated datePublished" datetime="2022-01-19T22:15:44+08:00">2022-01-19</time>
+      <time title="Created: 2022-01-19 22:15:44" itemprop="dateCreated datePublished" datetime="2022-01-19T22:15:44+08:00">2022-01-19</time>
     </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">Edited on</span>
+        <time title="Modified: 2022-02-06 18:38:32" itemprop="dateModified" datetime="2022-02-06T18:38:32+08:00">2022-02-06</time>
+      </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
         <i class="far fa-folder"></i>
@@ -242,10 +255,307 @@
     
     
     <div class="post-body" itemprop="articleBody">
-        <p>TODO</p>
+        <p>动态规划（Dynamic Programming）是一种通过将最优问题分解为更简单的子问题，并利用了整体问题的最优解取决于其子问题的最优解这一事实来解决最优问题的算法技术。动态规划中的“<em>Programming</em>”指的是表格法，而非编写代码。</p>
 <a id="more"></a>
 
+<h1 id="动态规划"><a href="#动态规划" class="headerlink" title="动态规划"></a>动态规划</h1><h2 id="动态规划的特征"><a href="#动态规划的特征" class="headerlink" title="动态规划的特征"></a>动态规划的特征</h2><ul>
+<li><p>最优子结构(Optimal Substructure)</p>
+<p>问题的最优解可以通过相关子问题的最优解组合而成，而这些子问题可以独立求解。</p>
+</li>
+<li><p>重复子问题</p>
+</li>
+<li><p>无后效性</p>
+</li>
+</ul>
+<h2 id="动态规划的求解方法"><a href="#动态规划的求解方法" class="headerlink" title="动态规划的求解方法"></a>动态规划的求解方法</h2><h3 id="自底向上的表格法-Bottom-up-with-Tabulation"><a href="#自底向上的表格法-Bottom-up-with-Tabulation" class="headerlink" title="自底向上的表格法(Bottom-up with Tabulation)"></a>自底向上的表格法(Bottom-up with Tabulation)</h3><h3 id="自顶向下法的记忆式方法-Top-down-with-Memoization"><a href="#自顶向下法的记忆式方法-Top-down-with-Memoization" class="headerlink" title="自顶向下法的记忆式方法(Top-down with Memoization)"></a>自顶向下法的记忆式方法(Top-down with Memoization)</h3><h1 id="动态规划问题"><a href="#动态规划问题" class="headerlink" title="动态规划问题"></a>动态规划问题</h1><h2 id="问题1"><a href="#问题1" class="headerlink" title="问题1"></a>问题1</h2><p style="margin-bottom: 0px">问题描述，如下图：</p>
 
+<ul>
+<li>x轴代表时间轴；</li>
+<li>每个长方型代表不同的任务；任务横跨时间格，表示完成该任务所需要的时间；完成任务可以获取相应收入；</li>
+<li>假设任务不能同时进行，求解最大收入？</li>
+</ul>
+<img src="/images/algorithm/dp-q1.svg" style="zoom:80%;" />
+
+<p>这是一个寻找最优解的问题，我们假设$OPT(i)$表示截至任务$i$的最优解，$v_i$表示完成任务$i$获得的收入，$prev(i)$表示任务$i$最邻近的前置可选择任务。</p>
+<p>从最后一个任务开始分析，对于第8个任务，可以选择做或不做：如果选择做任务8，那么从上图可以看出只能选择任务5以及前面的任务，截至任务5的最优解可以记为$OPT(5)$，那么$OPT(8)=OPT(5)+v_8$；如果选择不做任务8，那么$OPT(8)=OPT(7)$；所以我们只需要取$OPT(5)+v_8$和$OPT(7)$中的较大者，于是可以写成：$OPT(8) = max\begin{cases}选\ \ \ ：OPT(prev(8))+v_8 \\不选：OPT(7)\end{cases}$</p>
+<p>于是，我们得到了该最优化问题的推导式：<br>$$<br>OPT(i) = max<br>\begin{cases}<br>选\ \ \ ：OPT(prev(i))+v_i \\<br>\ \\<br>不选：OPT(i-1)<br>\end{cases}<br>$$<br>依据推导式，该问题的展开图如下，图中相同颜色标识了重叠子问题：</p>
+<p><img src="/images/algorithm/dp-q1-expansion.svg"></p>
+<p>依次带入上图，我们可以得到如下最优解表格，最终任务8对应的最优方案就是本题的最优解：</p>
+<table border="1" cellpadding="1" cellspacing="1" style="width:300px;">
+    <thead>
+        <tr>
+            <th style="padding:0px;" align="center">任务项</th>
+            <th style="padding:0px;" align="center">prev(i)</th>
+      <th style="padding:0px;" align="center">OPT(i)</th>
+      <th style="padding:0px;" align="center">最优方案</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td style="padding:0px;" align="center">1</td>
+            <td style="padding:0px;" align="center">0</td>
+            <td style="padding:0px;" align="center">5</td>
+            <td style="padding:0px;">1($5)</td>
+        </tr>
+        <tr>
+            <td style="padding:0px;" align="center">2</td>
+            <td style="padding:0px;" align="center">0</td>
+            <td style="padding:0px;" align="center">5</td>
+            <td style="padding:0px;">1($5)</td>
+        </tr>
+        <tr>
+            <td style="padding:0px;" align="center">3</td>
+            <td style="padding:0px;" align="center">0</td>
+            <td style="padding:0px;" align="center">8</td>
+            <td style="padding:0px;">3($8)</td>
+        </tr>
+        <tr>
+            <td style="padding:0px;" align="center">4</td>
+            <td style="padding:0px;" align="center">1</td>
+            <td style="padding:0px;" align="center">9</td>
+            <td style="padding:0px;">1(\$5)、4(\$4)</td>
+        </tr>
+        <tr>
+            <td style="padding:0px;" align="center">5</td>
+            <td style="padding:0px;" align="center">0</td>
+            <td style="padding:0px;" align="center">9</td>
+            <td style="padding:0px;">1(\$5)、4(\$4)</td>
+        </tr>
+        <tr>
+            <td style="padding:0px;" align="center">6</td>
+            <td style="padding:0px;" align="center">2</td>
+            <td style="padding:0px;" align="center">9</td>
+            <td style="padding:0px;">1(\$5)、4(\$4)</td>
+        </tr>
+        <tr>
+            <td style="padding:0px;" align="center">7</td>
+            <td style="padding:0px;" align="center">3</td>
+            <td style="padding:0px;" align="center">10</td>
+            <td style="padding:0px;">3(\$8)、7(\$2)</td>
+        </tr>
+        <tr>
+            <td style="padding:0px;" align="center">8</td>
+            <td style="padding:0px;" align="center">5</td>
+            <td style="padding:0px;" align="center">13</td>
+            <td style="padding:0px;">1(\$5)、4(\$4)、8(\$4)</td>
+        </tr>
+    </tbody>
+</table>
+
+<p style="margin-bottom: 0px">代码如下：</p>
+
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 任务对应的收入</span></span><br><span class="line">arr = [<span class="number">5</span>, <span class="number">1</span>, <span class="number">8</span>, <span class="number">4</span>, <span class="number">6</span>, <span class="number">3</span>, <span class="number">2</span>, <span class="number">4</span>]</span><br><span class="line"><span class="comment"># 前置任务</span></span><br><span class="line">prev = [<span class="number">-1</span>, <span class="number">-1</span>, <span class="number">-1</span>, <span class="number">0</span>, <span class="number">-1</span>, <span class="number">1</span>, <span class="number">2</span>, <span class="number">4</span>]</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">dp_opt</span>():</span></span><br><span class="line">    opt = [<span class="number">0</span>]*len(arr)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 出口</span></span><br><span class="line">    opt[<span class="number">0</span>] = arr[<span class="number">0</span>]</span><br><span class="line">    opt[<span class="number">1</span>] = max(arr[<span class="number">0</span>], arr[<span class="number">1</span>])</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> n <span class="keyword">in</span> range(<span class="number">2</span>, len(arr)):</span><br><span class="line">        <span class="keyword">if</span> prev[n] == <span class="number">-1</span>:  <span class="comment"># 没有前置任务</span></span><br><span class="line">            A = arr[n]  <span class="comment"># 选</span></span><br><span class="line">            B = opt[n<span class="number">-1</span>]  <span class="comment"># 不选</span></span><br><span class="line">            opt[n] = max(A, B)</span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            A = opt[prev[n]] + arr[n]  <span class="comment"># 选</span></span><br><span class="line">            B = opt[n<span class="number">-1</span>]  <span class="comment"># 不选</span></span><br><span class="line">            opt[n] = max(A, B)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> opt[<span class="number">-1</span>]  <span class="comment"># opt最后元素作为最优解</span></span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="问题2"><a href="#问题2" class="headerlink" title="问题2"></a>问题2</h2><p style="margin-bottom: 0px">问题描述：求如下数值数组中，不相邻数值之和的最大值？
+
+<p><img src="/images/algorithm/dp-q2.svg"></p>
+<p>这是一个寻找最优解的问题，我们假设$OPT(i)$表示截至索引$i$的最优解。</p>
+<p>从最后一个数值分析，对于索引<code>6</code>的数值，可以选或不选：如果选，那么随后只能选不相邻的索引<code>4</code>的数值，截至索引<code>4</code>的最优解可以记为$OPT(4)$，那么$OPT(6)=OPT(4)+arr[6]$；如果不选，那么$OPT(6)=OPT(5)$；所以我们只需要取$OPT(4)+arr[6]$和$OPT(5)$中的较大者，于是可以写成：$OPT(6) = max\begin{cases}选\ \ \ ：OPT(4)+arr[6] \\不选：OPT(5)\end{cases}$</p>
+<p>于是，我们得到了该最优化问题的推导式：<br>$$<br>OPT(i) = max<br>\begin{cases}<br>选\ \ \ ：OPT(i-2)+arr[i] \\<br>\ \\<br>不选：OPT(i-1)<br>\end{cases}<br>$$<br>依据推导式，该问题的展开图如下，图中相同颜色标识了重叠子问题：</p>
+<p><img src="/images/algorithm/dp-q2-expansion.svg"></p>
+<p>依次带入上图，我们可以得到如下最优解表格，最终索引<code>6</code>对应的最优和就是本题的最优解：</p>
+<table border="1" cellpadding="1" cellspacing="1" style="width:280px;">
+  <thead>
+    <tr>
+      <th style="padding:0px;" align="center">索引</th>
+      <th style="padding:0px;" align="center">OPT(i)</th>
+      <th style="padding:0px;" align="center">最优方案</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="padding:0px;" align="center">0</td>
+      <td style="padding:0px;" align="center">1</td>
+      <td style="padding:0px;">arr[0]</td>
+    </tr>
+    <tr>
+      <td style="padding:0px;" align="center">1</td>
+      <td style="padding:0px;" align="center">2</td>
+      <td style="padding:0px;">arr[1]</td>
+    </tr>
+    <tr>
+      <td style="padding:0px;" align="center">2</td>
+      <td style="padding:0px;" align="center">5</td>
+      <td style="padding:0px;">arr[0]+arr[2]</td>
+    </tr>
+    <tr>
+      <td style="padding:0px;" align="center">3</td>
+      <td style="padding:0px;" align="center">5</td>
+      <td style="padding:0px;">arr[0]+arr[2]</td>
+    </tr>
+    <tr>
+      <td style="padding:0px;" align="center">4</td>
+      <td style="padding:0px;" align="center">12</td>
+      <td style="padding:0px;">arr[0]+arr[2]+arr[4]</td>
+    </tr>
+    <tr>
+      <td style="padding:0px;" align="center">5</td>
+      <td style="padding:0px;" align="center">12</td>
+      <td style="padding:0px;">arr[0]+arr[2]+arr[4]</td>
+    </tr>
+    <tr>
+      <td style="padding:0px;" align="center">6</td>
+      <td style="padding:0px;" align="center">15</td>
+      <td style="padding:0px;">arr[0]+arr[2]+arr[4]+arr[6]</td>
+    </tr>
+  </tbody>
+</table>
+
+<p style="margin-bottom: 0px">代码如下：</p>
+
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">arr = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">4</span>, <span class="number">1</span>, <span class="number">7</span>, <span class="number">8</span>, <span class="number">3</span>]</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">dp_opt</span>():</span></span><br><span class="line">    opt = [<span class="number">0</span>] * len(arr)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 出口</span></span><br><span class="line">    opt[<span class="number">0</span>] = arr[<span class="number">0</span>]</span><br><span class="line">    opt[<span class="number">1</span>] = max(arr[<span class="number">0</span>], arr[<span class="number">1</span>])</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> n <span class="keyword">in</span> range(<span class="number">2</span>, len(arr)):</span><br><span class="line">            A = opt[n<span class="number">-2</span>] + arr[n]  <span class="comment"># 选</span></span><br><span class="line">            B = opt[n<span class="number">-1</span>]  <span class="comment"># 不选</span></span><br><span class="line">            opt[n] = max(A, B)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> opt[<span class="number">-1</span>]  <span class="comment"># opt最后元素作为最优解</span></span><br></pre></td></tr></table></figure>
+
+
+
+<p style="margin-bottom: 0px">对应的递归代码如下：</p>
+
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">arr = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">4</span>, <span class="number">1</span>, <span class="number">7</span>, <span class="number">8</span>, <span class="number">3</span>]</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">rec_opt</span>(<span class="params">arr, i</span>):</span></span><br><span class="line">    <span class="keyword">if</span> i == <span class="number">0</span>:</span><br><span class="line">        <span class="keyword">return</span> arr[<span class="number">0</span>]</span><br><span class="line">    <span class="keyword">elif</span> i == <span class="number">1</span>:</span><br><span class="line">        <span class="keyword">return</span> max(arr[<span class="number">0</span>], arr[<span class="number">1</span>])</span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        A = rec_opt(arr, i - <span class="number">2</span>) + arr[i]  <span class="comment"># 选</span></span><br><span class="line">        B = rec_opt(arr, i - <span class="number">1</span>)  <span class="comment"># 不选</span></span><br><span class="line">        <span class="keyword">return</span> max(A, B)</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="问题3"><a href="#问题3" class="headerlink" title="问题3"></a>问题3</h2><p style="margin-bottom: 0px">问题描述：如下数组中是否存在相加之和等于9的组合？
+
+<p><img src="/images/algorithm/dp-q3.svg"></p>
+<p>我们假设$Subset(arr[i], S)$表示截至索引$i$的解。</p>
+<p>从最后一个数值分析，对于索引<code>5</code>的数值，可以选或不选：如果选，那么随后只需要找索引<code>4</code>前是否能找到和为<code>7</code>的组合，即$Subset(4, 7)$；如果不选，那么随后需要找索引<code>4</code>前是否能找到和为<code>9</code>的组合，即$Subset(4, 9)$，于是可以写成：$Subset(5, 9) = or\begin{cases}选\ \ \ ：Subset(4, 7) \\不选：Subset(4, 9)\end{cases}$</p>
+<p>于是，我们得到了该最优化问题的推导式：<br>$$<br>Subset(i, S)  = or<br>\begin{cases}<br>选\ \ \ ：Subset(i-1, S-arr[i]) \\<br>\ \\<br>不选：Subset(i-1, S)<br>\end{cases}<br>$$<br>依据推导式，该问题的展开图如下（图中只给出了部分展开形式）：</p>
+<p><img src="/images/algorithm/dp-q3-expansion.svg"></p>
+<p style="margin-bottom: 0px">其中，上图中有颜色的节点为三类程序出口点：</p>
+
+<ul>
+<li>第一类，蓝色$Subset(0, 9) $：$i=0$表示数组<code>arr</code>再无任何前置数据，所以$Subset(0, 9)=\begin{cases}False，当arr[0] \neq 9，\\True，当arr[0]=9\end{cases}$；</li>
+<li>第二类，黄色$Subset(1, 0) $：$S=0$时，任何$Subset(i, 0)=True$，因为无需选择任何数值就满足要求；</li>
+<li>第二类，粉色$Subset(2, -3)、Subset(2, -8)、Subset(0, -15)$：$S&lt;0$表示不能选择该选项，只能选择另外的选项；</li>
+</ul>
+<p style="margin-bottom: 0px">根据上面的分析，我们构造并填入下面的表格，其中：每行代表原数组$arr$索引，每列表示和$S$，于是每个单元格$Subset(i, S)$表示是否存在能找到和为$S$的组合，为布尔类型：</p>
+
+<ul>
+<li>首先填表中第一行，我们分析$i=0时，Subset(0, S) = \begin{cases}False，当arr[i] \neq S \\True，当arr[i]=S\end{cases}$；</li>
+<li>然后填表中第一列，$S=0时，为True$；</li>
+<li>再然后，我们依次填入第2行、第3行、…、第6行；</li>
+<li>最后一行中的最后一列为最后的解；</li>
+</ul>
+<table border="1" cellpadding="1" cellspacing="1" style="width:500px;">
+  <thead>
+    <tr>
+      <th align="center" style="padding:0px;"></th>
+      <th align="center" style="padding:0px;"></th>
+      <th align="center" style="padding:0px;"></th>
+      <th align="center" colspan="10" rowspan="1" style="padding:0px;">S</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td align="center" colspan="1" rowspan="7" style="padding:0px; width:10px;">arr[i]</td>
+      <td align="center" style="padding:0px;width:40px;">值</td>
+      <td align="center" style="padding:0px;width:40px;">索引</td>
+      <td align="center" style="padding:0px;">0</td>
+      <td align="center" style="padding:0px;">1</td>
+      <td align="center" style="padding:0px;">2</td>
+      <td align="center" style="padding:0px;">3</td>
+      <td align="center" style="padding:0px;">4</td>
+      <td align="center" style="padding:0px;">5</td>
+      <td align="center" style="padding:0px;">6</td>
+      <td align="center" style="padding:0px;">7</td>
+      <td align="center" style="padding:0px;">8</td>
+      <td align="center" style="padding:0px;">9</td>
+    </tr>
+    <tr>
+      <td align="center" style="padding:0px;">3</td>
+      <td align="center" style="padding:0px;">0</td>
+      <td align="center" style="padding:0px;">F</td>
+      <td align="center" style="padding:0px;">F</td>
+      <td align="center" style="padding:0px;">F</td>
+      <td align="center" style="padding:0px;">T</td>
+      <td align="center" style="padding:0px;">F</td>
+      <td align="center" style="padding:0px;">F</td>
+      <td align="center" style="padding:0px;">F</td>
+      <td align="center" style="padding:0px;">F</td>
+      <td align="center" style="padding:0px;">F</td>
+      <td align="center" style="padding:0px;">F</td>
+    </tr>
+    <tr>
+      <td align="center" style="padding:0px;">34</td>
+      <td align="center" style="padding:0px;">1</td>
+      <td align="center" style="padding:0px;">T</td>
+      <td align="center" style="padding:0px;"></td>
+      <td align="center" style="padding:0px;"></td>
+      <td align="center" style="padding:0px;"></td>
+      <td align="center" style="padding:0px;"></td>
+      <td align="center" style="padding:0px;"></td>
+      <td align="center" style="padding:0px;"></td>
+      <td align="center" style="padding:0px;"></td>
+      <td align="center" style="padding:0px;"></td>
+      <td align="center" style="padding:0px;"></td>
+    </tr>
+    <tr>
+      <td align="center" style="padding:0px;">4</td>
+      <td align="center" style="padding:0px;">2</td>
+      <td align="center" style="padding:0px;">T</td>
+      <td align="center" style="padding:0px;"></td>
+      <td align="center" style="padding:0px;"></td>
+      <td align="center" style="padding:0px;"></td>
+      <td align="center" style="padding:0px;"></td>
+      <td align="center" style="padding:0px;"></td>
+      <td align="center" style="padding:0px;"></td>
+      <td align="center" style="padding:0px;"></td>
+      <td align="center" style="padding:0px;"></td>
+      <td align="center" style="padding:0px;"></td>
+    </tr>
+    <tr>
+      <td align="center" style="padding:0px;">12</td>
+      <td align="center" style="padding:0px;">3</td>
+      <td align="center" style="padding:0px;">T</td>
+      <td align="center" style="padding:0px;"></td>
+      <td align="center" style="padding:0px;"></td>
+      <td align="center" style="padding:0px;"></td>
+      <td align="center" style="padding:0px;"></td>
+      <td align="center" style="padding:0px;"></td>
+      <td align="center" style="padding:0px;"></td>
+      <td align="center" style="padding:0px;"></td>
+      <td align="center" style="padding:0px;"></td>
+      <td align="center" style="padding:0px;"></td>
+    </tr>
+    <tr>
+      <td align="center" style="padding:0px;">5</td>
+      <td align="center" style="padding:0px;">4</td>
+      <td align="center" style="padding:0px;">T</td>
+      <td align="center" style="padding:0px;"></td>
+      <td align="center" style="padding:0px;"></td>
+      <td align="center" style="padding:0px;"></td>
+      <td align="center" style="padding:0px;"></td>
+      <td align="center" style="padding:0px;"></td>
+      <td align="center" style="padding:0px;"></td>
+      <td align="center" style="padding:0px;"></td>
+      <td align="center" style="padding:0px;"></td>
+      <td align="center" style="padding:0px;"></td>
+    </tr>
+    <tr>
+      <td align="center" style="padding:0px;">2</td>
+      <td align="center" style="padding:0px;">5</td>
+      <td align="center" style="padding:0px;">T</td>
+      <td align="center" style="padding:0px;"></td>
+      <td align="center" style="padding:0px;"></td>
+      <td align="center" style="padding:0px;"></td>
+      <td align="center" style="padding:0px;"></td>
+      <td align="center" style="padding:0px;"></td>
+      <td align="center" style="padding:0px;"></td>
+      <td align="center" style="padding:0px;"></td>
+      <td align="center" style="padding:0px;"></td>
+      <td align="center" style="padding:0px;"></td>
+    </tr>
+  </tbody>
+</table>
+
+<p style="margin-bottom: 0px">代码如下：</p>
+
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"></span><br><span class="line">arr = [<span class="number">3</span>, <span class="number">34</span>, <span class="number">4</span>, <span class="number">12</span>, <span class="number">5</span>, <span class="number">2</span>]</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">dp_subset</span>(<span class="params">S</span>):</span></span><br><span class="line">    subset = np.zeros((len(arr), S+<span class="number">1</span>), dtype=bool)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 出口1</span></span><br><span class="line">    subset[:, <span class="number">0</span>] = <span class="literal">True</span>  <span class="comment"># 第一列全部置为True</span></span><br><span class="line"></span><br><span class="line">    <span class="comment"># 出口2</span></span><br><span class="line">    subset[<span class="number">0</span>, :] = <span class="literal">False</span>  <span class="comment"># 第一行全部置为False</span></span><br><span class="line">    subset[<span class="number">0</span>, arr[<span class="number">0</span>]] = <span class="literal">True</span>  <span class="comment"># 第一行中，S=arr[0]的单元格置为False</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">1</span>, len(arr)):</span><br><span class="line">        <span class="keyword">for</span> s <span class="keyword">in</span> range(<span class="number">1</span>, S+<span class="number">1</span>):</span><br><span class="line">            <span class="keyword">if</span> arr[i] &gt; s:</span><br><span class="line">                subset[i, s] = subset[i<span class="number">-1</span>, s]</span><br><span class="line">            <span class="keyword">else</span>:</span><br><span class="line">                A = subset[i<span class="number">-1</span>, s-arr[i]]  <span class="comment"># 选</span></span><br><span class="line">                B = subset[i<span class="number">-1</span>, s]  <span class="comment"># 不选</span></span><br><span class="line">                subset[i, s] = A <span class="keyword">or</span> B</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> subset[<span class="number">-1</span>, <span class="number">-1</span>]  <span class="comment"># subset最后元素作为解</span></span><br><span class="line"></span><br><span class="line">print(dp_subset(<span class="number">9</span>))</span><br></pre></td></tr></table></figure>
+
+<p style="margin-bottom: 0px">对应的递归代码如下：</p>
+
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">arr = [<span class="number">3</span>, <span class="number">34</span>, <span class="number">4</span>, <span class="number">12</span>, <span class="number">5</span>, <span class="number">2</span>]</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">rec_subset</span>(<span class="params">arr, i, s</span>):</span></span><br><span class="line">    <span class="keyword">if</span> s == <span class="number">0</span>:</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">True</span></span><br><span class="line">    <span class="keyword">elif</span> i == <span class="number">0</span>:</span><br><span class="line">        <span class="keyword">return</span> arr[i] == s</span><br><span class="line">    <span class="keyword">elif</span> arr[i] &gt; s:</span><br><span class="line">        <span class="keyword">return</span> rec_subset(arr, i<span class="number">-1</span>, s)</span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        A = rec_subset(arr, i<span class="number">-1</span>, s-arr[i])  <span class="comment"># 选</span></span><br><span class="line">        B = rec_subset(arr, i<span class="number">-1</span>, s)  <span class="comment"># 不选</span></span><br><span class="line">        <span class="keyword">return</span> A <span class="keyword">or</span> B</span><br><span class="line"></span><br><span class="line">print(rec_subset(arr, len(arr)<span class="number">-1</span>, <span class="number">9</span>))</span><br></pre></td></tr></table></figure>
 
 <h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><ol>
 <li><a target="_blank" rel="noopener" href="https://www.educative.io/courses/grokking-dynamic-programming-patterns-for-coding-interviews/m2G1pAq0OO0">https://www.educative.io/courses/grokking-dynamic-programming-patterns-for-coding-interviews/m2G1pAq0OO0</a></li>
@@ -342,7 +652,7 @@
 
   
 
-  <script class="next-config" data-name="enableMath" type="application/json">false</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdn.jsdelivr.net/npm/mathjax@3.2.0/es5/tex-mml-chtml.js","integrity":"sha256-r+3itOMtGGjap0x+10hu6jW/gZCzxHsoKrOd7gyRSGY="}}</script>
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdn.jsdelivr.net/npm/mathjax@3.2.0/es5/tex-mml-chtml.js","integrity":"sha256-r+3itOMtGGjap0x+10hu6jW/gZCzxHsoKrOd7gyRSGY="}}</script>
 <script src="/js/third-party/math/mathjax.js"></script>
 
 

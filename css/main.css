@@ -2823,6 +2823,9 @@ td {
 .post-body li p {
   margin: 0 0 0 0;
 }
+.post-body p ul {
+  margin-top: 0px;
+}
 /*
 {
   color: var(--link-color);
