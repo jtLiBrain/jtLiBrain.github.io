@@ -28,12 +28,12 @@
 <meta property="og:site_name" content="jtLiBrain">
 <meta property="og:description" content="OLTPOLTP(On-Line Transaction Processing)，即联机事务处理 产品：Mysql、Oracle、Redis、Hbase OLAPOLAP(On-Line Analytical Processing)，联机分析处理 OLAP系统按照其存储器的数据存储格式可以分为：关系OLAP（RelationalOLAP，简称ROLAP）、多维OLAP（Multidimensi">
 <meta property="og:locale" content="en_US">
-<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/5306855-d1bd72d0787dcaa0.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/572/format/webp">
+<meta property="og:image" content="https://jtlibrain.github.io/images/architecture/OLAP-tools.svg">
 <meta property="article:published_time" content="2022-04-08T14:24:09.000Z">
-<meta property="article:modified_time" content="2022-04-09T10:02:16.567Z">
+<meta property="article:modified_time" content="2022-04-09T10:30:58.235Z">
 <meta property="article:author" content="JT Li">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://upload-images.jianshu.io/upload_images/5306855-d1bd72d0787dcaa0.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/572/format/webp">
+<meta name="twitter:image" content="https://jtlibrain.github.io/images/architecture/OLAP-tools.svg">
 
 
 <link rel="canonical" href="https://jtlibrain.github.io/2022/04/08/architecture/OLTP-OLAP-HTAP/">
@@ -221,7 +221,7 @@
           <i class="far fa-calendar-check"></i>
         </span>
         <span class="post-meta-item-text">Edited on</span>
-        <time title="Modified: 2022-04-09 18:02:16" itemprop="dateModified" datetime="2022-04-09T18:02:16+08:00">2022-04-09</time>
+        <time title="Modified: 2022-04-09 18:30:58" itemprop="dateModified" datetime="2022-04-09T18:30:58+08:00">2022-04-09</time>
       </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -262,14 +262,16 @@
 <li><font color="blue">HOLAP</font>：由于MOLAP和ROLAP有着各自的优点和缺点（如下表所示）,且它们的结构迥然不同，这给分析人员设计OLAP结构提出了难题。为此一个新的OLAP结构——混合型OLAP（HOLAP）被提出，它能把MOLAP和ROLAP两种结构的优点结合起来。迄今为止，对HOLAP还没有一个正式的定义。但很明显，HOLAP结构不应该是MOLAP与ROLAP结构的简单组合，而是这两种结构技术优点的有机结合，能满足用户各种复杂的分析请求。</li>
 </ul>
 <table border="1" cellpadding="1" cellspacing="1" style="width:1000px;">
-  <tbody>
+  <thead>
     <tr>
-      <td>分类</td>
-      <td>介绍</td>
-      <td>产品</td>
-      <td>优点</td>
-      <td>缺点</td>
+      <th>分类</th>
+      <th>介绍</th>
+      <th>产品</th>
+      <th>优点</th>
+      <th>缺点</th>
     </tr>
+  </thead>
+  <tbody>
     <tr>
       <td>MOLAP</td>
       <td>
@@ -321,16 +323,19 @@
   </tbody>
 </table>
 
-<p>以下图片引用自：《<a target="_blank" rel="noopener" href="https://www.jianshu.com/p/4b3bcbabad77">大数据OLAP系统（2）</a>》：</p>
-<p><img src="https://upload-images.jianshu.io/upload_images/5306855-d1bd72d0787dcaa0.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/572/format/webp"></p>
+
+
+<p><img src="/images/architecture/OLAP-tools.svg"></p>
 <h1 id="OLTP和OLAP对比"><a href="#OLTP和OLAP对比" class="headerlink" title="OLTP和OLAP对比"></a>OLTP和OLAP对比</h1><table border="1" cellpadding="1" cellspacing="1" style="width:500px;">
-  <tbody>
+  <thead>
     <tr>
-      <td></td>
-      <td></td>
-      <td>OLTP</td>
-      <td>OLAP</td>
+      <th></th>
+      <th></th>
+      <th>OLTP</th>
+      <th>OLAP</th>
     </tr>
+  </thead>
+  <tbody>
     <tr>
       <td rowspan="8">特征</td>
       <td>功能</td>
