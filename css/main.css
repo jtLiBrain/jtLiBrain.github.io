@@ -2823,7 +2823,8 @@ td {
 .post-body li p {
   margin: 0 0 0 0;
 }
-.post-body p ul {
+.post-body p + ul,
+.post-body p + ol {
   margin-top: 0px;
 }
 /*
