@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.0.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/css/all.min.css" integrity="sha256-mUZM63G8m73Mcidfrv5E+Y61y7a12O5mW4ezU3bxqW4=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css" integrity="sha256-Vzbj7sDDS/woiFS3uNKo8eIuni59rjyNGtXfstRzStA=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"jtlibrain.github.io","root":"/","images":"/images","scheme":"Gemini","version":"8.7.1","exturl":false,"sidebar":{"position":"left","display":"hide","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js"></script>
+<meta name="description" content="数据类型日期时间类型DateType TimestampType 基础数据类型参考类org.apache.spark.sql.catalyst.expressions.Cast中的castToTimestamp()和castToDate() 字符串类型数值类型时间间隔类型YearMonthIntervalType DayTimeIntervalType 时区可以通过以下三种方式来设置时区参数：">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Spark SQL中日期和时间函数">
+<meta property="og:url" content="https://jtlibrain.github.io/2022/04/22/spark/Spark-time-in-sql/index.html">
+<meta property="og:site_name" content="jtLiBrain">
+<meta property="og:description" content="数据类型日期时间类型DateType TimestampType 基础数据类型参考类org.apache.spark.sql.catalyst.expressions.Cast中的castToTimestamp()和castToDate() 字符串类型数值类型时间间隔类型YearMonthIntervalType DayTimeIntervalType 时区可以通过以下三种方式来设置时区参数：">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2022-04-22T14:55:37.000Z">
+<meta property="article:modified_time" content="2022-05-18T13:52:25.086Z">
+<meta property="article:author" content="JT Li">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://jtlibrain.github.io/2022/04/22/spark/Spark-time-in-sql/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"en","comments":true,"permalink":"https://jtlibrain.github.io/2022/04/22/spark/Spark-time-in-sql/","path":"2022/04/22/spark/Spark-time-in-sql/","title":"Spark SQL中日期和时间函数"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Spark SQL中日期和时间函数 | jtLiBrain</title>
+  
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">jtLiBrain</h1>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">任何伟大的事都不会一蹴而就，三分智慧，七分韧性</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu">
+        <li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a></li>
+        <li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a></li>
+        <li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a></li>
+        <li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a></li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B"><span class="nav-number">1.</span> <span class="nav-text">数据类型</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%97%A5%E6%9C%9F%E6%97%B6%E9%97%B4%E7%B1%BB%E5%9E%8B"><span class="nav-number">1.1.</span> <span class="nav-text">日期时间类型</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9F%BA%E7%A1%80%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B"><span class="nav-number">1.2.</span> <span class="nav-text">基础数据类型</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AD%97%E7%AC%A6%E4%B8%B2%E7%B1%BB%E5%9E%8B"><span class="nav-number">1.2.1.</span> <span class="nav-text">字符串类型</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%95%B0%E5%80%BC%E7%B1%BB%E5%9E%8B"><span class="nav-number">1.2.2.</span> <span class="nav-text">数值类型</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%97%B6%E9%97%B4%E9%97%B4%E9%9A%94%E7%B1%BB%E5%9E%8B"><span class="nav-number">1.3.</span> <span class="nav-text">时间间隔类型</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%97%B6%E5%8C%BA"><span class="nav-number">2.</span> <span class="nav-text">时区</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9F%A5%E7%9C%8B%E6%97%B6%E5%8C%BA%EF%BC%9A"><span class="nav-number">2.1.</span> <span class="nav-text">查看时区：</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AE%BE%E7%BD%AE%E6%97%B6%E5%8C%BA"><span class="nav-number">2.2.</span> <span class="nav-text">设置时区</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#TIMEZONE%E5%8F%82%E6%95%B0"><span class="nav-number">2.2.1.</span> <span class="nav-text">TIMEZONE参数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#TIME-ZONE%E5%85%B3%E9%94%AE%E5%AD%97"><span class="nav-number">2.2.2.</span> <span class="nav-text">TIME ZONE关键字</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#spark-sql-session-timeZone%E5%8F%82%E6%95%B0"><span class="nav-number">2.2.3.</span> <span class="nav-text">spark.sql.session.timeZone参数</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%87%BD%E6%95%B0"><span class="nav-number">3.</span> <span class="nav-text">函数</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%BD%AC%E6%8D%A2%E4%B8%BAUTC%E6%97%B6%E9%97%B4"><span class="nav-number">3.1.</span> <span class="nav-text">转换为UTC时间</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#unix-timestamp"><span class="nav-number">3.1.1.</span> <span class="nav-text">unix_timestamp</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#to-unix-timestamp"><span class="nav-number">3.1.2.</span> <span class="nav-text">to_unix_timestamp</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%97%B6%E9%97%B4%E4%B8%8E%E6%97%B6%E5%8C%BA%E7%9A%84%E8%BF%90%E7%AE%97"><span class="nav-number">3.2.</span> <span class="nav-text">时间与时区的运算</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#from-utc-timestamp"><span class="nav-number">3.2.1.</span> <span class="nav-text">from_utc_timestamp</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#to-utc-timestamp"><span class="nav-number">3.2.2.</span> <span class="nav-text">to_utc_timestamp</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AD%97%E7%AC%A6%E4%B8%B2%E8%BD%AC%E6%8D%A2%E6%97%B6%E9%97%B4"><span class="nav-number">3.3.</span> <span class="nav-text">字符串转换时间</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#to-timestamp"><span class="nav-number">3.3.1.</span> <span class="nav-text">to_timestamp</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#to-date"><span class="nav-number">3.3.2.</span> <span class="nav-text">to_date</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%A0%BC%E5%BC%8F%E5%8C%96%E5%87%BD%E6%95%B0"><span class="nav-number">3.4.</span> <span class="nav-text">格式化函数</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#from-unixtime"><span class="nav-number">3.4.1.</span> <span class="nav-text">from_unixtime</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#date-format"><span class="nav-number">3.4.2.</span> <span class="nav-text">date_format</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AE%97%E6%95%B0%E8%BF%90%E7%AE%97%E5%87%BD%E6%95%B0"><span class="nav-number">3.5.</span> <span class="nav-text">算数运算函数</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#date-add"><span class="nav-number">3.5.1.</span> <span class="nav-text">date_add</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#date-sub"><span class="nav-number">3.5.2.</span> <span class="nav-text">date_sub</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#datediff"><span class="nav-number">3.5.3.</span> <span class="nav-text">datediff</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#last-day"><span class="nav-number">3.5.4.</span> <span class="nav-text">last_day</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#next-day"><span class="nav-number">3.5.5.</span> <span class="nav-text">next_day</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#add-months"><span class="nav-number">3.5.6.</span> <span class="nav-text">add_months</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#months-between"><span class="nav-number">3.5.7.</span> <span class="nav-text">months_between</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#trunc"><span class="nav-number">3.5.8.</span> <span class="nav-text">trunc</span></a></li></ol></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">JT Li</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">74</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">19</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">8</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="mailto:jtli.brain@hotmail.com" title="E-Mail → mailto:jtli.brain@hotmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="Back to top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://jtlibrain.github.io/2022/04/22/spark/Spark-time-in-sql/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="JT Li">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="jtLiBrain">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Spark SQL中日期和时间函数
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2022-04-22 22:55:37" itemprop="dateCreated datePublished" datetime="2022-04-22T22:55:37+08:00">2022-04-22</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">Edited on</span>
+        <time title="Modified: 2022-05-18 21:52:25" itemprop="dateModified" datetime="2022-05-18T21:52:25+08:00">2022-05-18</time>
+      </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">In</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/spark/" itemprop="url" rel="index"><span itemprop="name">spark</span></a>
+        </span>
+          , 
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/spark/hive/" itemprop="url" rel="index"><span itemprop="name">hive</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-item" title="Views" id="busuanzi_container_page_pv">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">Views: </span>
+      <span id="busuanzi_value_page_pv"></span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <a id="more"></a>
+
+<h1 id="数据类型"><a href="#数据类型" class="headerlink" title="数据类型"></a>数据类型</h1><h2 id="日期时间类型"><a href="#日期时间类型" class="headerlink" title="日期时间类型"></a>日期时间类型</h2><p>DateType</p>
+<p>TimestampType</p>
+<h2 id="基础数据类型"><a href="#基础数据类型" class="headerlink" title="基础数据类型"></a>基础数据类型</h2><p>参考类<code>org.apache.spark.sql.catalyst.expressions.Cast</code>中的<code>castToTimestamp()</code>和<code>castToDate()</code></p>
+<h3 id="字符串类型"><a href="#字符串类型" class="headerlink" title="字符串类型"></a>字符串类型</h3><h3 id="数值类型"><a href="#数值类型" class="headerlink" title="数值类型"></a>数值类型</h3><h2 id="时间间隔类型"><a href="#时间间隔类型" class="headerlink" title="时间间隔类型"></a>时间间隔类型</h2><p>YearMonthIntervalType</p>
+<p>DayTimeIntervalType</p>
+<h1 id="时区"><a href="#时区" class="headerlink" title="时区"></a>时区</h1><p>可以通过以下三种方式来设置时区参数：</p>
+<ul>
+<li>区域ID所表示的时区：区域ID的格式必须是：<code>area/city</code>，例如，<code>America/Los_Angeles</code>、<code>Asia/Shanghai</code>。</li>
+<li>时区偏移量：时区偏移量的格式必须是：<code>(+|-)HH</code>、 <code>(+|-)HH:mm</code>、<code>(+|-)HH:mm:ss</code>；例如<code>-08</code>、 <code>+01:00</code>、<code>-13:33:33</code>。</li>
+<li>也可以使用短名称<code>UTC</code>来表示<code>+00:00</code>，其他短名称不建议使用。</li>
+</ul>
+<h2 id="查看时区："><a href="#查看时区：" class="headerlink" title="查看时区："></a>查看时区：</h2><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sql&gt; select current_timezone();</span><br><span class="line">sql&gt; SET spark.sql.session.timeZone;</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="设置时区"><a href="#设置时区" class="headerlink" title="设置时区"></a>设置时区</h2><h3 id="TIMEZONE参数"><a href="#TIMEZONE参数" class="headerlink" title="TIMEZONE参数"></a>TIMEZONE参数</h3><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 使用区域ID设置时区</span></span><br><span class="line">sql&gt; SET timezone = America/Los_Angeles;</span><br><span class="line"></span><br><span class="line"><span class="comment">-- 使用时区偏移量设置时区</span></span><br><span class="line">sql&gt; SET timezone = +08:00;</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="TIME-ZONE关键字"><a href="#TIME-ZONE关键字" class="headerlink" title="TIME ZONE关键字"></a>TIME ZONE关键字</h3><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 设置为系统默认时区</span></span><br><span class="line">sql&gt; SET TIME ZONE LOCAL;</span><br><span class="line"></span><br><span class="line"><span class="comment">-- 使用区域ID设置时区</span></span><br><span class="line">sql&gt; SET TIME ZONE &#x27;America/Los_Angeles&#x27;;</span><br><span class="line"></span><br><span class="line"><span class="comment">-- 使用时区偏移量设置时区</span></span><br><span class="line">sql&gt; SET TIME ZONE &#x27;+08:00&#x27;;</span><br><span class="line"></span><br><span class="line"><span class="comment">-- 使用间隔量设置时区</span></span><br><span class="line">sql&gt; SET TIME ZONE INTERVAL 1 HOUR 30 MINUTES;</span><br><span class="line">sql&gt; SET TIME ZONE INTERVAL &#x27;08:30:00&#x27; HOUR TO SECOND;</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="spark-sql-session-timeZone参数"><a href="#spark-sql-session-timeZone参数" class="headerlink" title="spark.sql.session.timeZone参数"></a>spark.sql.session.timeZone参数</h3><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 使用区域ID设置时区</span></span><br><span class="line">sql&gt; SET spark.sql.session.timeZone = America/Los_Angeles;</span><br><span class="line"></span><br><span class="line"><span class="comment">-- 使用时区偏移量设置时区</span></span><br><span class="line">sql&gt; SET spark.sql.session.timeZone = +08:00;</span><br></pre></td></tr></table></figure>
+
+
+
+<h1 id="函数"><a href="#函数" class="headerlink" title="函数"></a>函数</h1><h2 id="转换为UTC时间"><a href="#转换为UTC时间" class="headerlink" title="转换为UTC时间"></a>转换为UTC时间</h2><h3 id="unix-timestamp"><a href="#unix-timestamp" class="headerlink" title="unix_timestamp"></a>unix_timestamp</h3><table border="1" cellpadding="1" cellspacing="1" style="width:100%;">
+  <tbody>
+    <tr>
+      <td style="width:120px;">函数</td>
+      <td>unix_timestamp(timeExp, String fmt)</td>
+    </tr>
+    <tr>
+      <td>返回值类型</td>
+      <td>bigint</td>
+    </tr>
+    <tr>
+      <td>描述</td>
+      <td>将当前系统时区表示的时间转换为UTC秒数</td>
+    </tr>
+    <tr>
+      <td>参数</td>
+      <td>
+        timeExp：可选参数，Spark中该参数可以是date、timestamp、string类型，Hive中该参数是string类型。
+        <br/>
+        fmt：可选参数，当timeExp不是string类型时，会忽略该参数。默认值为<font color="blue">yyyy-MM-dd HH:mm:ss</font>。参考<a target="_blank" rel="noopener" href="https://spark.apache.org/docs/latest/sql-ref-datetime-pattern.html">日期时间格式</a>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+
+
+<p>示例1：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sql&gt; <span class="function">SELECT <span class="title">unix_timestamp</span><span class="params">()</span></span>;</span><br></pre></td></tr></table></figure>
+
+<p>示例2：入参格式串没有时区信息，默认使用系统时区</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sql&gt; SET TIME ZONE <span class="string">&#x27;Asia/Shanghai&#x27;</span>;</span><br><span class="line">sql&gt; <span class="function">SELECT <span class="title">unix_timestamp</span><span class="params">(<span class="string">&#x27;1970-01-01 08:00:00&#x27;</span>, <span class="string">&#x27;yyyy-MM-dd HH:mm:ss&#x27;</span>)</span></span>;</span><br><span class="line"><span class="number">0</span></span><br></pre></td></tr></table></figure>
+
+<p>示例3：入参格式串包含明确的时区信息，则使用入参中的时区</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sql&gt; SET TIME ZONE <span class="string">&#x27;Asia/Shanghai&#x27;</span>;</span><br><span class="line">sql&gt; <span class="function">SELECT <span class="title">unix_timestamp</span><span class="params">(<span class="string">&#x27;1970-01-01T08:00:00.000+0800&#x27;</span>, <span class="string">&quot;yyyy-MM-dd&#x27;T&#x27;HH:mm:ss.SSSZ&quot;</span>)</span></span>;</span><br><span class="line"><span class="number">0</span></span><br></pre></td></tr></table></figure>
+
+<p>示例4：入参格式串包含明确的时区信息，则使用入参中的时区</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sql&gt; SET TIME ZONE <span class="string">&#x27;Etc/UTC&#x27;</span>;</span><br><span class="line">sql&gt; <span class="function">SELECT <span class="title">unix_timestamp</span><span class="params">(<span class="string">&#x27;1970-01-01T08:00:00.000+0800&#x27;</span>, <span class="string">&quot;yyyy-MM-dd&#x27;T&#x27;HH:mm:ss.SSSZ&quot;</span>)</span></span></span><br><span class="line"><span class="function">0</span></span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="to-unix-timestamp"><a href="#to-unix-timestamp" class="headerlink" title="to_unix_timestamp"></a>to_unix_timestamp</h3><p>该函数与unix_timestamp()函数功能类似，有以下几点需要注意：</p>
+<ol>
+<li>该函数只是unix_timestamp()函数相比，unix_timestamp()函数有空函数的形式，返回当前时间的UTC时间；</li>
+<li>该函数只有Spark支持，Hive不支持该函数；</li>
+</ol>
+<h2 id="时间与时区的运算"><a href="#时间与时区的运算" class="headerlink" title="时间与时区的运算"></a>时间与时区的运算</h2><h3 id="from-utc-timestamp"><a href="#from-utc-timestamp" class="headerlink" title="from_utc_timestamp"></a>from_utc_timestamp</h3><p>该函数理解起来比较困难，它实际的运算路径是：时间 –(等价变换)–&gt; 目标时区 –(加/减时区差)–&gt;结果时间，从语义上它表达是在时间加上某个时区相对于UTC偏移量后的时间。</p>
+<table border="1" cellpadding="1" cellspacing="1" style="width:100%;">
+  <tbody>
+    <tr>
+      <td style="width:120px;">函数</td>
+      <td>from_utc_timestamp(ts, string to_tz)</td>
+    </tr>
+    <tr>
+      <td>返回值类型</td>
+      <td>timestamp</td>
+    </tr>
+    <tr>
+      <td>描述</td>
+      <td>时间加上某个时区偏移量后的时间</td>
+    </tr>
+    <tr>
+      <td>参数</td>
+      <td>
+        ts：UTC时间；Spark中可以是timestamp/date、时间字符串类型；Hive中可以是timestamp/date、tinyint/smallint/int/bigint、float/double、decimal。
+        <br/>
+        to_tz：目标时区(<span style="font-weight: bold; color: red;">从UTC到目标时区</span>)
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<p>示例1：<code>UTC 2016-08-31</code>加上8小时（上海时区与UTC时区为8小时）后为<code>UTC 2016-08-31T08:00:00.000</code></p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">sql&gt; SET TIME ZONE &#x27;UTC&#x27;;</span><br><span class="line">sql&gt; SELECT \</span><br><span class="line">from_utc_timestamp(&#x27;2016-08-31&#x27;, &#x27;UTC&#x27;), \</span><br><span class="line">from_utc_timestamp(&#x27;2016-08-31&#x27;, &#x27;Asia/Shanghai&#x27;), \</span><br><span class="line">from_utc_timestamp(&#x27;2016-08-31&#x27;, &#x27;Asia/Seoul&#x27;)</span><br><span class="line"></span><br><span class="line">2016-08-31T00:00:00.000+0000</span><br><span class="line">2016-08-31T08:00:00.000+0000</span><br><span class="line">2016-08-31T09:00:00.000+0000</span><br></pre></td></tr></table></figure>
+
+<p>示例2：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">sql&gt; SET TIME ZONE &#x27;Asia/Shanghai&#x27;;</span><br><span class="line">sql&gt; SELECT \</span><br><span class="line">from_utc_timestamp(&#x27;2016-08-31&#x27;, &#x27;UTC&#x27;), \</span><br><span class="line">from_utc_timestamp(&#x27;2016-08-31&#x27;, &#x27;Asia/Shanghai&#x27;), \</span><br><span class="line">from_utc_timestamp(&#x27;2016-08-31&#x27;, &#x27;Asia/Seoul&#x27;)</span><br><span class="line"></span><br><span class="line">2016-08-31T00:00:00.000+0800</span><br><span class="line">2016-08-31T08:00:00.000+0800</span><br><span class="line">2016-08-31T09:00:00.000+0800</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="to-utc-timestamp"><a href="#to-utc-timestamp" class="headerlink" title="to_utc_timestamp"></a>to_utc_timestamp</h3><p>与from_utc_timestamp()函数相对应，从语义上该函数表达是在时间减去某个时区相对于UTC偏移量后的时间。</p>
+<table border="1" cellpadding="1" cellspacing="1" style="width:100%;">
+  <tbody>
+    <tr>
+      <td style="width:120px;">函数</td>
+      <td>to_utc_timestamp(ts, string to_tz)</td>
+    </tr>
+    <tr>
+      <td>返回值类型</td>
+      <td>timestamp</td>
+    </tr>
+    <tr>
+      <td>描述</td>
+      <td>时间减去某个时区偏移量后的时间</td>
+    </tr>
+    <tr>
+      <td>参数</td>
+      <td>
+        ts：UTC时间；Spark中可以是timestamp/date、时间字符串类型；Hive中可以是timestamp/date、tinyint/smallint/int/bigint、float/double、decimal。
+        <br/>
+        to_tz：目标时区(<span style="font-weight: bold; color: red;">从目标时区到UTC</span>)
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<p>示例1：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">sql&gt; SET TIME ZONE &#x27;UTC&#x27;</span><br><span class="line">sql&gt; SELECT \</span><br><span class="line">to_utc_timestamp(&#x27;1970-01-02 08:00:00.000+0800&#x27;, &#x27;Etc/UTC&#x27;),  \</span><br><span class="line">to_utc_timestamp(&#x27;1970-01-02 08:00:00.000&#x27;, &#x27;Etc/UTC&#x27;), \</span><br><span class="line">to_utc_timestamp(&#x27;1970-01-02 08:00:00.000+0800&#x27;, &#x27;Asia/Shanghai&#x27;), \</span><br><span class="line">to_utc_timestamp(&#x27;1970-01-02 08:00:00.000&#x27;, &#x27;Asia/Shanghai&#x27;)</span><br><span class="line"></span><br><span class="line">1970-01-02T00:00:00.000+0000</span><br><span class="line">1970-01-02T08:00:00.000+0000</span><br><span class="line">1970-01-01T16:00:00.000+0000</span><br><span class="line">1970-01-02T00:00:00.000+0000</span><br></pre></td></tr></table></figure>
+
+<p>示例2：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">sql&gt; SET TIME ZONE &#x27;Asia/Shanghai&#x27;</span><br><span class="line">sql&gt; SELECT \</span><br><span class="line">to_utc_timestamp(&#x27;1970-01-02 08:00:00.000+0800&#x27;, &#x27;Etc/UTC&#x27;),  \</span><br><span class="line">to_utc_timestamp(&#x27;1970-01-02 08:00:00.000&#x27;, &#x27;Etc/UTC&#x27;), \</span><br><span class="line">to_utc_timestamp(&#x27;1970-01-02 08:00:00.000+0800&#x27;, &#x27;Asia/Shanghai&#x27;), \</span><br><span class="line">to_utc_timestamp(&#x27;1970-01-02 08:00:00.000&#x27;, &#x27;Asia/Shanghai&#x27;)</span><br><span class="line"></span><br><span class="line">1970-01-02T08:00:00.000+0800</span><br><span class="line">1970-01-02T08:00:00.000+0800</span><br><span class="line">1970-01-02T00:00:00.000+0800</span><br><span class="line">1970-01-02T00:00:00.000+0800</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="字符串转换时间"><a href="#字符串转换时间" class="headerlink" title="字符串转换时间"></a>字符串转换时间</h2><h3 id="to-timestamp"><a href="#to-timestamp" class="headerlink" title="to_timestamp"></a>to_timestamp</h3><table border="1" cellpadding="1" cellspacing="1" style="width:100%;">
+  <tbody>
+    <tr>
+      <td style="width:120px;">函数</td>
+      <td>to_timestamp(string ts[, string fmt])</td>
+    </tr>
+    <tr>
+      <td>返回值类型</td>
+      <td>timestamp</td>
+    </tr>
+    <tr>
+      <td>描述</td>
+      <td>将时间字符串按指定格式解析为当前系统时区表示的时间</td>
+    </tr>
+    <tr>
+      <td>参数</td>
+      <td>
+      ts：时间字符串。<br/>
+      fmt：格式化字符串，参考<a target="_blank" rel="noopener" href="https://spark.apache.org/docs/latest/sql-ref-datetime-pattern.html">Datetime Patterns</a>、<a target="_blank" rel="noopener" href="https://docs.oracle.com/javase/7/docs/api/java/text/SimpleDateFormat.html">Java SimpleDateFormat。</a>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<p>注意：Hive不支持该函数。</p>
+<p>示例1：入参时间字符串没有时区信息，则默认使用系统当前时区对其进行解析</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sql&gt; SET TIME ZONE &#x27;UTC&#x27;;</span><br><span class="line">sql&gt; SELECT to_timestamp(&#x27;2022-05-15 19:00:00&#x27;, &#x27;yyyy-MM-dd HH:mm:ss&#x27;)</span><br><span class="line">2022-05-15T19:00:00.000+0000</span><br></pre></td></tr></table></figure>
+
+<p>示例2：入参时间字符串没有时区信息，则默认使用系统当前时区对其进行解析</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sql&gt; SET TIME ZONE &#x27;Asia/Shanghai&#x27;;</span><br><span class="line">sql&gt; SELECT to_timestamp(&#x27;2022-05-15 19:00:00&#x27;, &#x27;yyyy-MM-dd HH:mm:ss&#x27;)</span><br><span class="line">2022-05-15T19:00:00.000+0800</span><br></pre></td></tr></table></figure>
+
+<p>示例3：入参时间字符串包含明确的时区信息</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sql&gt; SET TIME ZONE &#x27;UTC&#x27;;</span><br><span class="line">sql&gt; SELECT to_timestamp(&#x27;2022-05-15T19:00:00.000+0800&#x27;, &quot;yyyy-MM-dd&#x27;T&#x27;HH:mm:ss.SSSZ&quot;)</span><br><span class="line">2022-05-15T11:00:00.000+0000</span><br></pre></td></tr></table></figure>
+
+<p>示例4：入参时间字符串包含明确的时区信息</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sql&gt; SET TIME ZONE &#x27;Asia/Shanghai&#x27;;</span><br><span class="line">sql&gt; SELECT to_timestamp(&#x27;2022-05-15T19:00:00.000+0800&#x27;, &quot;yyyy-MM-dd&#x27;T&#x27;HH:mm:ss.SSSZ&quot;)</span><br><span class="line">2022-05-15T19:00:00.000+0800</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="to-date"><a href="#to-date" class="headerlink" title="to_date"></a>to_date</h3><table border="1" cellpadding="1" cellspacing="1" style="width:100%;">
+  <tbody>
+    <tr>
+      <td style="width:120px;">函数</td>
+      <td>to_date(string date[, string fmt])</td>
+    </tr>
+    <tr>
+      <td>返回值类型</td>
+      <td>date</td>
+    </tr>
+    <tr>
+      <td>描述</td>
+      <td>将时间字符串按指定格式解析为当前系统时区表示的时间</td>
+    </tr>
+    <tr>
+      <td>参数</td>
+      <td>
+      date：时间字符串。<br/>
+      fmt：格式化字符串，参考<a target="_blank" rel="noopener" href="https://spark.apache.org/docs/latest/sql-ref-datetime-pattern.html">Datetime Patterns</a>、<a target="_blank" rel="noopener" href="https://docs.oracle.com/javase/7/docs/api/java/text/SimpleDateFormat.html">Java SimpleDateFormat。</a>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+
+
+<p>示例参考to_timestamp()函数。</p>
+<h2 id="格式化函数"><a href="#格式化函数" class="headerlink" title="格式化函数"></a>格式化函数</h2><h3 id="from-unixtime"><a href="#from-unixtime" class="headerlink" title="from_unixtime"></a>from_unixtime</h3><table border="1" cellpadding="1" cellspacing="1" style="width:100%;">
+  <tbody>
+    <tr>
+      <td style="width:120px;">函数</td>
+      <td>from_unixtime(bigint unixtime[, string to_fmt])</td>
+    </tr>
+    <tr>
+      <td>返回值类型</td>
+      <td>string</td>
+    </tr>
+    <tr>
+      <td>描述</td>
+      <td>将时间戳按当前系统时区表示的时间进行格式化</td>
+    </tr>
+    <tr>
+      <td>参数</td>
+      <td>
+      unixtime：从Unix纪元(1970-01-01 00:00:00 UTC)计数的秒数；<br/>
+      fmt：格式化字符串，参考<a target="_blank" rel="noopener" href="https://spark.apache.org/docs/latest/sql-ref-datetime-pattern.html">Datetime Patterns</a>、<a target="_blank" rel="noopener" href="https://docs.oracle.com/javase/7/docs/api/java/text/SimpleDateFormat.html">Java SimpleDateFormat</a>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+
+
+<p>示例1：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sql&gt; SET TIME ZONE &#x27;UTC&#x27;;</span><br><span class="line">sql&gt; SELECT from_unixtime(0, &#x27;yyyy-MM-dd HH:mm:ss&#x27;);</span><br><span class="line">1970-01-01 00:00:00</span><br></pre></td></tr></table></figure>
+
+<p>示例2：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sql&gt; SET TIME ZONE &#x27;Asia/Shanghai&#x27;;</span><br><span class="line">sql&gt; SELECT from_unixtime(0, &#x27;yyyy-MM-dd HH:mm:ss&#x27;);</span><br><span class="line">1970-01-01 08:00:00</span><br></pre></td></tr></table></figure>
+
+<p>示例3：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sql&gt; SET TIME ZONE &#x27;Asia/Shanghai&#x27;;</span><br><span class="line">sql&gt; SELECT from_unixtime(0, &quot;yyyy-MM-dd&#x27;T&#x27;HH:mm:ss.SSSZ&quot;);</span><br><span class="line">1970-01-01T08:00:00.000+0800</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="date-format"><a href="#date-format" class="headerlink" title="date_format"></a>date_format</h3><table border="1" cellpadding="1" cellspacing="1" style="width:100%;">
+  <tbody>
+    <tr>
+      <td style="width:120px;">函数</td>
+      <td>date_format(ts, string to_fmt)</td>
+    </tr>
+    <tr>
+      <td>返回值类型</td>
+      <td>string</td>
+    </tr>
+    <tr>
+      <td>描述</td>
+      <td>将时间按指定格式进行格式化</td>
+    </tr>
+    <tr>
+      <td>参数</td>
+      <td>
+      ts：date/timestamp、或时间字符串。<br/>
+      to_fmt：格式化字符串，参考<a target="_blank" rel="noopener" href="https://spark.apache.org/docs/latest/sql-ref-datetime-pattern.html">Datetime Patterns</a>、<a target="_blank" rel="noopener" href="https://docs.oracle.com/javase/7/docs/api/java/text/SimpleDateFormat.html">Java SimpleDateFormat。</a>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+
+
+<p>示例1：入参时间字符串包含明确的时区信息</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sql&gt; SET TIME ZONE &#x27;UTC&#x27;;</span><br><span class="line">sql&gt; SELECT date_format(&#x27;2022-05-15T19:00:00.000+0800&#x27;, &#x27;yyyy-MM-dd HH:mm:ss&#x27;);</span><br><span class="line">2022-05-15 11:00:00</span><br></pre></td></tr></table></figure>
+
+<p>示例2：入参时间字符串没有时区信息，则入参时间字符串默认为系统当前时区</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sql&gt; SET TIME ZONE &#x27;UTC&#x27;;</span><br><span class="line">sql&gt; SELECT date_format(&#x27;2022-05-15 19:00:00&#x27;, &quot;yyyy-MM-dd&#x27;T&#x27;HH:mm:ss.SSSZ&quot;);</span><br><span class="line">2022-05-15T19:00:00.000+0000</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="算数运算函数"><a href="#算数运算函数" class="headerlink" title="算数运算函数"></a>算数运算函数</h2><h3 id="date-add"><a href="#date-add" class="headerlink" title="date_add"></a>date_add</h3><h3 id="date-sub"><a href="#date-sub" class="headerlink" title="date_sub"></a>date_sub</h3><h3 id="datediff"><a href="#datediff" class="headerlink" title="datediff"></a>datediff</h3><h3 id="last-day"><a href="#last-day" class="headerlink" title="last_day"></a>last_day</h3><h3 id="next-day"><a href="#next-day" class="headerlink" title="next_day"></a>next_day</h3><h3 id="add-months"><a href="#add-months" class="headerlink" title="add_months"></a>add_months</h3><h3 id="months-between"><a href="#months-between" class="headerlink" title="months_between"></a>months_between</h3><h3 id="trunc"><a href="#trunc" class="headerlink" title="trunc"></a>trunc</h3><p>参考</p>
+<ol>
+<li><a target="_blank" rel="noopener" href="https://docs.microsoft.com/en-us/azure/databricks/sql/language-manual/parameters/timezone">https://docs.microsoft.com/en-us/azure/databricks/sql/language-manual/parameters/timezone</a></li>
+<li><a target="_blank" rel="noopener" href="https://docs.microsoft.com/en-us/azure/databricks/sql/language-manual/sql-ref-syntax-aux-conf-mgmt-set-timezone">https://docs.microsoft.com/en-us/azure/databricks/sql/language-manual/sql-ref-syntax-aux-conf-mgmt-set-timezone</a></li>
+<li><a target="_blank" rel="noopener" href="https://spark.apache.org/docs/latest/sql-ref-functions-builtin.html#date-and-timestamp-functions">https://spark.apache.org/docs/latest/sql-ref-functions-builtin.html#date-and-timestamp-functions</a></li>
+<li><a target="_blank" rel="noopener" href="https://cwiki.apache.org/confluence/display/Hive/LanguageManual+UDF#LanguageManualUDF-DateFunctions">https://cwiki.apache.org/confluence/display/Hive/LanguageManual+UDF#LanguageManualUDF-DateFunctions</a></li>
+<li><a target="_blank" rel="noopener" href="https://spark.apache.org/docs/latest/api/sql/index.html">https://spark.apache.org/docs/latest/api/sql/index.html</a></li>
+</ol>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2022/04/08/architecture/OLTP-OLAP-HTAP/" rel="prev" title="OLTP、OLAP、HTAP">
+                  <i class="fa fa-chevron-left"></i> OLTP、OLAP、HTAP
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2022/04/26/spark/Spark-SQL-Grouping-Rollup-Cube/" rel="next" title="Spark SQL：GROUP语句">
+                  Spark SQL：GROUP语句 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments gitalk-container"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">JT Li</span>
+</div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="Total Visitors">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="Total Views">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js" integrity="sha256-yt2kYMy0w8AbtF89WXb2P1rfjcP/HTHLT7097U8Y5b8=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+  <script src="/js/third-party/fancybox.js"></script>
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">false</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdn.jsdelivr.net/npm/mathjax@3.2.0/es5/tex-mml-chtml.js","integrity":"sha256-r+3itOMtGGjap0x+10hu6jW/gZCzxHsoKrOd7gyRSGY="}}</script>
+<script src="/js/third-party/math/mathjax.js"></script>
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1.7.2/dist/gitalk.css" integrity="sha256-AJnUHL7dBv6PGaeyPQJcgQPDjt/Hn/PvYZde1iqfp8U=" crossorigin="anonymous">
+
+<script class="next-config" data-name="gitalk" type="application/json">{"enable":true,"github_id":"jtLiBrain","repo":"jtLiBrain.github.io","client_id":"c94aa78cf2eda71757bf","client_secret":"01e1353b3f8eac54aafb1224c784b7af0305ce8c","admin_user":"jtLiBrain","distraction_free_mode":true,"proxy":"https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token","language":"en","js":{"url":"https://cdn.jsdelivr.net/npm/gitalk@1.7.2/dist/gitalk.min.js","integrity":"sha256-Pmj85ojLaPOWwRtlMJwmezB/Qg8BzvJp5eTzvXaYAfA="},"path_md5":"7b3784d95571ab7b85c7214a84d72fc7"}</script>
+<script src="/js/third-party/comments/gitalk.js"></script>
+
+</body>
+</html>
