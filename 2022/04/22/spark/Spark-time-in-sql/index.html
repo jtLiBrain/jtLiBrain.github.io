@@ -29,7 +29,7 @@
 <meta property="og:description" content="数据类型日期时间类型DateType TimestampType 基础数据类型参考类org.apache.spark.sql.catalyst.expressions.Cast中的castToTimestamp()和castToDate() 字符串类型数值类型时间间隔类型YearMonthIntervalType DayTimeIntervalType 时区可以通过以下三种方式来设置时区参数：">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2022-04-22T14:55:37.000Z">
-<meta property="article:modified_time" content="2022-05-18T13:52:25.086Z">
+<meta property="article:modified_time" content="2022-05-18T14:00:16.482Z">
 <meta property="article:author" content="JT Li">
 <meta name="twitter:card" content="summary">
 
@@ -139,7 +139,7 @@
       </div>
       <div class="site-state-item site-state-categories">
           <a href="/categories/">
-        <span class="site-state-item-count">19</span>
+        <span class="site-state-item-count">18</span>
         <span class="site-state-item-name">categories</span></a>
       </div>
       <div class="site-state-item site-state-tags">
@@ -219,7 +219,7 @@
           <i class="far fa-calendar-check"></i>
         </span>
         <span class="post-meta-item-text">Edited on</span>
-        <time title="Modified: 2022-05-18 21:52:25" itemprop="dateModified" datetime="2022-05-18T21:52:25+08:00">2022-05-18</time>
+        <time title="Modified: 2022-05-18 22:00:16" itemprop="dateModified" datetime="2022-05-18T22:00:16+08:00">2022-05-18</time>
       </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -228,10 +228,6 @@
       <span class="post-meta-item-text">In</span>
         <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
           <a href="/categories/spark/" itemprop="url" rel="index"><span itemprop="name">spark</span></a>
-        </span>
-          , 
-        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/spark/hive/" itemprop="url" rel="index"><span itemprop="name">hive</span></a>
         </span>
     </span>
 
@@ -318,7 +314,7 @@
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sql&gt; SET TIME ZONE <span class="string">&#x27;Asia/Shanghai&#x27;</span>;</span><br><span class="line">sql&gt; <span class="function">SELECT <span class="title">unix_timestamp</span><span class="params">(<span class="string">&#x27;1970-01-01T08:00:00.000+0800&#x27;</span>, <span class="string">&quot;yyyy-MM-dd&#x27;T&#x27;HH:mm:ss.SSSZ&quot;</span>)</span></span>;</span><br><span class="line"><span class="number">0</span></span><br></pre></td></tr></table></figure>
 
 <p>示例4：入参格式串包含明确的时区信息，则使用入参中的时区</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sql&gt; SET TIME ZONE <span class="string">&#x27;Etc/UTC&#x27;</span>;</span><br><span class="line">sql&gt; <span class="function">SELECT <span class="title">unix_timestamp</span><span class="params">(<span class="string">&#x27;1970-01-01T08:00:00.000+0800&#x27;</span>, <span class="string">&quot;yyyy-MM-dd&#x27;T&#x27;HH:mm:ss.SSSZ&quot;</span>)</span></span></span><br><span class="line"><span class="function">0</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sql&gt; SET TIME ZONE <span class="string">&#x27;Etc/UTC&#x27;</span>;</span><br><span class="line">sql&gt; <span class="function">SELECT <span class="title">unix_timestamp</span><span class="params">(<span class="string">&#x27;1970-01-01T08:00:00.000+0800&#x27;</span>, <span class="string">&quot;yyyy-MM-dd&#x27;T&#x27;HH:mm:ss.SSSZ&quot;</span>)</span></span>;</span><br><span class="line"><span class="number">0</span></span><br></pre></td></tr></table></figure>
 
 
 
@@ -354,10 +350,10 @@
 </table>
 
 <p>示例1：<code>UTC 2016-08-31</code>加上8小时（上海时区与UTC时区为8小时）后为<code>UTC 2016-08-31T08:00:00.000</code></p>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">sql&gt; SET TIME ZONE &#x27;UTC&#x27;;</span><br><span class="line">sql&gt; SELECT \</span><br><span class="line">from_utc_timestamp(&#x27;2016-08-31&#x27;, &#x27;UTC&#x27;), \</span><br><span class="line">from_utc_timestamp(&#x27;2016-08-31&#x27;, &#x27;Asia/Shanghai&#x27;), \</span><br><span class="line">from_utc_timestamp(&#x27;2016-08-31&#x27;, &#x27;Asia/Seoul&#x27;)</span><br><span class="line"></span><br><span class="line">2016-08-31T00:00:00.000+0000</span><br><span class="line">2016-08-31T08:00:00.000+0000</span><br><span class="line">2016-08-31T09:00:00.000+0000</span><br></pre></td></tr></table></figure>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">sql&gt; SET TIME ZONE &#x27;UTC&#x27;;</span><br><span class="line">sql&gt; SELECT \</span><br><span class="line">from_utc_timestamp(&#x27;2016-08-31&#x27;, &#x27;UTC&#x27;), \</span><br><span class="line">from_utc_timestamp(&#x27;2016-08-31&#x27;, &#x27;Asia/Shanghai&#x27;), \</span><br><span class="line">from_utc_timestamp(&#x27;2016-08-31&#x27;, &#x27;Asia/Seoul&#x27;);</span><br><span class="line"></span><br><span class="line">2016-08-31T00:00:00.000+0000</span><br><span class="line">2016-08-31T08:00:00.000+0000</span><br><span class="line">2016-08-31T09:00:00.000+0000</span><br></pre></td></tr></table></figure>
 
 <p>示例2：</p>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">sql&gt; SET TIME ZONE &#x27;Asia/Shanghai&#x27;;</span><br><span class="line">sql&gt; SELECT \</span><br><span class="line">from_utc_timestamp(&#x27;2016-08-31&#x27;, &#x27;UTC&#x27;), \</span><br><span class="line">from_utc_timestamp(&#x27;2016-08-31&#x27;, &#x27;Asia/Shanghai&#x27;), \</span><br><span class="line">from_utc_timestamp(&#x27;2016-08-31&#x27;, &#x27;Asia/Seoul&#x27;)</span><br><span class="line"></span><br><span class="line">2016-08-31T00:00:00.000+0800</span><br><span class="line">2016-08-31T08:00:00.000+0800</span><br><span class="line">2016-08-31T09:00:00.000+0800</span><br></pre></td></tr></table></figure>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">sql&gt; SET TIME ZONE &#x27;Asia/Shanghai&#x27;;</span><br><span class="line">sql&gt; SELECT \</span><br><span class="line">from_utc_timestamp(&#x27;2016-08-31&#x27;, &#x27;UTC&#x27;), \</span><br><span class="line">from_utc_timestamp(&#x27;2016-08-31&#x27;, &#x27;Asia/Shanghai&#x27;), \</span><br><span class="line">from_utc_timestamp(&#x27;2016-08-31&#x27;, &#x27;Asia/Seoul&#x27;);</span><br><span class="line"></span><br><span class="line">2016-08-31T00:00:00.000+0800</span><br><span class="line">2016-08-31T08:00:00.000+0800</span><br><span class="line">2016-08-31T09:00:00.000+0800</span><br></pre></td></tr></table></figure>
 
 
 
@@ -388,10 +384,10 @@
 </table>
 
 <p>示例1：</p>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">sql&gt; SET TIME ZONE &#x27;UTC&#x27;</span><br><span class="line">sql&gt; SELECT \</span><br><span class="line">to_utc_timestamp(&#x27;1970-01-02 08:00:00.000+0800&#x27;, &#x27;Etc/UTC&#x27;),  \</span><br><span class="line">to_utc_timestamp(&#x27;1970-01-02 08:00:00.000&#x27;, &#x27;Etc/UTC&#x27;), \</span><br><span class="line">to_utc_timestamp(&#x27;1970-01-02 08:00:00.000+0800&#x27;, &#x27;Asia/Shanghai&#x27;), \</span><br><span class="line">to_utc_timestamp(&#x27;1970-01-02 08:00:00.000&#x27;, &#x27;Asia/Shanghai&#x27;)</span><br><span class="line"></span><br><span class="line">1970-01-02T00:00:00.000+0000</span><br><span class="line">1970-01-02T08:00:00.000+0000</span><br><span class="line">1970-01-01T16:00:00.000+0000</span><br><span class="line">1970-01-02T00:00:00.000+0000</span><br></pre></td></tr></table></figure>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">sql&gt; SET TIME ZONE &#x27;UTC&#x27;</span><br><span class="line">sql&gt; SELECT \</span><br><span class="line">to_utc_timestamp(&#x27;1970-01-02 08:00:00.000+0800&#x27;, &#x27;Etc/UTC&#x27;),  \</span><br><span class="line">to_utc_timestamp(&#x27;1970-01-02 08:00:00.000&#x27;, &#x27;Etc/UTC&#x27;), \</span><br><span class="line">to_utc_timestamp(&#x27;1970-01-02 08:00:00.000+0800&#x27;, &#x27;Asia/Shanghai&#x27;), \</span><br><span class="line">to_utc_timestamp(&#x27;1970-01-02 08:00:00.000&#x27;, &#x27;Asia/Shanghai&#x27;);</span><br><span class="line"></span><br><span class="line">1970-01-02T00:00:00.000+0000</span><br><span class="line">1970-01-02T08:00:00.000+0000</span><br><span class="line">1970-01-01T16:00:00.000+0000</span><br><span class="line">1970-01-02T00:00:00.000+0000</span><br></pre></td></tr></table></figure>
 
 <p>示例2：</p>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">sql&gt; SET TIME ZONE &#x27;Asia/Shanghai&#x27;</span><br><span class="line">sql&gt; SELECT \</span><br><span class="line">to_utc_timestamp(&#x27;1970-01-02 08:00:00.000+0800&#x27;, &#x27;Etc/UTC&#x27;),  \</span><br><span class="line">to_utc_timestamp(&#x27;1970-01-02 08:00:00.000&#x27;, &#x27;Etc/UTC&#x27;), \</span><br><span class="line">to_utc_timestamp(&#x27;1970-01-02 08:00:00.000+0800&#x27;, &#x27;Asia/Shanghai&#x27;), \</span><br><span class="line">to_utc_timestamp(&#x27;1970-01-02 08:00:00.000&#x27;, &#x27;Asia/Shanghai&#x27;)</span><br><span class="line"></span><br><span class="line">1970-01-02T08:00:00.000+0800</span><br><span class="line">1970-01-02T08:00:00.000+0800</span><br><span class="line">1970-01-02T00:00:00.000+0800</span><br><span class="line">1970-01-02T00:00:00.000+0800</span><br></pre></td></tr></table></figure>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">sql&gt; SET TIME ZONE &#x27;Asia/Shanghai&#x27;</span><br><span class="line">sql&gt; SELECT \</span><br><span class="line">to_utc_timestamp(&#x27;1970-01-02 08:00:00.000+0800&#x27;, &#x27;Etc/UTC&#x27;),  \</span><br><span class="line">to_utc_timestamp(&#x27;1970-01-02 08:00:00.000&#x27;, &#x27;Etc/UTC&#x27;), \</span><br><span class="line">to_utc_timestamp(&#x27;1970-01-02 08:00:00.000+0800&#x27;, &#x27;Asia/Shanghai&#x27;), \</span><br><span class="line">to_utc_timestamp(&#x27;1970-01-02 08:00:00.000&#x27;, &#x27;Asia/Shanghai&#x27;);</span><br><span class="line"></span><br><span class="line">1970-01-02T08:00:00.000+0800</span><br><span class="line">1970-01-02T08:00:00.000+0800</span><br><span class="line">1970-01-02T00:00:00.000+0800</span><br><span class="line">1970-01-02T00:00:00.000+0800</span><br></pre></td></tr></table></figure>
 
 
 
@@ -421,16 +417,16 @@
 
 <p>注意：Hive不支持该函数。</p>
 <p>示例1：入参时间字符串没有时区信息，则默认使用系统当前时区对其进行解析</p>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sql&gt; SET TIME ZONE &#x27;UTC&#x27;;</span><br><span class="line">sql&gt; SELECT to_timestamp(&#x27;2022-05-15 19:00:00&#x27;, &#x27;yyyy-MM-dd HH:mm:ss&#x27;)</span><br><span class="line">2022-05-15T19:00:00.000+0000</span><br></pre></td></tr></table></figure>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sql&gt; SET TIME ZONE &#x27;UTC&#x27;;</span><br><span class="line">sql&gt; SELECT to_timestamp(&#x27;2022-05-15 19:00:00&#x27;, &#x27;yyyy-MM-dd HH:mm:ss&#x27;);</span><br><span class="line">2022-05-15T19:00:00.000+0000</span><br></pre></td></tr></table></figure>
 
 <p>示例2：入参时间字符串没有时区信息，则默认使用系统当前时区对其进行解析</p>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sql&gt; SET TIME ZONE &#x27;Asia/Shanghai&#x27;;</span><br><span class="line">sql&gt; SELECT to_timestamp(&#x27;2022-05-15 19:00:00&#x27;, &#x27;yyyy-MM-dd HH:mm:ss&#x27;)</span><br><span class="line">2022-05-15T19:00:00.000+0800</span><br></pre></td></tr></table></figure>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sql&gt; SET TIME ZONE &#x27;Asia/Shanghai&#x27;;</span><br><span class="line">sql&gt; SELECT to_timestamp(&#x27;2022-05-15 19:00:00&#x27;, &#x27;yyyy-MM-dd HH:mm:ss&#x27;);</span><br><span class="line">2022-05-15T19:00:00.000+0800</span><br></pre></td></tr></table></figure>
 
 <p>示例3：入参时间字符串包含明确的时区信息</p>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sql&gt; SET TIME ZONE &#x27;UTC&#x27;;</span><br><span class="line">sql&gt; SELECT to_timestamp(&#x27;2022-05-15T19:00:00.000+0800&#x27;, &quot;yyyy-MM-dd&#x27;T&#x27;HH:mm:ss.SSSZ&quot;)</span><br><span class="line">2022-05-15T11:00:00.000+0000</span><br></pre></td></tr></table></figure>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sql&gt; SET TIME ZONE &#x27;UTC&#x27;;</span><br><span class="line">sql&gt; SELECT to_timestamp(&#x27;2022-05-15T19:00:00.000+0800&#x27;, &quot;yyyy-MM-dd&#x27;T&#x27;HH:mm:ss.SSSZ&quot;);</span><br><span class="line">2022-05-15T11:00:00.000+0000</span><br></pre></td></tr></table></figure>
 
 <p>示例4：入参时间字符串包含明确的时区信息</p>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sql&gt; SET TIME ZONE &#x27;Asia/Shanghai&#x27;;</span><br><span class="line">sql&gt; SELECT to_timestamp(&#x27;2022-05-15T19:00:00.000+0800&#x27;, &quot;yyyy-MM-dd&#x27;T&#x27;HH:mm:ss.SSSZ&quot;)</span><br><span class="line">2022-05-15T19:00:00.000+0800</span><br></pre></td></tr></table></figure>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sql&gt; SET TIME ZONE &#x27;Asia/Shanghai&#x27;;</span><br><span class="line">sql&gt; SELECT to_timestamp(&#x27;2022-05-15T19:00:00.000+0800&#x27;, &quot;yyyy-MM-dd&#x27;T&#x27;HH:mm:ss.SSSZ&quot;);</span><br><span class="line">2022-05-15T19:00:00.000+0800</span><br></pre></td></tr></table></figure>
 
 
 
