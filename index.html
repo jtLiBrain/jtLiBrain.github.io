@@ -333,7 +333,7 @@
           <i class="far fa-calendar-check"></i>
         </span>
         <span class="post-meta-item-text">Edited on</span>
-        <time title="Modified: 2022-05-18 21:55:40" itemprop="dateModified" datetime="2022-05-18T21:55:40+08:00">2022-05-18</time>
+        <time title="Modified: 2022-05-19 22:49:08" itemprop="dateModified" datetime="2022-05-19T22:49:08+08:00">2022-05-19</time>
       </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -355,15 +355,116 @@
     
     
     <div class="post-body" itemprop="articleBody">
-          <!-- JTLI <p>TODO</p> -->
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2022/04/26/spark/Spark-SQL-Grouping-Rollup-Cube/#more" rel="contents">
-                Read more &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
+          <a id="more"></a>
+
+<h1 id="聚合"><a href="#聚合" class="headerlink" title="聚合"></a>聚合</h1><p>TODO</p>
+<h1 id="高级聚合"><a href="#高级聚合" class="headerlink" title="高级聚合"></a>高级聚合</h1><h2 id="GROUPING-SETS"><a href="#GROUPING-SETS" class="headerlink" title="GROUPING SETS"></a>GROUPING SETS</h2><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">GROUP BY GROUPING SETS(分组集1[, 分组集2, ...])</span><br></pre></td></tr></table></figure>
+
+
+
+<p>对关键字 <code>GROUPING SETS</code>后面指定的多个分组集合中每个集合都进行一次分组操作，等价于按照每个分组集合单独进行聚合，然后再将这些聚合结果进行 <code>UNION ALL</code>。</p>
+<p>注意：为了兼容Hive，Spark也支持<code>GROUP BY ... GROUPING SETS (...)</code>这样的写法。<code>GROUP BY</code> 表达式通常被忽略，但是如果<code>GROUP BY</code> 表达式中包含有<code>GROUPING SETS</code>表达式以外的表达式，那么这些额外的表达式将被包含进分组表达式中且其值为NULL，例如<code>SELECT a, b, c FROM ... GROUP BY a, b, c GROUPING SETS (a, b)</code></p>
+<table border="1" cellpadding="1" cellspacing="1" style="">
+  <thead>
+    <tr>
+      <th style="width:40%">GROUPING SETS</th>
+      <th style="width:60%">等价表示</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>
+        GROUP BY GROUPING SETS((a), (b))<br/><br/>
+        GROUP BY GROUPING SETS(a, b)
+      </td>
+      <td>
+        GROUP BY a<br/>
+        UNION ALL<br/>
+        GROUP BY b
+      </td>
+    </tr>
+    <tr>
+      <td>
+        GROUP BY a,b GROUPING SETS(a, b)
+      </td>
+      <td>
+        SELECT a, NULL ... GROUP BY a<br/>
+        UNION ALL<br/>
+        SELECT NULL, b ... GROUP BY b
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+
+
+<h2 id="ROLLUP"><a href="#ROLLUP" class="headerlink" title="ROLLUP"></a>ROLLUP</h2><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">GROUP BY 分组表达式1[, 分组表达式2, ...] <span class="keyword">WITH</span> <span class="keyword">ROLLUP</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">GROUP</span> <span class="keyword">BY</span> <span class="keyword">ROLLUP</span>(分组集<span class="number">1</span>[, 分组集<span class="number">2</span>, ...])</span><br></pre></td></tr></table></figure>
+
+
+
+<table border="1" cellpadding="1" cellspacing="1" style="">
+  <thead>
+    <tr>
+      <th style="width:40%">RULLUP</th>
+      <th style="width:60%">等价表示</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>
+        GROUP BY a, b WITH ROLLUP<br/><br/>
+        GROUP BY ROLLUP(a, b)
+      </td>
+      <td>
+        GROUP BY GROUPING SETS((a, b), (a), ())
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+
+
+<h2 id="CUBE"><a href="#CUBE" class="headerlink" title="CUBE"></a>CUBE</h2><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">GROUP BY 分组表达式1[, 分组表达式2, ...] <span class="keyword">WITH</span> <span class="keyword">CUBE</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">GROUP</span> <span class="keyword">BY</span> <span class="keyword">CUBE</span>(分组集<span class="number">1</span>[, 分组集<span class="number">2</span>, ...])</span><br></pre></td></tr></table></figure>
+
+
+
+<table border="1" cellpadding="1" cellspacing="1" style="">
+  <thead>
+    <tr>
+      <th style="width:30%">CUBE</th>
+      <th style="width:70%">等价表示</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>
+        GROUP BY a, b WITH CUBE<br/><br/>
+        GROUP BY CUBE(a,b)
+      </td>
+      <td>
+        GROUP BY GROUPING SETS((a,b), (a), (b), ())
+      </td>
+    </tr>
+    <tr>
+      <td>
+        GROUP BY CUBE(a, b, (a,c))
+      </td>
+      <td>
+        GROUP BY GROUPING SETS((a,b,c), (a,b), (a,c), (b,a,c), (a), (b), (a,c), ())
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+
+
+<p>参考：</p>
+<ol>
+<li><a target="_blank" rel="noopener" href="https://spark.apache.org/docs/latest/sql-ref-syntax-qry-select-groupby.html">https://spark.apache.org/docs/latest/sql-ref-syntax-qry-select-groupby.html</a></li>
+<li><a target="_blank" rel="noopener" href="https://cwiki.apache.org/confluence/display/Hive/LanguageManual+GroupBy#LanguageManualGroupBy-Multi-Group-ByInserts">https://cwiki.apache.org/confluence/display/Hive/LanguageManual+GroupBy#LanguageManualGroupBy-Multi-Group-ByInserts</a></li>
+<li><a target="_blank" rel="noopener" href="https://cwiki.apache.org/confluence/display/Hive/Enhanced+Aggregation%2C+Cube%2C+Grouping+and+Rollup">https://cwiki.apache.org/confluence/display/Hive/Enhanced+Aggregation%2C+Cube%2C+Grouping+and+Rollup</a></li>
+</ol>
+
       
     </div>
 
@@ -420,7 +521,7 @@
           <i class="far fa-calendar-check"></i>
         </span>
         <span class="post-meta-item-text">Edited on</span>
-        <time title="Modified: 2022-05-18 22:00:16" itemprop="dateModified" datetime="2022-05-18T22:00:16+08:00">2022-05-18</time>
+        <time title="Modified: 2022-05-19 21:19:56" itemprop="dateModified" datetime="2022-05-19T21:19:56+08:00">2022-05-19</time>
       </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -722,7 +823,7 @@
 
 
 
-<h2 id="算数运算函数"><a href="#算数运算函数" class="headerlink" title="算数运算函数"></a>算数运算函数</h2><h3 id="date-add"><a href="#date-add" class="headerlink" title="date_add"></a>date_add</h3><h3 id="date-sub"><a href="#date-sub" class="headerlink" title="date_sub"></a>date_sub</h3><h3 id="datediff"><a href="#datediff" class="headerlink" title="datediff"></a>datediff</h3><h3 id="last-day"><a href="#last-day" class="headerlink" title="last_day"></a>last_day</h3><h3 id="next-day"><a href="#next-day" class="headerlink" title="next_day"></a>next_day</h3><h3 id="add-months"><a href="#add-months" class="headerlink" title="add_months"></a>add_months</h3><h3 id="months-between"><a href="#months-between" class="headerlink" title="months_between"></a>months_between</h3><h3 id="trunc"><a href="#trunc" class="headerlink" title="trunc"></a>trunc</h3><p>参考</p>
+<h2 id="算数运算函数"><a href="#算数运算函数" class="headerlink" title="算数运算函数"></a>算数运算函数</h2><h3 id="date-add"><a href="#date-add" class="headerlink" title="date_add"></a>date_add</h3><h3 id="date-sub"><a href="#date-sub" class="headerlink" title="date_sub"></a>date_sub</h3><h3 id="datediff"><a href="#datediff" class="headerlink" title="datediff"></a>datediff</h3><h3 id="last-day"><a href="#last-day" class="headerlink" title="last_day"></a>last_day</h3><h3 id="next-day"><a href="#next-day" class="headerlink" title="next_day"></a>next_day</h3><h3 id="add-months"><a href="#add-months" class="headerlink" title="add_months"></a>add_months</h3><h3 id="months-between"><a href="#months-between" class="headerlink" title="months_between"></a>months_between</h3><h3 id="trunc"><a href="#trunc" class="headerlink" title="trunc"></a>trunc</h3><h2 id="获取函数"><a href="#获取函数" class="headerlink" title="获取函数"></a>获取函数</h2><p>参考</p>
 <ol>
 <li><a target="_blank" rel="noopener" href="https://docs.microsoft.com/en-us/azure/databricks/sql/language-manual/parameters/timezone">https://docs.microsoft.com/en-us/azure/databricks/sql/language-manual/parameters/timezone</a></li>
 <li><a target="_blank" rel="noopener" href="https://docs.microsoft.com/en-us/azure/databricks/sql/language-manual/sql-ref-syntax-aux-conf-mgmt-set-timezone">https://docs.microsoft.com/en-us/azure/databricks/sql/language-manual/sql-ref-syntax-aux-conf-mgmt-set-timezone</a></li>
