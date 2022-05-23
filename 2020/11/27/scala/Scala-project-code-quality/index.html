@@ -36,7 +36,7 @@
 <meta property="og:image" content="https://jtlibrain.github.io/images/scala/quality-scoverage.png">
 <meta property="og:image" content="https://jtlibrain.github.io/images/scala/quality-sonarqube-scala-profile.png">
 <meta property="article:published_time" content="2020-11-27T14:12:38.000Z">
-<meta property="article:modified_time" content="2021-03-10T15:22:55.659Z">
+<meta property="article:modified_time" content="2022-05-23T14:20:26.852Z">
 <meta property="article:author" content="JT Li">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="https://jtlibrain.github.io/images/scala/quality-scalastyle.png">
@@ -227,7 +227,7 @@
           <i class="far fa-calendar-check"></i>
         </span>
         <span class="post-meta-item-text">Edited on</span>
-        <time title="Modified: 2021-03-10 23:22:55" itemprop="dateModified" datetime="2021-03-10T23:22:55+08:00">2021-03-10</time>
+        <time title="Modified: 2022-05-23 22:20:26" itemprop="dateModified" datetime="2022-05-23T22:20:26+08:00">2022-05-23</time>
       </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -335,9 +335,14 @@
 <p><img src="/images/scala/quality-scoverage.png"></p>
 <h2 id="SonarQube"><a href="#SonarQube" class="headerlink" title="SonarQube"></a>SonarQube</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker run -p 80:9000 -d mwizner/sonarqube-scala-plugins:latest-full</span><br></pre></td></tr></table></figure>
 
-<p>访问<a target="_blank" rel="noopener" href="http://localhost,使用admin/admin%E8%BF%9B%E8%A1%8C%E7%99%BB%E5%BD%95%EF%BC%8C%E5%AF%BC%E8%88%AA%E5%88%B0%E2%80%9CQuality">http://localhost，使用admin/admin进行登录，导航到“Quality</a> Profiles”，我们可以看到sonarqube针对Scala集成了4种质量配置，如下图：</p>
+<p>访问<a target="_blank" rel="noopener" href="http://localhost/">http://localhost</a>，使用admin/admin进行登录，导航到“Quality Profiles”，我们可以看到sonarqube针对Scala集成了4种质量配置，如下图：</p>
 <p><img src="/images/scala/quality-sonarqube-scala-profile.png"></p>
-<p>mvn -Dsonar.host.url=<a target="_blank" rel="noopener" href="http://localhost/">http://localhost</a> clean test scoverage:report jacoco:report scala:compile sonar:sonar</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mvn -Dsonar.host.url&#x3D;http:&#x2F;&#x2F;localhost clean test scoverage:report jacoco:report scala:compile sonar:sonar</span><br></pre></td></tr></table></figure>
+
+
+
+
+
 <h3 id="SonarScala-Maven-插件"><a href="#SonarScala-Maven-插件" class="headerlink" title="SonarScala Maven 插件"></a>SonarScala Maven 插件</h3><h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><ol>
 <li><a target="_blank" rel="noopener" href="https://www.scalatest.org/user_guide/using_the_scalatest_maven_plugin">https://www.scalatest.org/user_guide/using_the_scalatest_maven_plugin</a></li>
 <li><a target="_blank" rel="noopener" href="https://www.scalatest.org/user_guide/running_your_tests">https://www.scalatest.org/user_guide/running_your_tests</a></li>
