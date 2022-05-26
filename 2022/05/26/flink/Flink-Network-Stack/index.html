@@ -23,13 +23,13 @@
 <script class="next-config" data-name="main" type="application/json">{"hostname":"jtlibrain.github.io","root":"/","images":"/images","scheme":"Gemini","version":"8.7.1","exturl":false,"sidebar":{"position":"left","display":"hide","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js"></script>
 <meta name="description" content="参考 https:&#x2F;&#x2F;flink.apache.org&#x2F;2019&#x2F;06&#x2F;05&#x2F;flink-network-stack.html  https:&#x2F;&#x2F;flink.apache.org&#x2F;2019&#x2F;07&#x2F;23&#x2F;flink-network-stack-2.html  https:&#x2F;&#x2F;developer.aliyun.com&#x2F;article&#x2F;749557">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Flink中的网络模型与反压">
+<meta property="og:title" content="Flink的网络模型与反压">
 <meta property="og:url" content="https://jtlibrain.github.io/2022/05/26/flink/Flink-Network-Stack/index.html">
 <meta property="og:site_name" content="jtLiBrain">
 <meta property="og:description" content="参考 https:&#x2F;&#x2F;flink.apache.org&#x2F;2019&#x2F;06&#x2F;05&#x2F;flink-network-stack.html  https:&#x2F;&#x2F;flink.apache.org&#x2F;2019&#x2F;07&#x2F;23&#x2F;flink-network-stack-2.html  https:&#x2F;&#x2F;developer.aliyun.com&#x2F;article&#x2F;749557">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2022-05-26T12:40:37.000Z">
-<meta property="article:modified_time" content="2022-05-26T12:44:24.813Z">
+<meta property="article:modified_time" content="2022-05-26T12:46:36.656Z">
 <meta property="article:author" content="JT Li">
 <meta name="twitter:card" content="summary">
 
@@ -38,10 +38,10 @@
 
 
 
-<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"en","comments":true,"permalink":"https://jtlibrain.github.io/2022/05/26/flink/Flink-Network-Stack/","path":"2022/05/26/flink/Flink-Network-Stack/","title":"Flink中的网络模型与反压"}</script>
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"en","comments":true,"permalink":"https://jtlibrain.github.io/2022/05/26/flink/Flink-Network-Stack/","path":"2022/05/26/flink/Flink-Network-Stack/","title":"Flink的网络模型与反压"}</script>
 
 <script class="next-config" data-name="calendar" type="application/json">""</script>
-<title>Flink中的网络模型与反压 | jtLiBrain</title>
+<title>Flink的网络模型与反压 | jtLiBrain</title>
   
 
 
@@ -201,7 +201,7 @@
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          Flink中的网络模型与反压
+          Flink的网络模型与反压
         </h1>
 
         <div class="post-meta-container">
@@ -213,7 +213,7 @@
       <span class="post-meta-item-text">Posted on</span>
       
 
-      <time title="Created: 2022-05-26 20:40:37 / Modified: 20:44:24" itemprop="dateCreated datePublished" datetime="2022-05-26T20:40:37+08:00">2022-05-26</time>
+      <time title="Created: 2022-05-26 20:40:37 / Modified: 20:46:36" itemprop="dateCreated datePublished" datetime="2022-05-26T20:40:37+08:00">2022-05-26</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
