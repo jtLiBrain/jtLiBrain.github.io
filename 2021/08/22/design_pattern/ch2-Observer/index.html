@@ -21,12 +21,12 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css" integrity="sha256-Vzbj7sDDS/woiFS3uNKo8eIuni59rjyNGtXfstRzStA=" crossorigin="anonymous">
 
 <script class="next-config" data-name="main" type="application/json">{"hostname":"jtlibrain.github.io","root":"/","images":"/images","scheme":"Gemini","version":"8.7.1","exturl":false,"sidebar":{"position":"left","display":"hide","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js"></script>
-<meta name="description" content="（TODO）">
+<meta name="description" content="观察者模式的定义观察者模式定义了对象之间的一对多依赖，这样，当一个对象改变状态的时候，它的所有依赖者都会收到通知并自动更新。  场景Weather-O—Rama的Internet气象观测站 场景描述该气象站建立在该公司的专利WeatherData类上，WeatherData类负责跟物理气象站联系，以获得最新的天气状况（温度、湿度、气压），然后实时更新各种显示设备。目前的显示设备有三种：a)显示">
 <meta property="og:type" content="article">
 <meta property="og:title" content="《Head First Design Patterns》：第2章，观察者（Observer）模式">
 <meta property="og:url" content="https://jtlibrain.github.io/2021/08/22/design_pattern/ch2-Observer/index.html">
 <meta property="og:site_name" content="jtLiBrain">
-<meta property="og:description" content="（TODO）">
+<meta property="og:description" content="观察者模式的定义观察者模式定义了对象之间的一对多依赖，这样，当一个对象改变状态的时候，它的所有依赖者都会收到通知并自动更新。  场景Weather-O—Rama的Internet气象观测站 场景描述该气象站建立在该公司的专利WeatherData类上，WeatherData类负责跟物理气象站联系，以获得最新的天气状况（温度、湿度、气压），然后实时更新各种显示设备。目前的显示设备有三种：a)显示">
 <meta property="og:locale" content="en_US">
 <meta property="og:image" content="https://jtlibrain.github.io/images/design_pattern/ch2_observer_definition.svg">
 <meta property="og:image" content="https://jtlibrain.github.io/images/design_pattern/ch2_observer_example.svg">
@@ -34,7 +34,7 @@
 <meta property="og:image" content="https://jtlibrain.github.io/images/design_pattern/ch2_observer_impl_classes.svg">
 <meta property="og:image" content="https://jtlibrain.github.io/images/design_pattern/ch2_observer_impl_java_classes.svg">
 <meta property="article:published_time" content="2021-08-22T15:01:35.000Z">
-<meta property="article:modified_time" content="2021-09-05T08:35:49.879Z">
+<meta property="article:modified_time" content="2022-07-03T13:40:48.216Z">
 <meta property="article:author" content="JT Li">
 <meta property="article:tag" content="《Head First Design Patterns》">
 <meta name="twitter:card" content="summary">
@@ -140,7 +140,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">76</span>
+          <span class="site-state-item-count">79</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
@@ -151,7 +151,7 @@
       </div>
       <div class="site-state-item site-state-tags">
           <a href="/tags/">
-        <span class="site-state-item-count">8</span>
+        <span class="site-state-item-count">9</span>
         <span class="site-state-item-name">tags</span></a>
       </div>
   </nav>
@@ -226,7 +226,7 @@
           <i class="far fa-calendar-check"></i>
         </span>
         <span class="post-meta-item-text">Edited on</span>
-        <time title="Modified: 2021-09-05 16:35:49" itemprop="dateModified" datetime="2021-09-05T16:35:49+08:00">2021-09-05</time>
+        <time title="Modified: 2022-07-03 21:40:48" itemprop="dateModified" datetime="2022-07-03T21:40:48+08:00">2022-07-03</time>
       </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -255,14 +255,14 @@
     
     
     <div class="post-body" itemprop="articleBody">
-        <p>（TODO）</p>
-<a id="more"></a>
+        <a id="more"></a>
 
 <h1 id="观察者模式的定义"><a href="#观察者模式的定义" class="headerlink" title="观察者模式的定义"></a>观察者模式的定义</h1><p>观察者模式定义了对象之间的一对多依赖，这样，当一个对象改变状态的时候，它的所有依赖者都会收到通知并自动更新。</p>
 <p><img src="/images/design_pattern/ch2_observer_definition.svg"></p>
 <h1 id="场景"><a href="#场景" class="headerlink" title="场景"></a>场景</h1><p>Weather-O—Rama的Internet气象观测站</p>
 <h1 id="场景描述"><a href="#场景描述" class="headerlink" title="场景描述"></a>场景描述</h1><p>该气象站建立在该公司的专利<code>WeatherData</code>类上，<code>WeatherData</code>类负责跟物理气象站联系，以获得最新的天气状况（温度、湿度、气压），然后实时更新各种显示设备。目前的显示设备有三种：a)显示目前状况（温度、湿度、气压）的设备，b)显示气象统计的设备，c)显示天气预报的设备；<code>WeatherData</code>类还需要具备方便未来有其它显示设备以插拔的方式接入的功能。</p>
-<p><img src="/images/design_pattern/ch2_observer_example.svg"></p>
+<img src="/images/design_pattern/ch2_observer_example.svg" style="zoom:80%;" />
+
 <p>已有<code>WeatherData</code>类，其中</p>
 <ol>
 <li><code>getTemperature()</code>、<code>getHumidity()</code>、<code>getPressure()</code>是气象站的开发人员已经实现好的方法；</li>
@@ -291,7 +291,7 @@
 
 
 <p>观测站运行：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">WeatherStation</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        WeatherData weatherData = <span class="keyword">new</span> WeatherData();</span><br><span class="line">    </span><br><span class="line">        CurrentConditionsDisplay currentDisplay = </span><br><span class="line">            <span class="keyword">new</span> CurrentConditionsDisplay(weatherData);</span><br><span class="line">        StatisticsDisplay statisticsDisplay = <span class="keyword">new</span> StatisticsDisplay(weatherData);</span><br><span class="line">        ForecastDisplay forecastDisplay = <span class="keyword">new</span> ForecastDisplay(weatherData);</span><br><span class="line"></span><br><span class="line">        weatherData.setMeasurements(<span class="number">80</span>, <span class="number">65</span>, <span class="number">30.4f</span>);</span><br><span class="line">        weatherData.setMeasurements(<span class="number">82</span>, <span class="number">70</span>, <span class="number">29.2f</span>);</span><br><span class="line">        weatherData.setMeasurements(<span class="number">78</span>, <span class="number">90</span>, <span class="number">29.2f</span>);</span><br><span class="line">        </span><br><span class="line">        weatherData.removeObserver(forecastDisplay);</span><br><span class="line">        weatherData.setMeasurements(<span class="number">62</span>, <span class="number">90</span>, <span class="number">28.1f</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">WeatherStation</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        WeatherData weatherData = <span class="keyword">new</span> WeatherData();</span><br><span class="line">    </span><br><span class="line">        CurrentConditionsDisplay currentDisplay = <span class="keyword">new</span> CurrentConditionsDisplay(weatherData);</span><br><span class="line">        StatisticsDisplay statisticsDisplay = <span class="keyword">new</span> StatisticsDisplay(weatherData);</span><br><span class="line">        ForecastDisplay forecastDisplay = <span class="keyword">new</span> ForecastDisplay(weatherData);</span><br><span class="line"></span><br><span class="line">        weatherData.setMeasurements(<span class="number">80</span>, <span class="number">65</span>, <span class="number">30.4f</span>);</span><br><span class="line">        weatherData.setMeasurements(<span class="number">82</span>, <span class="number">70</span>, <span class="number">29.2f</span>);</span><br><span class="line">        weatherData.setMeasurements(<span class="number">78</span>, <span class="number">90</span>, <span class="number">29.2f</span>);</span><br><span class="line">        </span><br><span class="line">        weatherData.removeObserver(forecastDisplay);</span><br><span class="line">        weatherData.setMeasurements(<span class="number">62</span>, <span class="number">90</span>, <span class="number">28.1f</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
 
 

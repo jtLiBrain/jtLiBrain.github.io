@@ -128,7 +128,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">76</span>
+          <span class="site-state-item-count">79</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
@@ -139,7 +139,7 @@
       </div>
       <div class="site-state-item site-state-tags">
           <a href="/tags/">
-        <span class="site-state-item-count">8</span>
+        <span class="site-state-item-count">9</span>
         <span class="site-state-item-name">tags</span></a>
       </div>
   </nav>
@@ -173,6 +173,408 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://jtlibrain.github.io/2021/08/22/design_pattern/ch3-Decorator/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="JT Li">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="jtLiBrain">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2021/08/22/design_pattern/ch3-Decorator/" class="post-title-link" itemprop="url">《Head First Design Patterns》：第3章，装饰器（Decorator）模式</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2021-08-22 23:01:55" itemprop="dateCreated datePublished" datetime="2021-08-22T23:01:55+08:00">2021-08-22</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">Edited on</span>
+        <time title="Modified: 2022-07-03 22:00:41" itemprop="dateModified" datetime="2022-07-03T22:00:41+08:00">2022-07-03</time>
+      </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">In</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/design-pattern/" itemprop="url" rel="index"><span itemprop="name">design pattern</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <a id="more"></a>
+
+<h1 id="装饰器模式的定义"><a href="#装饰器模式的定义" class="headerlink" title="装饰器模式的定义"></a>装饰器模式的定义</h1><p>装饰器模式动态地将责任附加到对象上。若要扩展功能，装饰者提供了比继承更有弹性的替代方案。</p>
+<p>如下：</p>
+<ol>
+<li><code>ConcreteComponent</code>是我们将要动态地加上新行为的对象，它扩展自<code>Component</code>；</li>
+<li>每个装饰者<code>Decorator</code>都有一个（包装一个）组件对象，也就是说，装饰者有一个实例变量保存某个<code>Component</code>是的引用；</li>
+<li>每个具体的装饰者可以加上新的方法。新行为是通过在旧行为前面或后面做一些计算来添加的；</li>
+</ol>
+<img src="/images/design_pattern/ch3_decorator_definition.svg" style="zoom:80%;" />
+
+
+
+<h1 id="场景"><a href="#场景" class="headerlink" title="场景"></a>场景</h1><p>星巴兹咖啡店的订单系统</p>
+<h1 id="场景介绍"><a href="#场景介绍" class="headerlink" title="场景介绍"></a>场景介绍</h1><p>星巴兹咖啡店扩展迅速，他们准备更新订单系统，以合乎他们的饮料供应要求。类设计原来是这样的：a)饮料类<code>Beverage</code>是一个抽象类，店内所有提供的饮料都要继承此类；b)<code>cost()</code>方法是抽象的，子类必须定义自己的实现，以实现对每种饮料计算价格；c)购买咖啡时，也可以加入各种调料，例如：蒸奶、豆浆、摩卡或覆盖奶泡；星巴兹会根据所加入的调料收取不同的费用。</p>
+<img src="/images/design_pattern/ch3_decorator_example_classes.svg" style="zoom:80%;" />
+
+<p>采用这样的设计，他们的类将会爆炸：</p>
+<img src="/images/design_pattern/ch3_decorator_example_image.jpg" style="zoom:80%;" />
+
+
+
+<h1 id="解决方案"><a href="#解决方案" class="headerlink" title="解决方案"></a>解决方案</h1><p>这里采用的做法是：以饮料为主体，在运行时以调料来“装饰”饮料。比如，如果顾客想要摩卡和奶泡深焙咖啡，那么需要这样做：</p>
+<ol>
+<li>拿一个深焙咖啡<code>DarkRoast</code>对象；</li>
+<li>以摩卡<code>Mocha</code>对象装饰它；</li>
+<li>以奶泡<code>Whip</code>对象再进行装饰它；</li>
+<li>调用<code>cost()</code>方法，并依赖委托将调料的价钱加上去；</li>
+</ol>
+<img src="/images/design_pattern/ch3_decorator_example_impl_classes.svg" style="zoom:80%;" />
+
+
+
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">Beverage</span> </span>&#123;</span><br><span class="line">    String description = <span class="string">&quot;Unknown Beverage&quot;</span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">getDescription</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> description;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">double</span> <span class="title">cost</span><span class="params">()</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<p>实现一些饮料，我们先实现浓缩咖啡<code>Espresso</code>和综合咖啡<code>HouseBlend</code>：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Espresso</span> <span class="keyword">extends</span> <span class="title">Beverage</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">Espresso</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        description = <span class="string">&quot;Espresso&quot;</span>;</span><br><span class="line">    &#125;</span><br><span class="line">  </span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">double</span> <span class="title">cost</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="number">1.99</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">HouseBlend</span> <span class="keyword">extends</span> <span class="title">Beverage</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">HouseBlend</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        description = <span class="string">&quot;House Blend Coffee&quot;</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">double</span> <span class="title">cost</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> .<span class="number">89</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<p>调料抽象类：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">CondimentDecorator</span> <span class="keyword">extends</span> <span class="title">Beverage</span> </span>&#123;</span><br><span class="line">    Beverage beverage;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">abstract</span> String <span class="title">getDescription</span><span class="params">()</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<p>实现摩卡口味的咖啡：a)<code>getDescription()</code>中加上摩卡的描述，b)<code>cost()</code>如中加上了摩卡的费用，如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Mocha</span> <span class="keyword">extends</span> <span class="title">CondimentDecorator</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">Mocha</span><span class="params">(Beverage beverage)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.beverage = beverage;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">getDescription</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> beverage.getDescription() + <span class="string">&quot;, Mocha&quot;</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">double</span> <span class="title">cost</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> .<span class="number">20</span> + beverage.cost();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<p>我们来使用一下新的订单系统：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">StarbuzzCoffee</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String args[])</span> </span>&#123;</span><br><span class="line">        Beverage beverage = <span class="keyword">new</span> Espresso();</span><br><span class="line">        System.out.println(beverage.getDescription()</span><br><span class="line">                + <span class="string">&quot; $&quot;</span> + beverage.cost());</span><br><span class="line"></span><br><span class="line">        Beverage beverage2 = <span class="keyword">new</span> DarkRoast();</span><br><span class="line">        beverage2 = <span class="keyword">new</span> Mocha(beverage2);</span><br><span class="line">        beverage2 = <span class="keyword">new</span> Mocha(beverage2);</span><br><span class="line">        beverage2 = <span class="keyword">new</span> Whip(beverage2);</span><br><span class="line">        System.out.println(beverage2.getDescription()</span><br><span class="line">                + <span class="string">&quot; $&quot;</span> + beverage2.cost());</span><br><span class="line"> </span><br><span class="line">        Beverage beverage3 = <span class="keyword">new</span> HouseBlend();</span><br><span class="line">        beverage3 = <span class="keyword">new</span> Soy(beverage3);</span><br><span class="line">        beverage3 = <span class="keyword">new</span> Mocha(beverage3);</span><br><span class="line">        beverage3 = <span class="keyword">new</span> Whip(beverage3);</span><br><span class="line">        System.out.println(beverage3.getDescription()</span><br><span class="line">                + <span class="string">&quot; $&quot;</span> + beverage3.cost());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h1 id="Java中的装饰者"><a href="#Java中的装饰者" class="headerlink" title="Java中的装饰者"></a>Java中的装饰者</h1><h2 id="Java-I-O"><a href="#Java-I-O" class="headerlink" title="Java I/O"></a>Java I/O</h2><ol>
+<li><code>InputStream</code>是抽象组件；</li>
+<li><code>FileInputStream</code>、<code>StringBufferInputStream</code>、<code>ByteArrayInputStream</code>是可以被装饰者包起来的具体组件，还有少数类没有被列出，如<code>ObjectInputStream</code>;</li>
+<li><code>PushbackInputStream</code>、<code>BufferedInputStream</code>、<code>DataInputStream</code>、<code>InflatorInputStream</code>、<code>ZipInputStream</code>是具体的装饰者；</li>
+<li>Java I/O也引出装饰者模式的一个“缺点”：利用装饰者模式，常常造成设计中大量的小类，数量实在太多，可能会造成使用此API的程序员困扰</li>
+</ol>
+<img src="/images/design_pattern/ch3_decorator_java_io.svg" style="zoom:80%;" />
+
+<p>实现输入流中所有大写字符转成小写的例子：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">LowerCaseInputStream</span> <span class="keyword">extends</span> <span class="title">FilterInputStream</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">LowerCaseInputStream</span><span class="params">(InputStream in)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>(in);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">read</span><span class="params">()</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">        <span class="keyword">int</span> c = in.read();</span><br><span class="line">        <span class="keyword">return</span> (c == -<span class="number">1</span> ? c : Character.toLowerCase((<span class="keyword">char</span>) c));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">read</span><span class="params">(<span class="keyword">byte</span>[] b, <span class="keyword">int</span> offset, <span class="keyword">int</span> len)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">        <span class="keyword">int</span> result = in.read(b, offset, len);</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = offset; i &lt; offset + result; i++) &#123;</span><br><span class="line">            b[i] = (<span class="keyword">byte</span>) Character.toLowerCase((<span class="keyword">char</span>) b[i]);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> result;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><ol>
+<li><a target="_blank" rel="noopener" href="https://wickedlysmart.com/head-first-design-patterns/">https://wickedlysmart.com/head-first-design-patterns/</a></li>
+</ol>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://jtlibrain.github.io/2021/08/22/design_pattern/ch2-Observer/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="JT Li">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="jtLiBrain">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2021/08/22/design_pattern/ch2-Observer/" class="post-title-link" itemprop="url">《Head First Design Patterns》：第2章，观察者（Observer）模式</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2021-08-22 23:01:35" itemprop="dateCreated datePublished" datetime="2021-08-22T23:01:35+08:00">2021-08-22</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">Edited on</span>
+        <time title="Modified: 2022-07-03 21:40:48" itemprop="dateModified" datetime="2022-07-03T21:40:48+08:00">2022-07-03</time>
+      </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">In</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/design-pattern/" itemprop="url" rel="index"><span itemprop="name">design pattern</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <a id="more"></a>
+
+<h1 id="观察者模式的定义"><a href="#观察者模式的定义" class="headerlink" title="观察者模式的定义"></a>观察者模式的定义</h1><p>观察者模式定义了对象之间的一对多依赖，这样，当一个对象改变状态的时候，它的所有依赖者都会收到通知并自动更新。</p>
+<p><img src="/images/design_pattern/ch2_observer_definition.svg"></p>
+<h1 id="场景"><a href="#场景" class="headerlink" title="场景"></a>场景</h1><p>Weather-O—Rama的Internet气象观测站</p>
+<h1 id="场景描述"><a href="#场景描述" class="headerlink" title="场景描述"></a>场景描述</h1><p>该气象站建立在该公司的专利<code>WeatherData</code>类上，<code>WeatherData</code>类负责跟物理气象站联系，以获得最新的天气状况（温度、湿度、气压），然后实时更新各种显示设备。目前的显示设备有三种：a)显示目前状况（温度、湿度、气压）的设备，b)显示气象统计的设备，c)显示天气预报的设备；<code>WeatherData</code>类还需要具备方便未来有其它显示设备以插拔的方式接入的功能。</p>
+<img src="/images/design_pattern/ch2_observer_example.svg" style="zoom:80%;" />
+
+<p>已有<code>WeatherData</code>类，其中</p>
+<ol>
+<li><code>getTemperature()</code>、<code>getHumidity()</code>、<code>getPressure()</code>是气象站的开发人员已经实现好的方法；</li>
+<li>我们只需要实现<code>measurementsChanged()</code>，该方法一旦气象测量有更新就会被调用；</li>
+</ol>
+<p><img src="/images/design_pattern/ch2_observer_example_classes.svg"></p>
+<h1 id="不好的设计"><a href="#不好的设计" class="headerlink" title="不好的设计"></a>不好的设计</h1><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">WeatherData</span> </span>&#123;</span><br><span class="line">    <span class="comment">// instance variable declarations</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">measurementsChanged</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">float</span> temp = getTemperature();</span><br><span class="line">        <span class="keyword">float</span> humidity = getHumidity();</span><br><span class="line">        <span class="keyword">float</span> pressure = getPressure();</span><br><span class="line"></span><br><span class="line">        currentConditionsDisplay.update(temp, humidity, pressure);</span><br><span class="line">        statisticsDisplay.update(temp, humidity, pressure);</span><br><span class="line">        forecastDisplay.update(temp, humidity, pressure);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// other WeatherData methods here</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h1 id="解决方案一"><a href="#解决方案一" class="headerlink" title="解决方案一"></a>解决方案一</h1><img src="/images/design_pattern/ch2_observer_impl_classes.svg" style="zoom:80%;" />
+
+<p>相关接口：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">Subject</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">registerObserver</span><span class="params">(Observer o)</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">removeObserver</span><span class="params">(Observer o)</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">notifyObservers</span><span class="params">()</span></span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">Observer</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">update</span><span class="params">(<span class="keyword">float</span> temp, <span class="keyword">float</span> humidity, <span class="keyword">float</span> pressure)</span></span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">DisplayElement</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">display</span><span class="params">()</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<p>实现<code>WeatherData</code>：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line">public class WeatherData implements Subject &#123;</span><br><span class="line">    private List&lt;Observer&gt; observers;</span><br><span class="line">    private float temperature;</span><br><span class="line">    private float humidity;</span><br><span class="line">    private float pressure;</span><br><span class="line">    </span><br><span class="line">    public WeatherData() &#123;</span><br><span class="line">        observers &#x3D; new ArrayList&lt;Observer&gt;();</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    public void registerObserver(Observer o) &#123;</span><br><span class="line">        observers.add(o);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    public void removeObserver(Observer o) &#123;</span><br><span class="line">        observers.remove(o);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    public void notifyObservers() &#123;</span><br><span class="line">        for (Observer observer : observers) &#123;</span><br><span class="line">            observer.update(temperature, humidity, pressure);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    public void measurementsChanged() &#123;</span><br><span class="line">        notifyObservers();</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    public void setMeasurements(float temperature, float humidity, float pressure) &#123;</span><br><span class="line">        this.temperature &#x3D; temperature;</span><br><span class="line">        this.humidity &#x3D; humidity;</span><br><span class="line">        this.pressure &#x3D; pressure;</span><br><span class="line">        measurementsChanged();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public float getTemperature() &#123;</span><br><span class="line">        return temperature;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    public float getHumidity() &#123;</span><br><span class="line">        return humidity;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    public float getPressure() &#123;</span><br><span class="line">        return pressure;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<p>实现显示设备：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">CurrentConditionsDisplay</span> <span class="keyword">implements</span> <span class="title">Observer</span>, <span class="title">DisplayElement</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">float</span> temperature;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">float</span> humidity;</span><br><span class="line">    <span class="keyword">private</span> WeatherData weatherData;</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">CurrentConditionsDisplay</span><span class="params">(WeatherData weatherData)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.weatherData = weatherData;</span><br><span class="line">        weatherData.registerObserver(<span class="keyword">this</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">update</span><span class="params">(<span class="keyword">float</span> temperature, <span class="keyword">float</span> humidity, <span class="keyword">float</span> pressure)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.temperature = temperature;</span><br><span class="line">        <span class="keyword">this</span>.humidity = humidity;</span><br><span class="line">        display();</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">display</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;Current conditions: &quot;</span> + temperature </span><br><span class="line">            + <span class="string">&quot;F degrees and &quot;</span> + humidity + <span class="string">&quot;% humidity&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">StatisticsDisplay</span> <span class="keyword">implements</span> <span class="title">Observer</span>, <span class="title">DisplayElement</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">float</span> maxTemp = <span class="number">0.0f</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">float</span> minTemp = <span class="number">200</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">float</span> tempSum= <span class="number">0.0f</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">int</span> numReadings;</span><br><span class="line">    <span class="keyword">private</span> WeatherData weatherData;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">StatisticsDisplay</span><span class="params">(WeatherData weatherData)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.weatherData = weatherData;</span><br><span class="line">        weatherData.registerObserver(<span class="keyword">this</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">update</span><span class="params">(<span class="keyword">float</span> temp, <span class="keyword">float</span> humidity, <span class="keyword">float</span> pressure)</span> </span>&#123;</span><br><span class="line">        tempSum += temp;</span><br><span class="line">        numReadings++;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (temp &gt; maxTemp) &#123;</span><br><span class="line">            maxTemp = temp;</span><br><span class="line">        &#125;</span><br><span class="line"> </span><br><span class="line">        <span class="keyword">if</span> (temp &lt; minTemp) &#123;</span><br><span class="line">            minTemp = temp;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        display();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">display</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;Avg/Max/Min temperature = &quot;</span> + (tempSum / numReadings)</span><br><span class="line">            + <span class="string">&quot;/&quot;</span> + maxTemp + <span class="string">&quot;/&quot;</span> + minTemp);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ForecastDisplay</span> <span class="keyword">implements</span> <span class="title">Observer</span>, <span class="title">DisplayElement</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">float</span> currentPressure = <span class="number">29.92f</span>;  </span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">float</span> lastPressure;</span><br><span class="line">    <span class="keyword">private</span> WeatherData weatherData;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">ForecastDisplay</span><span class="params">(WeatherData weatherData)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.weatherData = weatherData;</span><br><span class="line">        weatherData.registerObserver(<span class="keyword">this</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">update</span><span class="params">(<span class="keyword">float</span> temp, <span class="keyword">float</span> humidity, <span class="keyword">float</span> pressure)</span> </span>&#123;</span><br><span class="line">        lastPressure = currentPressure;</span><br><span class="line">        currentPressure = pressure;</span><br><span class="line"></span><br><span class="line">        display();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">display</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        System.out.print(<span class="string">&quot;Forecast: &quot;</span>);</span><br><span class="line">        <span class="keyword">if</span> (currentPressure &gt; lastPressure) &#123;</span><br><span class="line">            System.out.println(<span class="string">&quot;Improving weather on the way!&quot;</span>);</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (currentPressure == lastPressure) &#123;</span><br><span class="line">            System.out.println(<span class="string">&quot;More of the same&quot;</span>);</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (currentPressure &lt; lastPressure) &#123;</span><br><span class="line">            System.out.println(<span class="string">&quot;Watch out for cooler, rainy weather&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<p>观测站运行：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">WeatherStation</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        WeatherData weatherData = <span class="keyword">new</span> WeatherData();</span><br><span class="line">    </span><br><span class="line">        CurrentConditionsDisplay currentDisplay = <span class="keyword">new</span> CurrentConditionsDisplay(weatherData);</span><br><span class="line">        StatisticsDisplay statisticsDisplay = <span class="keyword">new</span> StatisticsDisplay(weatherData);</span><br><span class="line">        ForecastDisplay forecastDisplay = <span class="keyword">new</span> ForecastDisplay(weatherData);</span><br><span class="line"></span><br><span class="line">        weatherData.setMeasurements(<span class="number">80</span>, <span class="number">65</span>, <span class="number">30.4f</span>);</span><br><span class="line">        weatherData.setMeasurements(<span class="number">82</span>, <span class="number">70</span>, <span class="number">29.2f</span>);</span><br><span class="line">        weatherData.setMeasurements(<span class="number">78</span>, <span class="number">90</span>, <span class="number">29.2f</span>);</span><br><span class="line">        </span><br><span class="line">        weatherData.removeObserver(forecastDisplay);</span><br><span class="line">        weatherData.setMeasurements(<span class="number">62</span>, <span class="number">90</span>, <span class="number">28.1f</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h1 id="解决方案二：使用Java内置观察者模式"><a href="#解决方案二：使用Java内置观察者模式" class="headerlink" title="解决方案二：使用Java内置观察者模式"></a>解决方案二：使用Java内置观察者模式</h1><img src="/images/design_pattern/ch2_observer_impl_java_classes.svg" style="zoom:80%;" />
+
+<p>注意点：</p>
+<ol>
+<li><code>java.util.Observable</code>是类；</li>
+<li><code>java.util.Observable</code>中的<code>setChanged()</code>方法；</li>
+</ol>
+<h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><ol>
+<li><a target="_blank" rel="noopener" href="https://wickedlysmart.com/head-first-design-patterns/">https://wickedlysmart.com/head-first-design-patterns/</a></li>
+</ol>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://jtlibrain.github.io/2021/08/19/design_pattern/ch1-Strategy/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="JT Li">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="jtLiBrain">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2021/08/19/design_pattern/ch1-Strategy/" class="post-title-link" itemprop="url">《Head First Design Patterns》：第1章，策略（Strategy）模式</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2021-08-19 22:56:38" itemprop="dateCreated datePublished" datetime="2021-08-19T22:56:38+08:00">2021-08-19</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">Edited on</span>
+        <time title="Modified: 2022-07-03 21:24:28" itemprop="dateModified" datetime="2022-07-03T21:24:28+08:00">2022-07-03</time>
+      </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">In</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/design-pattern/" itemprop="url" rel="index"><span itemprop="name">design pattern</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <a id="more"></a>
+
+<h1 id="策略模式的定义"><a href="#策略模式的定义" class="headerlink" title="策略模式的定义"></a>策略模式的定义</h1><p>策略模式定义了算法簇，封装每一个算法，使得这些算法可以互相替换；该模式让算法的变化独立于使用算法的客户。</p>
+<p>以下面的例子为例，<code>Flyable</code>定义了一个飞的算法簇，<code>FlyWithWings</code>和<code>FlyNoWay</code>这两个飞的具体算法可以互相替换。</p>
+<h1 id="场景"><a href="#场景" class="headerlink" title="场景"></a>场景</h1><p>鸭子池塘模拟游戏SimUDuck</p>
+<h1 id="场景描述"><a href="#场景描述" class="headerlink" title="场景描述"></a>场景描述</h1><p>所有鸭子都会呱呱叫<code>quack()</code>，也会游泳<code>swin()</code>，所以抽象类<code>Duck</code>负责实现<code>quack()</code>和<code>swin()</code>；而每种鸭子的外观是不同的，所以抽象类<code>Duck</code>的<code>display()</code>方法是抽象的。</p>
+<img src="/images/design_pattern/ch1_strategy_example.svg" style="zoom:90%;" />
+
+
+
+<p>现在，该游戏需要升级，考虑给鸭子加上飞<code>fly()</code>的行为（注意，并不是所有的鸭子都会飞）。假如，按照我们前面设计，直接将<code>fly()</code>方法在抽象类<code>Duck</code>中进行实现，那么就会造成，所有子类具有飞<code>fly()</code>的行为，而假如我们有一只橡皮鸭子（它是不能飞翔的），那么它现在也会飞了：</p>
+<img src="/images/design_pattern/ch1_strategy_example_2.svg" style="zoom:90%;" />
+
+<p>那么，继续在橡皮鸭子<code>RubberDuck</code>中重写<code>fly()</code>方法为“什么都不做”，是否可行呢？这样固然能解决橡皮鸭子不会飞的问题，但是假如我们又添加了一个诱饵鸭<code>DecoyDuck</code>，还需要再次添加对<code>fly()</code>方法的重写：</p>
+<img src="/images/design_pattern/ch1_strategy_example_3.svg" style="zoom:90%;" />
+
+
+
+<p>那么用接口实现如何？因为并不是所有鸭子都会飞<code>fly()</code>和叫<code>quack()</code>，所以把这两个行为放到单独的接口中。这样的话，重复代码会变多，因为绿头鸭和红头鸭都需要实现<code>fly()</code>和<code>quack()</code>，造成代码无法复用：</p>
+<img src="/images/design_pattern/ch1_strategy_example_4.svg" style="zoom:90%;" />
+
+<h1 id="解决方案"><a href="#解决方案" class="headerlink" title="解决方案"></a>解决方案</h1><p>我们知道<code>Duck</code>类内的<code>fly()</code>和<code>quack()</code>会随着鸭子的不同而改变。我们将这两个行为从<code>Duck</code>类中取出来，建立一套鸭子的行为类来代表每个行为。</p>
+<img src="/images/design_pattern/ch1_strategy_example_impl_1.svg" style="zoom:80%;" />
+
+<p>采用这样的设计，可以让飞行<code>fly()</code>和呱呱叫<code>quack()</code>的动作被其它的对象复用，因为这些行为已经和鸭子类无关了。同时，我们可以新增一些行为，而不会影响到既有的行为类，也不会影响“使用”到飞行行为的鸭子类。</p>
+<img src="/images/design_pattern/ch1_strategy_example_impl_2.svg" />
+
+
+
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">Duck</span> </span>&#123;</span><br><span class="line">    FlyBehavior flyBehavior;</span><br><span class="line">    QuackBehavior quackBehavior;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">Duck</span><span class="params">()</span> </span>&#123; &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">void</span> <span class="title">display</span><span class="params">()</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">performFly</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        flyBehavior.fly();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">performQuack</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        quackBehavior.quack();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">swim</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;All ducks float, even decoys!&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MallardDuck</span> <span class="keyword">extends</span> <span class="title">Duck</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">MallardDuck</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        quackBehavior = <span class="keyword">new</span> Quack();</span><br><span class="line">        flyBehavior = <span class="keyword">new</span> FlyWithWings();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">display</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;I&#x27;m a real Mallard duck&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">FlyBehavior</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">fly</span><span class="params">()</span></span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">FlyWithWings</span> <span class="keyword">implements</span> <span class="title">FlyBehavior</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">fly</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;I&#x27;m flying!!&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">FlyNoWay</span> <span class="keyword">implements</span> <span class="title">FlyBehavior</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">fly</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;I can&#x27;t fly&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">QuackBehavior</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">quack</span><span class="params">()</span></span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Quack</span> <span class="keyword">implements</span> <span class="title">QuackBehavior</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">quack</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;Quack&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MuteQuack</span> <span class="keyword">implements</span> <span class="title">QuackBehavior</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">quack</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;&lt;&lt; Silence &gt;&gt;&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Squeak</span> <span class="keyword">implements</span> <span class="title">QuackBehavior</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">quack</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;Squeak&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><ol>
+<li><a target="_blank" rel="noopener" href="https://wickedlysmart.com/head-first-design-patterns/">https://wickedlysmart.com/head-first-design-patterns/</a></li>
+</ol>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -810,267 +1212,6 @@
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/2021/04/17/scala/Scala-Trait/#more" rel="contents">
-                Read more &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://jtlibrain.github.io/2021/04/16/scala/Scala-Implicit-Conversions-And-Parameters/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="JT Li">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="jtLiBrain">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2021/04/16/scala/Scala-Implicit-Conversions-And-Parameters/" class="post-title-link" itemprop="url">Scala学习系列-隐式转换和隐式参数</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2021-04-16 22:31:03" itemprop="dateCreated datePublished" datetime="2021-04-16T22:31:03+08:00">2021-04-16</time>
-    </span>
-      <span class="post-meta-item">
-        <span class="post-meta-item-icon">
-          <i class="far fa-calendar-check"></i>
-        </span>
-        <span class="post-meta-item-text">Edited on</span>
-        <time title="Modified: 2021-04-17 21:45:33" itemprop="dateModified" datetime="2021-04-17T21:45:33+08:00">2021-04-17</time>
-      </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-folder"></i>
-      </span>
-      <span class="post-meta-item-text">In</span>
-        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/scala/" itemprop="url" rel="index"><span itemprop="name">scala</span></a>
-        </span>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <!-- JTLI <p>TODO</p> -->
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2021/04/16/scala/Scala-Implicit-Conversions-And-Parameters/#more" rel="contents">
-                Read more &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://jtlibrain.github.io/2021/04/08/git/Git-Reset-Demystified/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="JT Li">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="jtLiBrain">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2021/04/08/git/Git-Reset-Demystified/" class="post-title-link" itemprop="url">Git：重置揭秘</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2021-04-08 23:33:21" itemprop="dateCreated datePublished" datetime="2021-04-08T23:33:21+08:00">2021-04-08</time>
-    </span>
-      <span class="post-meta-item">
-        <span class="post-meta-item-icon">
-          <i class="far fa-calendar-check"></i>
-        </span>
-        <span class="post-meta-item-text">Edited on</span>
-        <time title="Modified: 2021-09-10 22:14:21" itemprop="dateModified" datetime="2021-09-10T22:14:21+08:00">2021-09-10</time>
-      </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-folder"></i>
-      </span>
-      <span class="post-meta-item-text">In</span>
-        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/git/" itemprop="url" rel="index"><span itemprop="name">git</span></a>
-        </span>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <!-- JTLI <p>本文详细讲述了Git中重置相关的git-reset、git-checkout、git-revert的命令。</p> -->
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2021/04/08/git/Git-Reset-Demystified/#more" rel="contents">
-                Read more &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://jtlibrain.github.io/2021/04/08/scala/Scala-Collection-View-And-Iterator/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="JT Li">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="jtLiBrain">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2021/04/08/scala/Scala-Collection-View-And-Iterator/" class="post-title-link" itemprop="url">Scala学习系列-集合3：视图和迭代器</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2021-04-08 23:16:01" itemprop="dateCreated datePublished" datetime="2021-04-08T23:16:01+08:00">2021-04-08</time>
-    </span>
-      <span class="post-meta-item">
-        <span class="post-meta-item-icon">
-          <i class="far fa-calendar-check"></i>
-        </span>
-        <span class="post-meta-item-text">Edited on</span>
-        <time title="Modified: 2021-07-18 12:26:58" itemprop="dateModified" datetime="2021-07-18T12:26:58+08:00">2021-07-18</time>
-      </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-folder"></i>
-      </span>
-      <span class="post-meta-item-text">In</span>
-        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/scala/" itemprop="url" rel="index"><span itemprop="name">scala</span></a>
-        </span>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <!-- JTLI <p>迭代器和视图是Scala集合中处理大规模数据集的两个重要的工具，本篇详细介绍了视图和迭代器的原理以及使用方式。</p> -->
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2021/04/08/scala/Scala-Collection-View-And-Iterator/#more" rel="contents">
                 Read more &raquo;
               </a>
             </div>

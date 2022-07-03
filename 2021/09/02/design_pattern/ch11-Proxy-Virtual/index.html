@@ -21,17 +21,17 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css" integrity="sha256-Vzbj7sDDS/woiFS3uNKo8eIuni59rjyNGtXfstRzStA=" crossorigin="anonymous">
 
 <script class="next-config" data-name="main" type="application/json">{"hostname":"jtlibrain.github.io","root":"/","images":"/images","scheme":"Gemini","version":"8.7.1","exturl":false,"sidebar":{"position":"left","display":"hide","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js"></script>
-<meta name="description" content="（TODO）">
+<meta name="description" content="定义虚拟代理作为创建开销大的对象的代表。虚拟代理经常直到我们真正需要一个对象的时候才创建它。当对象在创建前和创建中时，由虚拟代理来扮演对象的替身。对象创建后，代理就会将请求直接委托给对象。 场景可以显示CD封面的Swing应用 场景介绍建立一个应用程序，用来展现你最喜欢的CD封面。应用程序提供一个下拉菜单，然后从相应网站取得对应的CD封面。已知，限于连接带宽和网络负载，下载可能需要一些时间，所">
 <meta property="og:type" content="article">
 <meta property="og:title" content="《Head First Design Patterns》：第11章，代理（Proxy）模式之“虚拟代理”">
 <meta property="og:url" content="https://jtlibrain.github.io/2021/09/02/design_pattern/ch11-Proxy-Virtual/index.html">
 <meta property="og:site_name" content="jtLiBrain">
-<meta property="og:description" content="（TODO）">
+<meta property="og:description" content="定义虚拟代理作为创建开销大的对象的代表。虚拟代理经常直到我们真正需要一个对象的时候才创建它。当对象在创建前和创建中时，由虚拟代理来扮演对象的替身。对象创建后，代理就会将请求直接委托给对象。 场景可以显示CD封面的Swing应用 场景介绍建立一个应用程序，用来展现你最喜欢的CD封面。应用程序提供一个下拉菜单，然后从相应网站取得对应的CD封面。已知，限于连接带宽和网络负载，下载可能需要一些时间，所">
 <meta property="og:locale" content="en_US">
 <meta property="og:image" content="https://jtlibrain.github.io/images/design_pattern/ch11_proxy_virtual_example_image.jpg">
 <meta property="og:image" content="https://jtlibrain.github.io/images/design_pattern/ch11_proxy_virtual_example_impl_classes.svg">
 <meta property="article:published_time" content="2021-09-02T11:14:00.000Z">
-<meta property="article:modified_time" content="2021-09-02T14:59:18.687Z">
+<meta property="article:modified_time" content="2022-07-03T14:28:50.276Z">
 <meta property="article:author" content="JT Li">
 <meta property="article:tag" content="《Head First Design Patterns》">
 <meta name="twitter:card" content="summary">
@@ -137,7 +137,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">76</span>
+          <span class="site-state-item-count">79</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
@@ -148,7 +148,7 @@
       </div>
       <div class="site-state-item site-state-tags">
           <a href="/tags/">
-        <span class="site-state-item-count">8</span>
+        <span class="site-state-item-count">9</span>
         <span class="site-state-item-name">tags</span></a>
       </div>
   </nav>
@@ -215,10 +215,16 @@
         <i class="far fa-calendar"></i>
       </span>
       <span class="post-meta-item-text">Posted on</span>
-      
 
-      <time title="Created: 2021-09-02 19:14:00 / Modified: 22:59:18" itemprop="dateCreated datePublished" datetime="2021-09-02T19:14:00+08:00">2021-09-02</time>
+      <time title="Created: 2021-09-02 19:14:00" itemprop="dateCreated datePublished" datetime="2021-09-02T19:14:00+08:00">2021-09-02</time>
     </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">Edited on</span>
+        <time title="Modified: 2022-07-03 22:28:50" itemprop="dateModified" datetime="2022-07-03T22:28:50+08:00">2022-07-03</time>
+      </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
         <i class="far fa-folder"></i>
@@ -246,12 +252,11 @@
     
     
     <div class="post-body" itemprop="articleBody">
-        <p>（TODO）</p>
-<a id="more"></a>
+        <a id="more"></a>
 
 <h1 id="定义"><a href="#定义" class="headerlink" title="定义"></a>定义</h1><p>虚拟代理作为创建开销大的对象的代表。虚拟代理经常直到我们真正需要一个对象的时候才创建它。当对象在创建前和创建中时，由虚拟代理来扮演对象的替身。对象创建后，代理就会将请求直接委托给对象。</p>
 <h1 id="场景"><a href="#场景" class="headerlink" title="场景"></a>场景</h1><p>可以显示CD封面的Swing应用</p>
-<h1 id="场景介绍"><a href="#场景介绍" class="headerlink" title="场景介绍"></a>场景介绍</h1><p>建立一个应用程序，用来展现你的最喜欢的CD封面。应用程序提供一个下拉菜单，然后从相应网站取得对应的CD封面。已知，限于连接带宽和网络负载，下载可能需要一些时间，所以在等待图像加载的时候，应该给出一些友好的提示。要求在等待图像时整个应用程序不要被挂起。一旦图像加载完成，Swing组件上显示相应的图像。</p>
+<h1 id="场景介绍"><a href="#场景介绍" class="headerlink" title="场景介绍"></a>场景介绍</h1><p>建立一个应用程序，用来展现你最喜欢的CD封面。应用程序提供一个下拉菜单，然后从相应网站取得对应的CD封面。已知，限于连接带宽和网络负载，下载可能需要一些时间，所以在等待图像加载的时候，应该给出一些友好的提示。要求在等待图像时整个应用程序不要被挂起。一旦图像加载完成，Swing组件上显示相应的图像。</p>
 <img src="/images/design_pattern/ch11_proxy_virtual_example_image.jpg" style="zoom:70%;" />
 
 <h1 id="解决方案"><a href="#解决方案" class="headerlink" title="解决方案"></a>解决方案</h1><p><code>ImageProxy</code>代理用于隐藏创建开销大的对象（因为我们需要通过网络获取图像数据）。</p>

@@ -21,17 +21,17 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css" integrity="sha256-Vzbj7sDDS/woiFS3uNKo8eIuni59rjyNGtXfstRzStA=" crossorigin="anonymous">
 
 <script class="next-config" data-name="main" type="application/json">{"hostname":"jtlibrain.github.io","root":"/","images":"/images","scheme":"Gemini","version":"8.7.1","exturl":false,"sidebar":{"position":"left","display":"hide","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js"></script>
-<meta name="description" content="（TODO）">
+<meta name="description" content="定义这是一种根据访问权限决定客户可否访问对象的代理。比方说，如果你有一个雇员对象，保护代理允许雇员调用对象上的某些方法，经理还可以多调用一些其它的方法（像setSalary()），而人力资源处的雇员可以调用对象上的所有方法。 Java的java.lang.reflect包中支持代理，利用java.lang.reflect包可以在运行时动态地创建一个代理类，实现一个或多个接口，并将方法调用转发到">
 <meta property="og:type" content="article">
 <meta property="og:title" content="《Head First Design Patterns》：第11章，代理（Proxy）模式之“保护代理”">
 <meta property="og:url" content="https://jtlibrain.github.io/2021/09/02/design_pattern/ch11-Proxy-Protection/index.html">
 <meta property="og:site_name" content="jtLiBrain">
-<meta property="og:description" content="（TODO）">
+<meta property="og:description" content="定义这是一种根据访问权限决定客户可否访问对象的代理。比方说，如果你有一个雇员对象，保护代理允许雇员调用对象上的某些方法，经理还可以多调用一些其它的方法（像setSalary()），而人力资源处的雇员可以调用对象上的所有方法。 Java的java.lang.reflect包中支持代理，利用java.lang.reflect包可以在运行时动态地创建一个代理类，实现一个或多个接口，并将方法调用转发到">
 <meta property="og:locale" content="en_US">
 <meta property="og:image" content="https://jtlibrain.github.io/images/design_pattern/ch11_proxy_protection_definition_classes.svg">
 <meta property="og:image" content="https://jtlibrain.github.io/images/design_pattern/ch11_proxy_protection_impl_classes.svg">
 <meta property="article:published_time" content="2021-09-02T11:14:38.000Z">
-<meta property="article:modified_time" content="2021-09-04T14:29:06.909Z">
+<meta property="article:modified_time" content="2022-07-03T14:26:08.015Z">
 <meta property="article:author" content="JT Li">
 <meta property="article:tag" content="《Head First Design Patterns》">
 <meta name="twitter:card" content="summary">
@@ -137,7 +137,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">76</span>
+          <span class="site-state-item-count">79</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
@@ -148,7 +148,7 @@
       </div>
       <div class="site-state-item site-state-tags">
           <a href="/tags/">
-        <span class="site-state-item-count">8</span>
+        <span class="site-state-item-count">9</span>
         <span class="site-state-item-name">tags</span></a>
       </div>
   </nav>
@@ -223,7 +223,7 @@
           <i class="far fa-calendar-check"></i>
         </span>
         <span class="post-meta-item-text">Edited on</span>
-        <time title="Modified: 2021-09-04 22:29:06" itemprop="dateModified" datetime="2021-09-04T22:29:06+08:00">2021-09-04</time>
+        <time title="Modified: 2022-07-03 22:26:08" itemprop="dateModified" datetime="2022-07-03T22:26:08+08:00">2022-07-03</time>
       </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -252,10 +252,7 @@
     
     
     <div class="post-body" itemprop="articleBody">
-        <p>（TODO）</p>
-<a id="more"></a>
-
-
+        <a id="more"></a>
 
 <h1 id="定义"><a href="#定义" class="headerlink" title="定义"></a>定义</h1><p>这是一种根据访问权限决定客户可否访问对象的代理。比方说，如果你有一个雇员对象，<code>保护代理</code>允许雇员调用对象上的某些方法，经理还可以多调用一些其它的方法（像<code>setSalary()</code>），而人力资源处的雇员可以调用对象上的所有方法。</p>
 <p><code>Java</code>的<code>java.lang.reflect</code>包中支持代理，利用<code>java.lang.reflect</code>包可以在运行时动态地创建一个代理类，实现一个或多个接口，并将方法调用转发到你所指定的类。因为实际的代理类是在运行时创建的，我们称之为：动态代理。</p>

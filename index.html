@@ -128,7 +128,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">76</span>
+          <span class="site-state-item-count">79</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
@@ -139,7 +139,7 @@
       </div>
       <div class="site-state-item site-state-tags">
           <a href="/tags/">
-        <span class="site-state-item-count">8</span>
+        <span class="site-state-item-count">9</span>
         <span class="site-state-item-name">tags</span></a>
       </div>
   </nav>
@@ -173,6 +173,314 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://jtlibrain.github.io/2022/07/01/flink/Flink-Window/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="JT Li">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="jtLiBrain">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2022/07/01/flink/Flink-Window/" class="post-title-link" itemprop="url">Flink：窗口计算</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2022-07-01 22:42:42" itemprop="dateCreated datePublished" datetime="2022-07-01T22:42:42+08:00">2022-07-01</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">Edited on</span>
+        <time title="Modified: 2022-07-03 17:29:16" itemprop="dateModified" datetime="2022-07-03T17:29:16+08:00">2022-07-03</time>
+      </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">In</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/flink/" itemprop="url" rel="index"><span itemprop="name">flink</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <a id="more"></a>
+
+<h1 id="窗口编程模型"><a href="#窗口编程模型" class="headerlink" title="窗口编程模型"></a>窗口编程模型</h1><ul>
+<li>Keyed Windows</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">stream</span><br><span class="line">       .keyBy(...)               &lt;-  仅 keyed 窗口需要</span><br><span class="line">       .window(...)              &lt;-  必填项：&quot;assigner&quot;</span><br><span class="line">      [.trigger(...)]            &lt;-  可选项：&quot;trigger&quot; (省略则使用默认 trigger)</span><br><span class="line">      [.evictor(...)]            &lt;-  可选项：&quot;evictor&quot; (省略则不使用 evictor)</span><br><span class="line">      [.allowedLateness(...)]    &lt;-  可选项：&quot;lateness&quot; (省略则为 0)</span><br><span class="line">      [.sideOutputLateData(...)] &lt;-  可选项：&quot;output tag&quot; (省略则不对迟到数据使用 side output)</span><br><span class="line">       .reduce&#x2F;aggregate&#x2F;apply()      &lt;-  必填项：&quot;function&quot;</span><br><span class="line">      [.getSideOutput(...)]      &lt;-  可选项：&quot;output tag&quot;</span><br></pre></td></tr></table></figure>
+
+
+
+<ul>
+<li>Non-Keyed Windows</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">stream</span><br><span class="line">       .windowAll(...)           &lt;-  必填项：&quot;assigner&quot;</span><br><span class="line">      [.trigger(...)]            &lt;-  可选项：&quot;trigger&quot; (else default trigger)</span><br><span class="line">      [.evictor(...)]            &lt;-  可选项：&quot;evictor&quot; (else no evictor)</span><br><span class="line">      [.allowedLateness(...)]    &lt;-  可选项：&quot;lateness&quot; (else zero)</span><br><span class="line">      [.sideOutputLateData(...)] &lt;-  可选项：&quot;output tag&quot; (else no side output for late data)</span><br><span class="line">       .reduce&#x2F;aggregate&#x2F;apply()      &lt;-  必填项：&quot;function&quot;</span><br><span class="line">      [.getSideOutput(...)]      &lt;-  可选项：&quot;output tag&quot;</span><br></pre></td></tr></table></figure>
+
+
+
+<h1 id="窗口生命周期"><a href="#窗口生命周期" class="headerlink" title="窗口生命周期"></a>窗口生命周期</h1><p><img src="/images/flink/window-lifecycle.svg" alt="window-lifecycle"></p>
+<p>备注：参考Flink代码WindowOperator和EvictingWindowOperator。</p>
+<h2 id="窗口分配器Window-Assigner"><a href="#窗口分配器Window-Assigner" class="headerlink" title="窗口分配器Window Assigner"></a>窗口分配器Window Assigner</h2><p> WindowAssigner 负责将 stream 中的每个数据分发到一个或多个窗口中。</p>
+<h2 id="窗口函数Window-Function"><a href="#窗口函数Window-Function" class="headerlink" title="窗口函数Window Function"></a>窗口函数Window Function</h2><table border="1">
+  <thead>
+    <tr>
+      <th style="width:10%;">函数类型</th>
+      <th style="width:38%;">说明</th>
+      <th style="width:20%;">函数类</th>
+      <th style="width:32%;">API</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>聚合函数</td>
+      <td>每一次有数据被分配到窗口时，都会调用 ReduceFunction 或者 AggregateFunction 来增量聚合。</td>
+      <td>ReduceFunction<br />
+      AggregateFunction</td>
+      <td>WindowedStream:<br />
+      &nbsp;&nbsp;sum(), max(), min(), maxBy(), reduce(), aggregate()</td>
+    </tr>
+    <tr>
+      <td>窗口函数</td>
+      <td>ProcessWindowFunction 会缓存 Iterable 和窗口内容，供接下来全量的窗口计算。</td>
+      <td>ProcessWindowFunction<br />
+      ProcessAllWindowFunction</td>
+      <td>WindowedStream:<br />
+      &nbsp;&nbsp;process(ProcessWindowFunction)</td>
+    </tr>
+    <tr>
+      <td>聚合+窗口函数</td>
+      <td>ProcessWindowFunction 与 ReduceFunction 或 AggregateFunction 搭配使用，使其能够在数据到达窗口的时候进行增量聚合。在窗口关闭时，ProcessWindowFunction 会得到聚合的结果。这样就可以做到增量聚合窗口的元素，并且可以从 ProcessWindowFunction中获得窗口的元数据。</td>
+      <td>&nbsp;</td>
+      <td>WindowedStream:<br />
+      &nbsp;&nbsp;reduce(ReduceFunction,ProcessWindowFunction)<br />
+      &nbsp;&nbsp;aggregate(AggregateFunction,WindowFunction)</td>
+    </tr>
+  </tbody>
+</table>
+
+
+
+<h2 id="触发器Trigger"><a href="#触发器Trigger" class="headerlink" title="触发器Trigger"></a>触发器Trigger</h2><h2 id="清除器Evictor"><a href="#清除器Evictor" class="headerlink" title="清除器Evictor"></a>清除器Evictor</h2><h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><ol>
+<li><a target="_blank" rel="noopener" href="https://nightlies.apache.org/flink/flink-docs-master/docs/dev/datastream/operators/windows/">https://nightlies.apache.org/flink/flink-docs-master/docs/dev/datastream/operators/windows/</a></li>
+<li><a target="_blank" rel="noopener" href="https://nightlies.apache.org/flink/flink-docs-master/docs/learn-flink/streaming_analytics/">https://nightlies.apache.org/flink/flink-docs-master/docs/learn-flink/streaming_analytics/</a></li>
+<li><a target="_blank" rel="noopener" href="https://nightlies.apache.org/flink/flink-docs-master/zh/docs/dev/datastream/event-time/generating_watermarks/">https://nightlies.apache.org/flink/flink-docs-master/zh/docs/dev/datastream/event-time/generating_watermarks/</a></li>
+</ol>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://jtlibrain.github.io/2022/06/18/spark/Spark-SQL-SortBy-DistributeBy-ClusterBy/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="JT Li">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="jtLiBrain">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2022/06/18/spark/Spark-SQL-SortBy-DistributeBy-ClusterBy/" class="post-title-link" itemprop="url">Spark SQL：SortBy & DistributeBy & ClusterBy</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2022-06-18 13:05:23" itemprop="dateCreated datePublished" datetime="2022-06-18T13:05:23+08:00">2022-06-18</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">Edited on</span>
+        <time title="Modified: 2022-06-20 23:28:58" itemprop="dateModified" datetime="2022-06-20T23:28:58+08:00">2022-06-20</time>
+      </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">In</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/spark/" itemprop="url" rel="index"><span itemprop="name">spark</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <a id="more"></a>
+
+
+
+
+
+
+<h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><ol>
+<li><a target="_blank" rel="noopener" href="https://spark.apache.org/docs/latest/sql-ref-syntax-qry-select-distribute-by.html">https://spark.apache.org/docs/latest/sql-ref-syntax-qry-select-distribute-by.html</a></li>
+<li><a target="_blank" rel="noopener" href="https://spark.apache.org/docs/latest/sql-ref-syntax-qry-select-sortby.html">https://spark.apache.org/docs/latest/sql-ref-syntax-qry-select-sortby.html</a></li>
+<li><a target="_blank" rel="noopener" href="https://spark.apache.org/docs/latest/sql-ref-syntax-qry-select-clusterby.html">https://spark.apache.org/docs/latest/sql-ref-syntax-qry-select-clusterby.html</a></li>
+</ol>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://jtlibrain.github.io/2022/06/12/flink/Flink-DataSource/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="JT Li">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="jtLiBrain">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2022/06/12/flink/Flink-DataSource/" class="post-title-link" itemprop="url">Flink：数据源接口</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2022-06-12 21:22:45" itemprop="dateCreated datePublished" datetime="2022-06-12T21:22:45+08:00">2022-06-12</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">Edited on</span>
+        <time title="Modified: 2022-07-03 17:41:05" itemprop="dateModified" datetime="2022-07-03T17:41:05+08:00">2022-07-03</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <a id="more"></a>
+
+<h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><ol>
+<li><a target="_blank" rel="noopener" href="https://nightlies.apache.org/flink/flink-docs-release-1.15/docs/dev/datastream/sources/#the-data-source-api">Data Sources</a></li>
+</ol>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -1319,256 +1627,6 @@
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/2022/03/30/spark/Spark-Shuffle-Reader/#more" rel="contents">
-                Read more &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://jtlibrain.github.io/2022/02/20/spark/Spark-Memory-Management/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="JT Li">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="jtLiBrain">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2022/02/20/spark/Spark-Memory-Management/" class="post-title-link" itemprop="url">Spark内存管理</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-      
-
-      <time title="Created: 2022-02-20 17:52:50 / Modified: 20:19:21" itemprop="dateCreated datePublished" datetime="2022-02-20T17:52:50+08:00">2022-02-20</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-folder"></i>
-      </span>
-      <span class="post-meta-item-text">In</span>
-        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/spark/" itemprop="url" rel="index"><span itemprop="name">spark</span></a>
-        </span>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <p><img src="/images/spark/memory-management.svg"></p>
-<h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><p>1.<a target="_blank" rel="noopener" href="https://blog.csdn.net/czmacd/article/details/122339148">https://blog.csdn.net/czmacd/article/details/122339148</a></p>
-<p>2.</p>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://jtlibrain.github.io/2022/01/19/algorithm/Dynamic-Programming/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="JT Li">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="jtLiBrain">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2022/01/19/algorithm/Dynamic-Programming/" class="post-title-link" itemprop="url">动态规划（Dynamic Programming）</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2022-01-19 22:15:44" itemprop="dateCreated datePublished" datetime="2022-01-19T22:15:44+08:00">2022-01-19</time>
-    </span>
-      <span class="post-meta-item">
-        <span class="post-meta-item-icon">
-          <i class="far fa-calendar-check"></i>
-        </span>
-        <span class="post-meta-item-text">Edited on</span>
-        <time title="Modified: 2022-04-22 23:40:59" itemprop="dateModified" datetime="2022-04-22T23:40:59+08:00">2022-04-22</time>
-      </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-folder"></i>
-      </span>
-      <span class="post-meta-item-text">In</span>
-        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/algorithm/" itemprop="url" rel="index"><span itemprop="name">algorithm</span></a>
-        </span>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <!-- JTLI <p>动态规划（Dynamic Programming）是一种通过将最优问题分解为更简单的子问题，并利用了整体问题的最优解取决于其子问题的最优解这一事实来解决最优问题的算法技术。动态规划中的“<em>Programming</em>”指的是表格法，而非编写代码。</p> -->
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2022/01/19/algorithm/Dynamic-Programming/#more" rel="contents">
-                Read more &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://jtlibrain.github.io/2021/09/27/computer_basics/computer-number/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="JT Li">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="jtLiBrain">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2021/09/27/computer_basics/computer-number/" class="post-title-link" itemprop="url">机器数：原码、反码、补码</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2021-09-27 22:17:30" itemprop="dateCreated datePublished" datetime="2021-09-27T22:17:30+08:00">2021-09-27</time>
-    </span>
-      <span class="post-meta-item">
-        <span class="post-meta-item-icon">
-          <i class="far fa-calendar-check"></i>
-        </span>
-        <span class="post-meta-item-text">Edited on</span>
-        <time title="Modified: 2021-10-22 23:18:21" itemprop="dateModified" datetime="2021-10-22T23:18:21+08:00">2021-10-22</time>
-      </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-folder"></i>
-      </span>
-      <span class="post-meta-item-text">In</span>
-        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/Computer-Basics/" itemprop="url" rel="index"><span itemprop="name">Computer Basics</span></a>
-        </span>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <!-- JTLI <p>（TODO）</p> -->
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2021/09/27/computer_basics/computer-number/#more" rel="contents">
                 Read more &raquo;
               </a>
             </div>
