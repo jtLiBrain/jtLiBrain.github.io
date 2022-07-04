@@ -666,7 +666,7 @@
           <i class="far fa-calendar-check"></i>
         </span>
         <span class="post-meta-item-text">Edited on</span>
-        <time title="Modified: 2021-08-30 22:26:37" itemprop="dateModified" datetime="2021-08-30T22:26:37+08:00">2021-08-30</time>
+        <time title="Modified: 2022-07-04 22:09:26" itemprop="dateModified" datetime="2022-07-04T22:09:26+08:00">2022-07-04</time>
       </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -688,15 +688,76 @@
     
     
     <div class="post-body" itemprop="articleBody">
-          <!-- JTLI <p>（TODO）</p> -->
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2021/08/27/design_pattern/ch8-Template-Method/#more" rel="contents">
-                Read more &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
+          <a id="more"></a>
+
+<h1 id="模板方法的定义"><a href="#模板方法的定义" class="headerlink" title="模板方法的定义"></a>模板方法的定义</h1><p>模板方法模式：在一个方法中定义一个算法的骨架，而将一些步骤延迟到子类中。模板方法使得子类可以在不改变算法结构的情况下，重新定义算法的某些步骤。</p>
+<p><img src="/images/design_pattern/ch8_template_method_definition.svg"></p>
+<h1 id="场景"><a href="#场景" class="headerlink" title="场景"></a>场景</h1><p>Starbuzz饮品店培训</p>
+<h1 id="场景描述"><a href="#场景描述" class="headerlink" title="场景描述"></a>场景描述</h1><p>Starbuzz内部有两种饮料：咖啡和茶。需要对新加入的师傅进行饮品制作的培训，已知：a)咖啡和茶都有各自的冲泡方式，b)咖啡和茶的冲泡有相同和不同的步骤。如何才能简化培训时的步骤：难道一定要培训完一遍咖啡的制作过程，再培训一遍茶的制作过程吗？</p>
+<table>
+<thead>
+<tr>
+<th>Starbuzz咖啡冲泡法</th>
+<th>Starbuzz茶冲泡法</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1.把水煮沸；<br/>2.用沸水冲泡咖啡；<br/>3.把咖啡倒进杯子；<br/>4.加糖和牛奶；</td>
+<td>1.把水煮沸；<br/>2.用沸水浸泡茶叶；<br/>3.把茶倒进杯子；<br/>4.加柠檬；</td>
+</tr>
+</tbody></table>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Coffee</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">prepareRecipe</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        boilWater();</span><br><span class="line">        brewCoffeeGrinds();</span><br><span class="line">        pourInCup();</span><br><span class="line">        addSugarAndMilk();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">boilWater</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;Boiling water&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">brewCoffeeGrinds</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;Dripping Coffee through filter&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">pourInCup</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;Pouring into cup&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">addSugarAndMilk</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;Adding Sugar and Milk&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Tea</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">prepareRecipe</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        boilWater();</span><br><span class="line">        steepTeaBag();</span><br><span class="line">        pourInCup();</span><br><span class="line">        addLemon();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">boilWater</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;Boiling water&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">steepTeaBag</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;Steeping the tea&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">addLemon</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;Adding Lemon&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">pourInCup</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;Pouring into cup&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h1 id="方案"><a href="#方案" class="headerlink" title="方案"></a>方案</h1><p>注意这两种冲泡法都采用了相同的算法：</p>
+<ol>
+<li>把水煮沸；</li>
+<li>用热水泡咖啡或茶；</li>
+<li>把饮料倒进杯子；</li>
+<li>在饮料内加入适当调料；</li>
+</ol>
+<br/>
+
+<p>对<code>prepareRecipe()</code>方法进行如下抽象：</p>
+<img src="/images/design_pattern/ch8_template_method_caffeine_classes.svg" style="zoom:70%;" />
+
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">CaffeineBeverage</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">final</span> <span class="keyword">void</span> <span class="title">prepareRecipe</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        boilWater();</span><br><span class="line">        brew();</span><br><span class="line">        pourInCup();</span><br><span class="line">        addCondiments();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">abstract</span> <span class="keyword">void</span> <span class="title">brew</span><span class="params">()</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">abstract</span> <span class="keyword">void</span> <span class="title">addCondiments</span><span class="params">()</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">boilWater</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;Boiling water&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">pourInCup</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;Pouring into cup&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Tea</span> <span class="keyword">extends</span> <span class="title">CaffeineBeverage</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">brew</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;Steeping the tea&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">addCondiments</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;Adding Lemon&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Coffee</span> <span class="keyword">extends</span> <span class="title">CaffeineBeverage</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">brew</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;Dripping Coffee through filter&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">addCondiments</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;Adding Sugar and Milk&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>以上抽象类<code>CaffeineBeverage</code>中的<code>prepareRecipe()</code>方法就是<font color="blue">模版方法</font>：</p>
+<ol>
+<li>首先，它是一个方法；</li>
+<li>它用作一个算法的模板，定义了算法的步骤，在这个例子中，算法就是<code>制作咖啡因饮料</code>；算法内每一个步骤都被一个方法代表了，例如<code>boilWater()</code>、<code>brew()</code>、<code>pourInCup()</code>、<code>addCondiments()</code>；</li>
+<li>算法内的一些方法在超类中处理，一些方法则是在子类中处理；</li>
+</ol>
+<h1 id="模板方法模式VS策略模式"><a href="#模板方法模式VS策略模式" class="headerlink" title="模板方法模式VS策略模式"></a>模板方法模式VS策略模式</h1><table>
+<thead>
+<tr>
+<th></th>
+<th>模板方法模式</th>
+<th>策略模式</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>定义</td>
+<td>定义一个算法大纲，由子类定义其中算法的某些步骤</td>
+<td>封装可互换的行为，使用委托来决定要采用哪一个行为</td>
+</tr>
+<tr>
+<td>实现</td>
+<td>通过继承</td>
+<td>通过对象组合</td>
+</tr>
+</tbody></table>
+
       
     </div>
 
@@ -753,7 +814,7 @@
           <i class="far fa-calendar-check"></i>
         </span>
         <span class="post-meta-item-text">Edited on</span>
-        <time title="Modified: 2021-08-30 22:27:12" itemprop="dateModified" datetime="2021-08-30T22:27:12+08:00">2021-08-30</time>
+        <time title="Modified: 2022-07-04 22:06:49" itemprop="dateModified" datetime="2022-07-04T22:06:49+08:00">2022-07-04</time>
       </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -775,15 +836,45 @@
     
     
     <div class="post-body" itemprop="articleBody">
-          <!-- JTLI <p>（TODO）</p> -->
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2021/08/26/design_pattern/ch7-Facade/#more" rel="contents">
-                Read more &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
+          <a id="more"></a>
+
+<h1 id="外观模式的定义"><a href="#外观模式的定义" class="headerlink" title="外观模式的定义"></a>外观模式的定义</h1><img src="/images/design_pattern/ch7_facade_definition.svg" style="zoom:90%;" />
+
+
+
+<h1 id="场景"><a href="#场景" class="headerlink" title="场景"></a>场景</h1><p>观看家庭影院</p>
+<h1 id="场景描述"><a href="#场景描述" class="headerlink" title="场景描述"></a>场景描述</h1><p>你组装了一套家庭影院，包含DVD播放器、投影机、自动屏幕、环绕立体声，甚至还有爆米花机，如下图：</p>
+<img src="/images/design_pattern/ch7_facade_theater.svg" style="zoom:80%;" />
+
+<p>现在你准备开始享受一部电影，你要做：</p>
+<ol>
+<li>打开爆米花机；</li>
+<li>开始爆米花；</li>
+<li>将灯光调暗；</li>
+<li>放下屏幕；</li>
+<li>… …（此处省略N步）</li>
+</ol>
+<p>代码如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">popper.on();</span><br><span class="line">popper.pop();</span><br><span class="line"></span><br><span class="line">lights.dim(<span class="number">10</span>);</span><br><span class="line"></span><br><span class="line">screen.down();</span><br><span class="line"></span><br><span class="line">projector.on();</span><br><span class="line">projector.setInput(dvd);</span><br><span class="line">projector.wideScreenMode();</span><br><span class="line"></span><br><span class="line">amp.on();</span><br><span class="line">amp.setDvd(dvd);</span><br><span class="line">amp.setSurroundSound();</span><br><span class="line">amp.setVolume(<span class="number">5</span>);</span><br><span class="line"></span><br><span class="line">dvd.on();</span><br><span class="line">dvd.play(movie);</span><br></pre></td></tr></table></figure>
+
+
+
+<p>可以看到，播放电影我们就要做很多事情；同样，看完电影，你还要把一切都要关掉，还有很多事情等着你要去做。</p>
+<h1 id="方案"><a href="#方案" class="headerlink" title="方案"></a>方案</h1><p>使用外观模式，通过实现一个提供了更合理接口的外观类，你可以将一个复杂的子系统变得容易使用。如果你需要原复杂子系统的强大威力，仍然可以使用原来的复杂接口；但如果你需要的是一个方便使用的接口，那么就使用外观类。</p>
+<img src="/images/design_pattern/ch7_facade_theater_facade.svg" style="zoom:80%;" />
+
+
+
+<p>为家庭影院系统创建一个外观类<code>HomeTheaterFacade</code>，该类对外暴露出了几个简单的方法：<code>watchMovie()</code>、<code>endMovie()</code>、<code>listenToRadio()</code>、<code>endRadio()</code>。这个外观类将家庭影院的各个组件看作成一个子系统，通过这个子系统来实现外观类中的接口。这样，客户代码就可以调用此外观类所提供的方法，而不必再调用这个子系统中各个组件的方法。所以，想要看电影，只需要调用一个方法<code>watchMovie()</code>就行了。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">HomeTheaterFacade</span> </span>&#123;</span><br><span class="line">   Amplifier amp;</span><br><span class="line">   Tuner tuner;</span><br><span class="line">   StreamingPlayer player;</span><br><span class="line">   CdPlayer cd;</span><br><span class="line">   Projector projector;</span><br><span class="line">   TheaterLights lights;</span><br><span class="line">   Screen screen;</span><br><span class="line">   PopcornPopper popper;</span><br><span class="line"> </span><br><span class="line">   <span class="function"><span class="keyword">public</span> <span class="title">HomeTheaterFacade</span><span class="params">(Amplifier amp, </span></span></span><br><span class="line"><span class="function"><span class="params">             Tuner tuner, </span></span></span><br><span class="line"><span class="function"><span class="params">             StreamingPlayer player, </span></span></span><br><span class="line"><span class="function"><span class="params">             Projector projector, </span></span></span><br><span class="line"><span class="function"><span class="params">             Screen screen,</span></span></span><br><span class="line"><span class="function"><span class="params">             TheaterLights lights,</span></span></span><br><span class="line"><span class="function"><span class="params">             PopcornPopper popper)</span> </span>&#123;</span><br><span class="line"> </span><br><span class="line">      <span class="keyword">this</span>.amp = amp;</span><br><span class="line">      <span class="keyword">this</span>.tuner = tuner;</span><br><span class="line">      <span class="keyword">this</span>.player = player;</span><br><span class="line">      <span class="keyword">this</span>.projector = projector;</span><br><span class="line">      <span class="keyword">this</span>.screen = screen;</span><br><span class="line">      <span class="keyword">this</span>.lights = lights;</span><br><span class="line">      <span class="keyword">this</span>.popper = popper;</span><br><span class="line">   &#125;</span><br><span class="line"> </span><br><span class="line">   <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">watchMovie</span><span class="params">(String movie)</span> </span>&#123;</span><br><span class="line">      System.out.println(<span class="string">&quot;Get ready to watch a movie...&quot;</span>);</span><br><span class="line">      popper.on();</span><br><span class="line">      popper.pop();</span><br><span class="line">      lights.dim(<span class="number">10</span>);</span><br><span class="line">      screen.down();</span><br><span class="line">      projector.on();</span><br><span class="line">      projector.wideScreenMode();</span><br><span class="line">      amp.on();</span><br><span class="line">      amp.setStreamingPlayer(player);</span><br><span class="line">      amp.setSurroundSound();</span><br><span class="line">      amp.setVolume(<span class="number">5</span>);</span><br><span class="line">      player.on();</span><br><span class="line">      player.play(movie);</span><br><span class="line">   &#125;</span><br><span class="line"> </span><br><span class="line"> </span><br><span class="line">   <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">endMovie</span><span class="params">()</span> </span>&#123;</span><br><span class="line">      System.out.println(<span class="string">&quot;Shutting movie theater down...&quot;</span>);</span><br><span class="line">      popper.off();</span><br><span class="line">      lights.on();</span><br><span class="line">      screen.up();</span><br><span class="line">      projector.off();</span><br><span class="line">      amp.off();</span><br><span class="line">      player.stop();</span><br><span class="line">      player.off();</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">   <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">listenToRadio</span><span class="params">(<span class="keyword">double</span> frequency)</span> </span>&#123;</span><br><span class="line">      System.out.println(<span class="string">&quot;Tuning in the airwaves...&quot;</span>);</span><br><span class="line">      tuner.on();</span><br><span class="line">      tuner.setFrequency(frequency);</span><br><span class="line">      amp.on();</span><br><span class="line">      amp.setVolume(<span class="number">5</span>);</span><br><span class="line">      amp.setTuner(tuner);</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">   <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">endRadio</span><span class="params">()</span> </span>&#123;</span><br><span class="line">      System.out.println(<span class="string">&quot;Shutting down the tuner...&quot;</span>);</span><br><span class="line">      tuner.off();</span><br><span class="line">      amp.off();</span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">   Amplifier amp = <span class="keyword">new</span> Amplifier(<span class="string">&quot;Amplifier&quot;</span>);</span><br><span class="line">   Tuner tuner = <span class="keyword">new</span> Tuner(<span class="string">&quot;AM/FM Tuner&quot;</span>, amp);</span><br><span class="line">   StreamingPlayer player = <span class="keyword">new</span> StreamingPlayer(<span class="string">&quot;Streaming Player&quot;</span>, amp);</span><br><span class="line">   CdPlayer cd = <span class="keyword">new</span> CdPlayer(<span class="string">&quot;CD Player&quot;</span>, amp);</span><br><span class="line">   Projector projector = <span class="keyword">new</span> Projector(<span class="string">&quot;Projector&quot;</span>, player);</span><br><span class="line">   TheaterLights lights = <span class="keyword">new</span> TheaterLights(<span class="string">&quot;Theater Ceiling Lights&quot;</span>);</span><br><span class="line">   Screen screen = <span class="keyword">new</span> Screen(<span class="string">&quot;Theater Screen&quot;</span>);</span><br><span class="line">   PopcornPopper popper = <span class="keyword">new</span> PopcornPopper(<span class="string">&quot;Popcorn Popper&quot;</span>);</span><br><span class="line"></span><br><span class="line">   HomeTheaterFacade homeTheater = </span><br><span class="line">         <span class="keyword">new</span> HomeTheaterFacade(amp, tuner, player, </span><br><span class="line">               projector, screen, lights, popper);</span><br><span class="line"></span><br><span class="line">   homeTheater.watchMovie(<span class="string">&quot;Raiders of the Lost Ark&quot;</span>);</span><br><span class="line">   homeTheater.endMovie();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h1 id="外观模式VS适配器模式"><a href="#外观模式VS适配器模式" class="headerlink" title="外观模式VS适配器模式"></a>外观模式VS适配器模式</h1>
       
     </div>
 
@@ -840,7 +931,7 @@
           <i class="far fa-calendar-check"></i>
         </span>
         <span class="post-meta-item-text">Edited on</span>
-        <time title="Modified: 2021-08-30 22:27:45" itemprop="dateModified" datetime="2021-08-30T22:27:45+08:00">2021-08-30</time>
+        <time title="Modified: 2022-07-04 22:53:34" itemprop="dateModified" datetime="2022-07-04T22:53:34+08:00">2022-07-04</time>
       </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -862,15 +953,39 @@
     
     
     <div class="post-body" itemprop="articleBody">
-          <!-- JTLI <p>（TODO）</p> -->
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2021/08/26/design_pattern/ch7-Adapter/#more" rel="contents">
-                Read more &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
+          <a id="more"></a>
+
+<h1 id="适配器模式的定义"><a href="#适配器模式的定义" class="headerlink" title="适配器模式的定义"></a>适配器模式的定义</h1><p>将一个类中的接口转换成客户期望的另一个接口。适配器让原本接口不兼容的类可以合作无间。</p>
+<img src="/images/design_pattern/ch7_adapter_definition_object.svg" style="zoom:80%;" />
+
+
+
+<h1 id="场景描述"><a href="#场景描述" class="headerlink" title="场景描述"></a>场景描述</h1><p>鸭子数量不够，使用火鸡冒充鸭子</p>
+<h1 id="方案"><a href="#方案" class="headerlink" title="方案"></a>方案</h1><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">Duck</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">quack</span><span class="params">()</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">fly</span><span class="params">()</span></span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MallardDuck</span> <span class="keyword">implements</span> <span class="title">Duck</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">quack</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;Quack&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">fly</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;I&#x27;m flying&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">Turkey</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">gobble</span><span class="params">()</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">fly</span><span class="params">()</span></span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">WildTurkey</span> <span class="keyword">implements</span> <span class="title">Turkey</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">gobble</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;Gobble gobble&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">fly</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;I&#x27;m flying a short distance&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">TurkeyAdapter</span> <span class="keyword">implements</span> <span class="title">Duck</span> </span>&#123;</span><br><span class="line">    Turkey turkey;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">TurkeyAdapter</span><span class="params">(Turkey turkey)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.turkey = turkey;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">quack</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        turkey.gobble();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">fly</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">0</span>; i &lt; <span class="number">5</span>; i++) &#123;</span><br><span class="line">            turkey.fly();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h1 id="适配器模式VS装饰者模式"><a href="#适配器模式VS装饰者模式" class="headerlink" title="适配器模式VS装饰者模式"></a>适配器模式VS装饰者模式</h1><table>
+<thead>
+<tr>
+<th>适配器模式</th>
+<th>装饰者模式</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>意图是将一个类的接口转换为另一个服务期望的接口，简而言之意图是进行接口转换。</td>
+<td>意图是对于被包装的接口，加入新的行为或责任，而不是进行接口之间的转换。</td>
+</tr>
+</tbody></table>
+
       
     </div>
 
@@ -927,7 +1042,7 @@
           <i class="far fa-calendar-check"></i>
         </span>
         <span class="post-meta-item-text">Edited on</span>
-        <time title="Modified: 2021-08-30 22:23:34" itemprop="dateModified" datetime="2021-08-30T22:23:34+08:00">2021-08-30</time>
+        <time title="Modified: 2022-07-04 22:11:44" itemprop="dateModified" datetime="2022-07-04T22:11:44+08:00">2022-07-04</time>
       </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -949,15 +1064,38 @@
     
     
     <div class="post-body" itemprop="articleBody">
-          <!-- JTLI <p>（TODO）</p> -->
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2021/08/26/design_pattern/ch6-Command/#more" rel="contents">
-                Read more &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
+          <a id="more"></a>
+
+<h1 id="命令模式的定义"><a href="#命令模式的定义" class="headerlink" title="命令模式的定义"></a>命令模式的定义</h1><p>命令模式将“请求”封装成对象，以便使用不同的请求、队列、或者日志来参数化其它对象。命令模式也支持可撤销的操作。</p>
+<img src="/images/design_pattern/ch6_command_definition.svg" style="zoom:80%;" />
+
+<h1 id="场景"><a href="#场景" class="headerlink" title="场景"></a>场景</h1><p>家电自动化遥控器</p>
+<h1 id="场景描述"><a href="#场景描述" class="headerlink" title="场景描述"></a>场景描述</h1><p>遥控器具有7个可编程的插槽，其中每个插槽都可以指定到不同的家电装置（如电灯、风扇、热水器、音响设备、等等），并且每个插槽都有对应的开关按钮。遥控器还具有一个整体的撤销按钮。现在，需要设计一组控制遥控器的API，让每个插槽都能够控制一个或一组装置（备注，需要能够控制目前的设备和任务未来可能出现的设备）。</p>
+<img src="/images/design_pattern/ch6_command_remote_control_image.png" style="zoom:60%;" />
+
+
+
+<p>下图是一些已知家电设备厂商的API：</p>
+<img src="/images/design_pattern/ch6_command_vendor_classes.png" style="zoom:80%;" />
+
+<h1 id="方案"><a href="#方案" class="headerlink" title="方案"></a>方案</h1><p>使用命令模式将动作的请求者和动作的执行者对象中解藕。请求者为遥控器，执行者对象是家电设备，利用命令对象，把请求（例如，打开电灯）封装成一个特定对象（例如，客厅电灯对象）。所以，如果每个按钮都存储一个命令对象，那么当按钮被按下的时候，就可以请命令对象做相关的工作。遥控器并不需要知道工作内容是什么，只要有一个命令对象能和正确的对象沟通，把事情做好就可以了。这样，遥控器和电灯对象就解藕了。</p>
+<img src="/images/design_pattern/ch6_command_example_impl_classes.svg" style="zoom:80%;" />
+
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">Command</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">execute</span><span class="params">()</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">undo</span><span class="params">()</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">LightOnCommand</span> <span class="keyword">implements</span> <span class="title">Command</span> </span>&#123;</span><br><span class="line">    Light light;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">LightOnCommand</span><span class="params">(Light light)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.light = light;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">execute</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        light.on();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">undo</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        light.off();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">LightOffCommand</span> <span class="keyword">implements</span> <span class="title">Command</span> </span>&#123;</span><br><span class="line">    Light light;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">LightOffCommand</span><span class="params">(Light light)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.light = light;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">execute</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        light.off();</span><br><span class="line">    &#125;</span><br><span class="line">  </span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">undo</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        light.on();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">RemoteControl</span> </span>&#123;</span><br><span class="line">    Command[] onCommands;</span><br><span class="line">    Command[] offCommands;</span><br><span class="line">    Command undoCommand;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">RemoteControl</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        onCommands = <span class="keyword">new</span> Command[<span class="number">7</span>];</span><br><span class="line">        offCommands = <span class="keyword">new</span> Command[<span class="number">7</span>];</span><br><span class="line">        Command noCommand = <span class="keyword">new</span> NoCommand();</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">7</span>; i++) &#123;</span><br><span class="line">            onCommands[i] = noCommand;</span><br><span class="line">            offCommands[i] = noCommand;</span><br><span class="line">        &#125;</span><br><span class="line">        undoCommand = noCommand;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setCommand</span><span class="params">(<span class="keyword">int</span> slot, Command onCommand, Command offCommand)</span> </span>&#123;</span><br><span class="line">        onCommands[slot] = onCommand;</span><br><span class="line">        offCommands[slot] = offCommand;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onButtonWasPushed</span><span class="params">(<span class="keyword">int</span> slot)</span> </span>&#123;</span><br><span class="line">        onCommands[slot].execute();</span><br><span class="line">        undoCommand = onCommands[slot];</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">offButtonWasPushed</span><span class="params">(<span class="keyword">int</span> slot)</span> </span>&#123;</span><br><span class="line">        offCommands[slot].execute();</span><br><span class="line">        undoCommand = onCommands[slot];</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">undoButtonWasPushed</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        undoCommand.undo();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">toString</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        StringBuffer stringBuff = <span class="keyword">new</span> StringBuffer();</span><br><span class="line">        stringBuff.append(<span class="string">&quot;\n------ Remote Control -------\n&quot;</span>);</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; onCommands.length; i++) &#123;</span><br><span class="line">            stringBuff.append(<span class="string">&quot;[slot &quot;</span> + i + <span class="string">&quot;] &quot;</span> + onCommands[i].getClass().getName()</span><br><span class="line">                    + <span class="string">&quot; &quot;</span> + offCommands[i].getClass().getName() + <span class="string">&quot;\n&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> stringBuff.toString();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h1 id="方案的更进一步"><a href="#方案的更进一步" class="headerlink" title="方案的更进一步"></a>方案的更进一步</h1><p>利用宏命令，实现一个按钮同时控制多个灯光、音箱、电视、DVD、热水器的功能。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MacroCommand</span> <span class="keyword">implements</span> <span class="title">Command</span> </span>&#123;</span><br><span class="line">    Command[] commands;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">MacroCommand</span><span class="params">(Command[] commands)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.commands = commands;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">execute</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; commands.length; i++) &#123;</span><br><span class="line">            commands[i].execute();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
       
     </div>
 
