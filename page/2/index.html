@@ -128,7 +128,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">79</span>
+          <span class="site-state-item-count">80</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
@@ -173,6 +173,101 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://jtlibrain.github.io/2022/03/30/spark/Spark-Shuffle-Reader/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="JT Li">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="jtLiBrain">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2022/03/30/spark/Spark-Shuffle-Reader/" class="post-title-link" itemprop="url">Spark Shuffle Reader</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2022-03-30 23:22:50" itemprop="dateCreated datePublished" datetime="2022-03-30T23:22:50+08:00">2022-03-30</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">Edited on</span>
+        <time title="Modified: 2022-07-20 09:49:26" itemprop="dateModified" datetime="2022-07-20T09:49:26+08:00">2022-07-20</time>
+      </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">In</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/spark/" itemprop="url" rel="index"><span itemprop="name">spark</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <a id="more"></a>
+
+<p><img src="/images/spark/BlockStoreShuffleReader-details.svg"></p>
+<h1 id="BlockStoreShuffleReader"><a href="#BlockStoreShuffleReader" class="headerlink" title="BlockStoreShuffleReader"></a>BlockStoreShuffleReader</h1><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">override def <span class="title">read</span><span class="params">()</span>: Iterator[Product2[K, C]] </span>= &#123;</span><br><span class="line">  val wrappedStreams = <span class="keyword">new</span> ShuffleBlockFetcherIterator(</span><br><span class="line">    context,</span><br><span class="line">    blockManager.shuffleClient,</span><br><span class="line">    blockManager,</span><br><span class="line">    mapOutputTracker.getMapSizesByExecutorId(handle.shuffleId, startPartition, endPartition),</span><br><span class="line">    serializerManager.wrapStream,</span><br><span class="line">    <span class="comment">// Note: we use getSizeAsMb when no suffix is provided for backwards compatibility</span></span><br><span class="line">    SparkEnv.get.conf.getSizeAsMb(<span class="string">&quot;spark.reducer.maxSizeInFlight&quot;</span>, <span class="string">&quot;48m&quot;</span>) * <span class="number">1024</span> * <span class="number">1024</span>,</span><br><span class="line">    SparkEnv.get.conf.getInt(<span class="string">&quot;spark.reducer.maxReqsInFlight&quot;</span>, Int.MaxValue),</span><br><span class="line">    SparkEnv.get.conf.get(config.REDUCER_MAX_BLOCKS_IN_FLIGHT_PER_ADDRESS),</span><br><span class="line">    SparkEnv.get.conf.get(config.MAX_REMOTE_BLOCK_SIZE_FETCH_TO_MEM),</span><br><span class="line">    SparkEnv.get.conf.getBoolean(<span class="string">&quot;spark.shuffle.detectCorrupt&quot;</span>, <span class="keyword">true</span>))</span><br><span class="line"></span><br><span class="line">  val serializerInstance = dep.serializer.newInstance()</span><br><span class="line"></span><br><span class="line">  <span class="comment">// Create a key/value iterator for each stream</span></span><br><span class="line">  val recordIter = wrappedStreams.flatMap &#123; <span class="keyword">case</span> (blockId, wrappedStream) =&gt;</span><br><span class="line">    <span class="comment">// Note: the asKeyValueIterator below wraps a key/value iterator inside of a</span></span><br><span class="line">    <span class="comment">// NextIterator. The NextIterator makes sure that close() is called on the</span></span><br><span class="line">    <span class="comment">// underlying InputStream when all records have been read.</span></span><br><span class="line">    serializerInstance.deserializeStream(wrappedStream).asKeyValueIterator</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// Update the context task metrics for each record read.</span></span><br><span class="line">  val readMetrics = context.taskMetrics.createTempShuffleReadMetrics()</span><br><span class="line">  val metricIter = CompletionIterator[(Any, Any), Iterator[(Any, Any)]](</span><br><span class="line">    recordIter.map &#123; record =&gt;</span><br><span class="line">      readMetrics.incRecordsRead(<span class="number">1</span>)</span><br><span class="line">      record</span><br><span class="line">    &#125;,</span><br><span class="line">    context.taskMetrics().mergeShuffleReadMetrics())</span><br><span class="line"></span><br><span class="line">  <span class="comment">// An interruptible iterator must be used here in order to support task cancellation</span></span><br><span class="line">  val interruptibleIter = <span class="keyword">new</span> InterruptibleIterator[(Any, Any)](context, metricIter)</span><br><span class="line"></span><br><span class="line">  val aggregatedIter: Iterator[Product2[K, C]] = <span class="keyword">if</span> (dep.aggregator.isDefined) &#123;</span><br><span class="line">    <span class="keyword">if</span> (dep.mapSideCombine) &#123;</span><br><span class="line">      <span class="comment">// We are reading values that are already combined</span></span><br><span class="line">      val combinedKeyValuesIterator = interruptibleIter.asInstanceOf[Iterator[(K, C)]]</span><br><span class="line">      dep.aggregator.get.combineCombinersByKey(combinedKeyValuesIterator, context)</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      <span class="comment">// We don&#x27;t know the value type, but also don&#x27;t care -- the dependency *should*</span></span><br><span class="line">      <span class="comment">// have made sure its compatible w/ this aggregator, which will convert the value</span></span><br><span class="line">      <span class="comment">// type to the combined type C</span></span><br><span class="line">      val keyValuesIterator = interruptibleIter.asInstanceOf[Iterator[(K, Nothing)]]</span><br><span class="line">      dep.aggregator.get.combineValuesByKey(keyValuesIterator, context)</span><br><span class="line">    &#125;</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    interruptibleIter.asInstanceOf[Iterator[Product2[K, C]]]</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// Sort the output if there is a sort ordering defined.</span></span><br><span class="line">  val resultIter = dep.keyOrdering match &#123;</span><br><span class="line">    <span class="function"><span class="keyword">case</span> <span class="title">Some</span><span class="params">(keyOrd: Ordering[K])</span> </span>=&gt;</span><br><span class="line">      <span class="comment">// Create an ExternalSorter to sort the data.</span></span><br><span class="line">      val sorter =</span><br><span class="line">        <span class="keyword">new</span> ExternalSorter[K, C, C](context, ordering = Some(keyOrd), serializer = dep.serializer)</span><br><span class="line">      sorter.insertAll(aggregatedIter)</span><br><span class="line">      context.taskMetrics().incMemoryBytesSpilled(sorter.memoryBytesSpilled)</span><br><span class="line">      context.taskMetrics().incDiskBytesSpilled(sorter.diskBytesSpilled)</span><br><span class="line">      context.taskMetrics().incPeakExecutionMemory(sorter.peakMemoryUsedBytes)</span><br><span class="line">      <span class="comment">// Use completion callback to stop sorter if task was finished/cancelled.</span></span><br><span class="line">      context.addTaskCompletionListener[Unit](_ =&gt; &#123;</span><br><span class="line">        sorter.stop()</span><br><span class="line">      &#125;)</span><br><span class="line">      CompletionIterator[Product2[K, C], Iterator[Product2[K, C]]](sorter.iterator, sorter.stop())</span><br><span class="line">    <span class="keyword">case</span> None =&gt;</span><br><span class="line">      aggregatedIter</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  resultIter match &#123;</span><br><span class="line">    <span class="keyword">case</span> _: InterruptibleIterator[Product2[K, C]] =&gt; resultIter</span><br><span class="line">    <span class="keyword">case</span> _ =&gt;</span><br><span class="line">      <span class="comment">// Use another interruptible iterator here to support task cancellation as aggregator</span></span><br><span class="line">      <span class="comment">// or(and) sorter may have consumed previous interruptible iterator.</span></span><br><span class="line">      <span class="keyword">new</span> InterruptibleIterator[Product2[K, C]](context, resultIter)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+
+
+<h1 id="ShuffleBlockFetcherIterator"><a href="#ShuffleBlockFetcherIterator" class="headerlink" title="ShuffleBlockFetcherIterator"></a>ShuffleBlockFetcherIterator</h1><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span>[<span class="keyword">this</span>] <span class="function"><span class="keyword">def</span> <span class="title">splitLocalRemoteBlocks</span></span>(): <span class="type">ArrayBuffer</span>[<span class="type">FetchRequest</span>] = &#123;</span><br><span class="line">  <span class="comment">// Make remote requests at most maxBytesInFlight / 5 in length; the reason to keep them</span></span><br><span class="line">  <span class="comment">// smaller than maxBytesInFlight is to allow multiple, parallel fetches from up to 5</span></span><br><span class="line">  <span class="comment">// nodes, rather than blocking on reading output from one node.</span></span><br><span class="line">  <span class="keyword">val</span> targetRequestSize = math.max(maxBytesInFlight / <span class="number">5</span>, <span class="number">1</span>L)</span><br><span class="line">  logDebug(<span class="string">&quot;maxBytesInFlight: &quot;</span> + maxBytesInFlight + <span class="string">&quot;, targetRequestSize: &quot;</span> + targetRequestSize</span><br><span class="line">    + <span class="string">&quot;, maxBlocksInFlightPerAddress: &quot;</span> + maxBlocksInFlightPerAddress)</span><br><span class="line"></span><br><span class="line">  <span class="comment">// Split local and remote blocks. Remote blocks are further split into FetchRequests of size</span></span><br><span class="line">  <span class="comment">// at most maxBytesInFlight in order to limit the amount of data in flight.</span></span><br><span class="line">  <span class="keyword">val</span> remoteRequests = <span class="keyword">new</span> <span class="type">ArrayBuffer</span>[<span class="type">FetchRequest</span>]</span><br><span class="line"></span><br><span class="line">  <span class="keyword">for</span> ((address, blockInfos) &lt;- blocksByAddress) &#123;</span><br><span class="line">    <span class="keyword">if</span> (address.executorId == blockManager.blockManagerId.executorId) &#123;</span><br><span class="line">      blockInfos.find(_._2 &lt;= <span class="number">0</span>) <span class="keyword">match</span> &#123;</span><br><span class="line">        <span class="keyword">case</span> <span class="type">Some</span>((blockId, size)) <span class="keyword">if</span> size &lt; <span class="number">0</span> =&gt;</span><br><span class="line">          <span class="keyword">throw</span> <span class="keyword">new</span> <span class="type">BlockException</span>(blockId, <span class="string">&quot;Negative block size &quot;</span> + size)</span><br><span class="line">        <span class="keyword">case</span> <span class="type">Some</span>((blockId, size)) <span class="keyword">if</span> size == <span class="number">0</span> =&gt;</span><br><span class="line">          <span class="keyword">throw</span> <span class="keyword">new</span> <span class="type">BlockException</span>(blockId, <span class="string">&quot;Zero-sized blocks should be excluded.&quot;</span>)</span><br><span class="line">        <span class="keyword">case</span> <span class="type">None</span> =&gt; <span class="comment">// do nothing.</span></span><br><span class="line">      &#125;</span><br><span class="line">      localBlocks ++= blockInfos.map(_._1)</span><br><span class="line">      numBlocksToFetch += localBlocks.size</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      <span class="keyword">val</span> iterator = blockInfos.iterator</span><br><span class="line">      <span class="keyword">var</span> curRequestSize = <span class="number">0</span>L</span><br><span class="line">      <span class="keyword">var</span> curBlocks = <span class="keyword">new</span> <span class="type">ArrayBuffer</span>[(<span class="type">BlockId</span>, <span class="type">Long</span>)]</span><br><span class="line">      <span class="keyword">while</span> (iterator.hasNext) &#123;</span><br><span class="line">        <span class="keyword">val</span> (blockId, size) = iterator.next()</span><br><span class="line">        <span class="keyword">if</span> (size &lt; <span class="number">0</span>) &#123;</span><br><span class="line">          <span class="keyword">throw</span> <span class="keyword">new</span> <span class="type">BlockException</span>(blockId, <span class="string">&quot;Negative block size &quot;</span> + size)</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (size == <span class="number">0</span>) &#123;</span><br><span class="line">          <span class="keyword">throw</span> <span class="keyword">new</span> <span class="type">BlockException</span>(blockId, <span class="string">&quot;Zero-sized blocks should be excluded.&quot;</span>)</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">          curBlocks += ((blockId, size))</span><br><span class="line">          remoteBlocks += blockId</span><br><span class="line">          numBlocksToFetch += <span class="number">1</span></span><br><span class="line">          curRequestSize += size</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (curRequestSize &gt;= targetRequestSize ||</span><br><span class="line">            curBlocks.size &gt;= maxBlocksInFlightPerAddress) &#123;</span><br><span class="line">          <span class="comment">// Add this FetchRequest</span></span><br><span class="line">          remoteRequests += <span class="keyword">new</span> <span class="type">FetchRequest</span>(address, curBlocks)</span><br><span class="line">          logDebug(<span class="string">s&quot;Creating fetch request of <span class="subst">$curRequestSize</span> at <span class="subst">$address</span> &quot;</span></span><br><span class="line">            + <span class="string">s&quot;with <span class="subst">$&#123;curBlocks.size&#125;</span> blocks&quot;</span>)</span><br><span class="line">          curBlocks = <span class="keyword">new</span> <span class="type">ArrayBuffer</span>[(<span class="type">BlockId</span>, <span class="type">Long</span>)]</span><br><span class="line">          curRequestSize = <span class="number">0</span></span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="comment">// Add in the final request</span></span><br><span class="line">      <span class="keyword">if</span> (curBlocks.nonEmpty) &#123;</span><br><span class="line">        remoteRequests += <span class="keyword">new</span> <span class="type">FetchRequest</span>(address, curBlocks)</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  logInfo(<span class="string">s&quot;Getting <span class="subst">$numBlocksToFetch</span> non-empty blocks including <span class="subst">$&#123;localBlocks.size&#125;</span>&quot;</span> +</span><br><span class="line">      <span class="string">s&quot; local blocks and <span class="subst">$&#123;remoteBlocks.size&#125;</span> remote blocks&quot;</span>)</span><br><span class="line">  remoteRequests</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+
+
+<h1 id="NOTEs"><a href="#NOTEs" class="headerlink" title="NOTEs"></a>NOTEs</h1><p>本文以Spark 2.4.3为基础。</p>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -900,7 +995,7 @@
           <i class="far fa-calendar-check"></i>
         </span>
         <span class="post-meta-item-text">Edited on</span>
-        <time title="Modified: 2022-07-03 22:26:08" itemprop="dateModified" datetime="2022-07-03T22:26:08+08:00">2022-07-03</time>
+        <time title="Modified: 2022-07-19 16:10:33" itemprop="dateModified" datetime="2022-07-19T16:10:33+08:00">2022-07-19</time>
       </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -942,7 +1037,7 @@
 </ol>
 <h1 id="实现方案"><a href="#实现方案" class="headerlink" title="实现方案"></a>实现方案</h1><img src="/images/design_pattern/ch11_proxy_protection_impl_classes.svg" style="zoom:80%;" />
 
-<p>服务系统涉及到一个<code>Person</code>接口，允许允许设置和获取一个人的信息：</p>
+<p>服务系统涉及到一个<code>Person</code>接口，允许设置和获取一个人的信息：</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">Person</span> </span>&#123;</span><br><span class="line">    <span class="function">String <span class="title">getName</span><span class="params">()</span></span>;</span><br><span class="line">    <span class="function">String <span class="title">getGender</span><span class="params">()</span></span>;</span><br><span class="line">    <span class="function">String <span class="title">getInterests</span><span class="params">()</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">int</span> <span class="title">getGeekRating</span><span class="params">()</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">setName</span><span class="params">(String name)</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">setGender</span><span class="params">(String gender)</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">setInterests</span><span class="params">(String interests)</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">setGeekRating</span><span class="params">(<span class="keyword">int</span> rating)</span></span>; </span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">PersonImpl</span> <span class="keyword">implements</span> <span class="title">Person</span> </span>&#123;</span><br><span class="line">    String name;</span><br><span class="line">    String gender;</span><br><span class="line">    String interests;</span><br><span class="line">    <span class="keyword">int</span> rating;</span><br><span class="line">    <span class="keyword">int</span> ratingCount = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">getName</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> name;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">getGender</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> gender;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">getInterests</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> interests;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">getGeekRating</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (ratingCount == <span class="number">0</span>) <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">return</span> (rating / ratingCount);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setName</span><span class="params">(String name)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.name = name;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setGender</span><span class="params">(String gender)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.gender = gender;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setInterests</span><span class="params">(String interests)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.interests = interests;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setGeekRating</span><span class="params">(<span class="keyword">int</span> rating)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.rating += rating;</span><br><span class="line">        ratingCount++;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
 
@@ -960,99 +1055,6 @@
 <h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><ol>
 <li><a target="_blank" rel="noopener" href="https://wickedlysmart.com/head-first-design-patterns/">https://wickedlysmart.com/head-first-design-patterns/</a></li>
 </ol>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://jtlibrain.github.io/2021/09/02/design_pattern/ch11-Proxy-Virtual/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="JT Li">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="jtLiBrain">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2021/09/02/design_pattern/ch11-Proxy-Virtual/" class="post-title-link" itemprop="url">《Head First Design Patterns》：第11章，代理（Proxy）模式之“虚拟代理”</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2021-09-02 19:14:00" itemprop="dateCreated datePublished" datetime="2021-09-02T19:14:00+08:00">2021-09-02</time>
-    </span>
-      <span class="post-meta-item">
-        <span class="post-meta-item-icon">
-          <i class="far fa-calendar-check"></i>
-        </span>
-        <span class="post-meta-item-text">Edited on</span>
-        <time title="Modified: 2022-07-03 22:28:50" itemprop="dateModified" datetime="2022-07-03T22:28:50+08:00">2022-07-03</time>
-      </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-folder"></i>
-      </span>
-      <span class="post-meta-item-text">In</span>
-        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/design-pattern/" itemprop="url" rel="index"><span itemprop="name">design pattern</span></a>
-        </span>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <a id="more"></a>
-
-<h1 id="定义"><a href="#定义" class="headerlink" title="定义"></a>定义</h1><p>虚拟代理作为创建开销大的对象的代表。虚拟代理经常直到我们真正需要一个对象的时候才创建它。当对象在创建前和创建中时，由虚拟代理来扮演对象的替身。对象创建后，代理就会将请求直接委托给对象。</p>
-<h1 id="场景"><a href="#场景" class="headerlink" title="场景"></a>场景</h1><p>可以显示CD封面的Swing应用</p>
-<h1 id="场景介绍"><a href="#场景介绍" class="headerlink" title="场景介绍"></a>场景介绍</h1><p>建立一个应用程序，用来展现你最喜欢的CD封面。应用程序提供一个下拉菜单，然后从相应网站取得对应的CD封面。已知，限于连接带宽和网络负载，下载可能需要一些时间，所以在等待图像加载的时候，应该给出一些友好的提示。要求在等待图像时整个应用程序不要被挂起。一旦图像加载完成，Swing组件上显示相应的图像。</p>
-<img src="/images/design_pattern/ch11_proxy_virtual_example_image.jpg" style="zoom:70%;" />
-
-<h1 id="解决方案"><a href="#解决方案" class="headerlink" title="解决方案"></a>解决方案</h1><p><code>ImageProxy</code>代理用于隐藏创建开销大的对象（因为我们需要通过网络获取图像数据）。</p>
-<p><img src="/images/design_pattern/ch11_proxy_virtual_example_impl_classes.svg"></p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> java.net.*;</span><br><span class="line"><span class="keyword">import</span> java.awt.*;</span><br><span class="line"><span class="keyword">import</span> javax.swing.*;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">ImageProxy</span> <span class="keyword">implements</span> <span class="title">Icon</span> </span>&#123;</span><br><span class="line">    <span class="keyword">volatile</span> ImageIcon imageIcon;</span><br><span class="line">    <span class="keyword">final</span> URL imageURL;</span><br><span class="line">    Thread retrievalThread;</span><br><span class="line">    <span class="keyword">boolean</span> retrieving = <span class="keyword">false</span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">ImageProxy</span><span class="params">(URL url)</span> </span>&#123; imageURL = url; &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">getIconWidth</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (imageIcon != <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> imageIcon.getIconWidth();</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="number">800</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">getIconHeight</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (imageIcon != <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> imageIcon.getIconHeight();</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="number">600</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title">setImageIcon</span><span class="params">(ImageIcon imageIcon)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.imageIcon = imageIcon;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">paintIcon</span><span class="params">(<span class="keyword">final</span> Component c, Graphics  g, <span class="keyword">int</span> x, <span class="keyword">int</span> y)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (imageIcon != <span class="keyword">null</span>) &#123;</span><br><span class="line">            imageIcon.paintIcon(c, g, x, y);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            g.drawString(<span class="string">&quot;Loading album cover, please wait...&quot;</span>, x+<span class="number">300</span>, y+<span class="number">190</span>);</span><br><span class="line">            <span class="keyword">if</span> (!retrieving) &#123;</span><br><span class="line">                retrieving = <span class="keyword">true</span>;</span><br><span class="line"></span><br><span class="line">                retrievalThread = <span class="keyword">new</span> Thread(<span class="keyword">new</span> Runnable() &#123;</span><br><span class="line">                    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">                        <span class="keyword">try</span> &#123;</span><br><span class="line">                            setImageIcon(<span class="keyword">new</span> ImageIcon(imageURL, <span class="string">&quot;Album Cover&quot;</span>));</span><br><span class="line">                            c.repaint();</span><br><span class="line">                        &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">                            e.printStackTrace();</span><br><span class="line">                        &#125;</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;);</span><br><span class="line"></span><br><span class="line">                retrievalThread.start();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-
-
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> java.awt.*;</span><br><span class="line"><span class="keyword">import</span> javax.swing.*;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">ImageComponent</span> <span class="keyword">extends</span> <span class="title">JComponent</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">long</span> serialVersionUID = <span class="number">1L</span>;</span><br><span class="line">    <span class="keyword">private</span> Icon icon;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">ImageComponent</span><span class="params">(Icon icon)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.icon = icon;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setIcon</span><span class="params">(Icon icon)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.icon = icon;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">paintComponent</span><span class="params">(Graphics g)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>.paintComponent(g);</span><br><span class="line">        <span class="keyword">int</span> w = icon.getIconWidth();</span><br><span class="line">        <span class="keyword">int</span> h = icon.getIconHeight();</span><br><span class="line">        <span class="keyword">int</span> x = (<span class="number">800</span> - w)/<span class="number">2</span>;</span><br><span class="line">        <span class="keyword">int</span> y = (<span class="number">600</span> - h)/<span class="number">2</span>;</span><br><span class="line">        icon.paintIcon(<span class="keyword">this</span>, g, x, y);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
       
     </div>
