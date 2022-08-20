@@ -128,7 +128,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">80</span>
+          <span class="site-state-item-count">81</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
@@ -173,6 +173,110 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://jtlibrain.github.io/2022/08/19/spark/Spark-How-To-Control-Map/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="JT Li">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="jtLiBrain">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2022/08/19/spark/Spark-How-To-Control-Map/" class="post-title-link" itemprop="url">Spark如何控制map任务数量</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2022-08-19 22:47:42" itemprop="dateCreated datePublished" datetime="2022-08-19T22:47:42+08:00">2022-08-19</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">Edited on</span>
+        <time title="Modified: 2022-08-20 21:53:38" itemprop="dateModified" datetime="2022-08-20T21:53:38+08:00">2022-08-20</time>
+      </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">In</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/spark/" itemprop="url" rel="index"><span itemprop="name">spark</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <p><a href="/2021/03/09/hive/Hive-Optimization-Control-Map-And-Reduce">《Hive优化系列1：MR&amp;Hive如何控制map和reduce任务数量》</a>一文中介绍了Hadoop和Hive中Map和Reduce任务数量是如何决定的，本文我们将介绍Spark中基于文件的表其物理计划中map任务的产生过程。</p>
+<h1 id="FileSourceScanExec"><a href="#FileSourceScanExec" class="headerlink" title="FileSourceScanExec"></a>FileSourceScanExec</h1><p>工作过程：</p>
+<ol>
+<li>首先遍历每一个文件，根据计算出来的<code>最大分片大小</code>对可切分的文件进行切分；</li>
+<li>对切分后的文件分片根据分片大小降序排序，根据计算出来的<code>最大分片大小</code>将小的文件分片合并分配到相应分区，进而便是map任务的个数；</li>
+</ol>
+<img src="/images/spark/FileSourceScanExec-details.svg" style="zoom:80%;" />
+
+<p>以<code>createNonBucketedReadRDD()</code>方法为例：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="function"><span class="keyword">def</span> <span class="title">createNonBucketedReadRDD</span></span>(</span><br><span class="line">    readFile: (<span class="type">PartitionedFile</span>) =&gt; <span class="type">Iterator</span>[<span class="type">InternalRow</span>],</span><br><span class="line">    selectedPartitions: <span class="type">Array</span>[<span class="type">PartitionDirectory</span>],</span><br><span class="line">    fsRelation: <span class="type">HadoopFsRelation</span>): <span class="type">RDD</span>[<span class="type">InternalRow</span>] = &#123;</span><br><span class="line">  <span class="keyword">val</span> openCostInBytes = fsRelation.sparkSession.sessionState.conf.filesOpenCostInBytes</span><br><span class="line">  <span class="keyword">val</span> maxSplitBytes =</span><br><span class="line">    <span class="type">FilePartition</span>.maxSplitBytes(fsRelation.sparkSession, selectedPartitions)</span><br><span class="line">  logInfo(<span class="string">s&quot;Planning scan with bin packing, max size: <span class="subst">$maxSplitBytes</span> bytes, &quot;</span> +</span><br><span class="line">    <span class="string">s&quot;open cost is considered as scanning <span class="subst">$openCostInBytes</span> bytes.&quot;</span>)</span><br><span class="line"></span><br><span class="line">  <span class="keyword">val</span> splitFiles = selectedPartitions.flatMap &#123; partition =&gt;</span><br><span class="line">    partition.files.flatMap &#123; file =&gt;</span><br><span class="line">      <span class="comment">// getPath() is very expensive so we only want to call it once in this block:</span></span><br><span class="line">      <span class="keyword">val</span> filePath = file.getPath</span><br><span class="line">      <span class="keyword">val</span> isSplitable = relation.fileFormat.isSplitable(</span><br><span class="line">        relation.sparkSession, relation.options, filePath)</span><br><span class="line">      <span class="type">PartitionedFileUtil</span>.splitFiles(</span><br><span class="line">        sparkSession = relation.sparkSession,</span><br><span class="line">        file = file,</span><br><span class="line">        filePath = filePath,</span><br><span class="line">        isSplitable = isSplitable,</span><br><span class="line">        maxSplitBytes = maxSplitBytes,</span><br><span class="line">        partitionValues = partition.values</span><br><span class="line">      )</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;.sortBy(_.length)(implicitly[<span class="type">Ordering</span>[<span class="type">Long</span>]].reverse)</span><br><span class="line"></span><br><span class="line">  <span class="keyword">val</span> partitions =</span><br><span class="line">    <span class="type">FilePartition</span>.getFilePartitions(relation.sparkSession, splitFiles, maxSplitBytes)</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 使用分配的分区进而创建FileScanRDD</span></span><br><span class="line">  <span class="keyword">new</span> <span class="type">FileScanRDD</span>(fsRelation.sparkSession, readFile, partitions)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h1 id="切分文件"><a href="#切分文件" class="headerlink" title="切分文件"></a>切分文件</h1><h2 id="FilePartition"><a href="#FilePartition" class="headerlink" title="FilePartition"></a>FilePartition</h2><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">maxSplitBytes</span></span>(</span><br><span class="line">    sparkSession: <span class="type">SparkSession</span>,</span><br><span class="line">    selectedPartitions: <span class="type">Seq</span>[<span class="type">PartitionDirectory</span>]): <span class="type">Long</span> = &#123;</span><br><span class="line">  <span class="comment">// spark.sql.files.maxPartitionBytes</span></span><br><span class="line">  <span class="keyword">val</span> defaultMaxSplitBytes = sparkSession.sessionState.conf.filesMaxPartitionBytes</span><br><span class="line">  <span class="comment">// spark.sql.files.openCostInBytes</span></span><br><span class="line">  <span class="keyword">val</span> openCostInBytes = sparkSession.sessionState.conf.filesOpenCostInBytes</span><br><span class="line">  <span class="comment">// spark.sql.files.minPartitionNum</span></span><br><span class="line">  <span class="keyword">val</span> minPartitionNum = sparkSession.sessionState.conf.filesMinPartitionNum</span><br><span class="line">    .getOrElse(sparkSession.sparkContext.defaultParallelism)</span><br><span class="line">  <span class="comment">// 计算目标分片大小</span></span><br><span class="line">  <span class="keyword">val</span> totalBytes = selectedPartitions.flatMap(_.files.map(_.getLen + openCostInBytes)).sum</span><br><span class="line">  <span class="keyword">val</span> bytesPerCore = totalBytes / minPartitionNum</span><br><span class="line"></span><br><span class="line">  <span class="type">Math</span>.min(defaultMaxSplitBytes, <span class="type">Math</span>.max(openCostInBytes, bytesPerCore))</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>要点：</p>
+<ol>
+<li><p>分片不会过大，由spark.sql.files.maxPartitionBytes控制；</p>
+</li>
+<li><p>分片不会过小，由spark.sql.files.openCostInBytes控制；</p>
+</li>
+<li><p>目标分片大小等于：${\sum_{i=1}^n{(文件大小_i+开销)_i}}\over{并行度}$；</p>
+</li>
+</ol>
+<h1 id="对文件进行分区"><a href="#对文件进行分区" class="headerlink" title="对文件进行分区"></a>对文件进行分区</h1><h2 id="FilePartition-1"><a href="#FilePartition-1" class="headerlink" title="FilePartition"></a>FilePartition</h2><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">getFilePartitions</span></span>(</span><br><span class="line">    sparkSession: <span class="type">SparkSession</span>,</span><br><span class="line">    partitionedFiles: <span class="type">Seq</span>[<span class="type">PartitionedFile</span>],</span><br><span class="line">    maxSplitBytes: <span class="type">Long</span>): <span class="type">Seq</span>[<span class="type">FilePartition</span>] = &#123;</span><br><span class="line">  <span class="keyword">val</span> partitions = <span class="keyword">new</span> <span class="type">ArrayBuffer</span>[<span class="type">FilePartition</span>]</span><br><span class="line">  <span class="keyword">val</span> currentFiles = <span class="keyword">new</span> <span class="type">ArrayBuffer</span>[<span class="type">PartitionedFile</span>]</span><br><span class="line">  <span class="keyword">var</span> currentSize = <span class="number">0</span>L</span><br><span class="line"></span><br><span class="line">  <span class="comment">/** Close the current partition and move to the next. */</span></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">closePartition</span></span>(): <span class="type">Unit</span> = &#123;</span><br><span class="line">    <span class="keyword">if</span> (currentFiles.nonEmpty) &#123;</span><br><span class="line">      <span class="comment">// Copy to a new Array.</span></span><br><span class="line">      <span class="keyword">val</span> newPartition = <span class="type">FilePartition</span>(partitions.size, currentFiles.toArray)</span><br><span class="line">      partitions += newPartition</span><br><span class="line">    &#125;</span><br><span class="line">    currentFiles.clear()</span><br><span class="line">    currentSize = <span class="number">0</span></span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">val</span> openCostInBytes = sparkSession.sessionState.conf.filesOpenCostInBytes</span><br><span class="line">  <span class="comment">// 使用&quot;Next Fit Decreasing&quot;将文件分配到分区</span></span><br><span class="line">  partitionedFiles.foreach &#123; file =&gt;</span><br><span class="line">    <span class="comment">// maxSplitBytes控制分区大小，达到指定阈值，则创建分区</span></span><br><span class="line">    <span class="comment">// 注意，没有计入文件开销</span></span><br><span class="line">    <span class="keyword">if</span> (currentSize + file.length &gt; maxSplitBytes) &#123;</span><br><span class="line">      closePartition()</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// Add the given file to the current partition.</span></span><br><span class="line">    <span class="comment">// 注意，当前文件在添加到当前分区时考虑了文件开销</span></span><br><span class="line">    currentSize += file.length + openCostInBytes</span><br><span class="line">    currentFiles += file</span><br><span class="line">  &#125;</span><br><span class="line">  closePartition()</span><br><span class="line">  partitions.toSeq</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -1469,246 +1573,8 @@
 
 
 
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://jtlibrain.github.io/2022/04/08/architecture/OLTP-OLAP-HTAP/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="JT Li">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="jtLiBrain">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2022/04/08/architecture/OLTP-OLAP-HTAP/" class="post-title-link" itemprop="url">OLTP、OLAP、HTAP</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2022-04-08 22:24:09" itemprop="dateCreated datePublished" datetime="2022-04-08T22:24:09+08:00">2022-04-08</time>
-    </span>
-      <span class="post-meta-item">
-        <span class="post-meta-item-icon">
-          <i class="far fa-calendar-check"></i>
-        </span>
-        <span class="post-meta-item-text">Edited on</span>
-        <time title="Modified: 2022-04-13 22:06:53" itemprop="dateModified" datetime="2022-04-13T22:06:53+08:00">2022-04-13</time>
-      </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-folder"></i>
-      </span>
-      <span class="post-meta-item-text">In</span>
-        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/architecture/" itemprop="url" rel="index"><span itemprop="name">architecture</span></a>
-        </span>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <a id="more"></a>
-
-<h1 id="OLTP"><a href="#OLTP" class="headerlink" title="OLTP"></a>OLTP</h1><p>OLTP(On-Line Transaction Processing)，即联机事务处理</p>
-<p>产品：Mysql、Oracle、Redis、Hbase</p>
-<h1 id="OLAP"><a href="#OLAP" class="headerlink" title="OLAP"></a>OLAP</h1><p>OLAP(On-Line Analytical Processing)，联机分析处理</p>
-<p>OLAP系统按照其存储器的数据存储格式可以分为：关系OLAP（RelationalOLAP，简称ROLAP）、多维OLAP（MultidimensionalOLAP，简称MOLAP）和混合型OLAP（HybridOLAP，简称HOLAP）三种类型。</p>
-<ul>
-<li><font color="blue">ROLAP</font>：ROLAP将分析用的多维数据存储在关系数据库中并根据应用的需要有选择的定义一批实视图作为表也存储在关系数据库中。不必要将每一个SQL查询都作为实视图保存，只定义那些应用频率比较高、计算工作量比较大的查询作为实视图。对每个针对OLAP服务器的查询，优先利用已经计算好的实视图来生成查询结果以提高查询效率。同时用作ROLAP存储器的RDBMS也针对OLAP作相应的优化，比如并行存储、并行查询、并行数据管理、基于成本的查询优化、位图索引、SQL的OLAP扩展(cube,rollup)等等。</li>
-<li><font color="blue">MOLAP</font>：MOLAP将OLAP分析所用到的多维数据物理上存储为多维数组的形式，形成“立方体”的结构。维的属性值被映射成多维数组的下标值或下标的范围，而总结数据作为多维数组的值存储在数组的单元中。由于MOLAP采用了新的存储结构，从物理层实现起，因此又称为物理OLAP（PhysicalOLAP）；而ROLAP主要通过一些软件工具或中间软件实现，物理层仍采用关系数据库的存储结构，因此称为虚拟OLAP（VirtualOLAP）。</li>
-<li><font color="blue">HOLAP</font>：由于MOLAP和ROLAP有着各自的优点和缺点（如下表所示）,且它们的结构迥然不同，这给分析人员设计OLAP结构提出了难题。为此一个新的OLAP结构——混合型OLAP（HOLAP）被提出，它能把MOLAP和ROLAP两种结构的优点结合起来。迄今为止，对HOLAP还没有一个正式的定义。但很明显，HOLAP结构不应该是MOLAP与ROLAP结构的简单组合，而是这两种结构技术优点的有机结合，能满足用户各种复杂的分析请求。</li>
-</ul>
-<table border="1" cellpadding="1" cellspacing="1" style="width:1000px;">
-  <thead>
-    <tr>
-      <th>分类</th>
-      <th>介绍</th>
-      <th>产品</th>
-      <th>优点</th>
-      <th>缺点</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>MOLAP</td>
-      <td>
-      以多维数组为存储模型的OLAP。<br/><br/>
-      特点：数据预计算，然后把预计算结果&ldquo;立方体&rdquo;存到多维数组里。
-      </td>
-      <td>
-      Kylin <br/>
-      Druid <br/>
-      </td>
-      <td>
-      cube包含所有维度的聚合结果，所以查询速度非常快。<br/><br/>
-      相对关系型数据库，计算结果数据的磁盘空间占用更小，扩展性强，适用于维度数量多的模型
-      </td>
-      <td>
-      对于维度多的模型预计算慢，空间占用大。update cube的时间跟计算维度（group）相关，随着维度增加计算时间大幅增加，此外预计算还会造成数据库占用急剧膨胀。需要提前设计维度模型，查询分析的内容仅限于这些指定维度，增加维度需要重新计算。
-      </td>
-    </tr>
-    <tr>
-      <td>ROLAP</td>
-      <td>基于关系模型存放数据，一般要求事实表和维度表按一定关系设计，它不需要预计算，使用标准SQL查询不同维度数据。</td>
-      <td>
-        Elasticsearch <br/>
-        Hive <br/>
-        Spark SQL <br/>
-        Flink SQL <br/>
-        Presto <br/>
-        Impala <br/>
-        GreenPlum <br/>
-        ClickHouse <br/>
-        Doris <br/>
-      </td>
-      <td>
-      更适合处理非聚合的数据，例如文本描述<br/><br/>
-      基于row数据更容易做权限管理
-      </td>
-      <td>因为是即时计算，查询响应时间一般比预计算的MOLAP长</td>
-    </tr>
-    <tr>
-      <td>HOLAP</td>
-      <td>
-      MOLAP和ROLAP类型的混合运用<br/>
-      细节的数据以ROLAP的形式存放，更加方便灵活，而高度聚合的数据以MOLAP的形式展现
-      </td>
-      <td></td>
-      <td>更适合于高效的分析处理。公司使用HOLAP的目的是根据不同场景来利用不同OLAP的特性。</td>
-      <td></td>
-    </tr>
-  </tbody>
-</table>
-
-
-
-<p><img src="/images/architecture/OLAP-tools.svg"></p>
-<h1 id="OLTP和OLAP对比"><a href="#OLTP和OLAP对比" class="headerlink" title="OLTP和OLAP对比"></a>OLTP和OLAP对比</h1><table border="1" cellpadding="1" cellspacing="1" style="width:500px;">
-  <thead>
-    <tr>
-      <th></th>
-      <th></th>
-      <th>OLTP</th>
-      <th>OLAP</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td rowspan="8">特征</td>
-      <td>功能</td>
-      <td>基本查询</td>
-      <td>分析决策</td>
-    </tr>
-    <tr>
-      <td>场景</td>
-      <td>简单事务</td>
-      <td>复杂查询</td>
-    </tr>
-    <tr>
-      <td>用户</td>
-      <td>初级的</td>
-      <td>决策者/高级的</td>
-    </tr>
-    <tr>
-      <td>用户数</td>
-      <td>上千个</td>
-      <td>上百万个</td>
-    </tr>
-    <tr>
-      <td>架构</td>
-      <td>面向应用</td>
-      <td>面向主题</td>
-    </tr>
-    <tr>
-      <td>数据</td>
-      <td>当前的，二维的</td>
-      <td>历史的，多维的</td>
-    </tr>
-    <tr>
-      <td>存取</td>
-      <td>百千条</td>
-      <td>上百万条</td>
-    </tr>
-    <tr>
-      <td>数据量</td>
-      <td>MB ~ GB</td>
-      <td>GB、TD、PB、EB</td>
-    </tr>
-    <tr>
-      <td rowspan="2">产品</td>
-      <td>离线</td>
-      <td>Mysql、Oracle</td>
-      <td>Hive、Presto</td>
-    </tr>
-    <tr>
-      <td>实时</td>
-      <td>Redis、Hbase</td>
-      <td>Druid、Kylin</td>
-    </tr>
-  </tbody>
-</table>
-
-
-
-<h1 id="HTAP"><a href="#HTAP" class="headerlink" title="HTAP"></a>HTAP</h1><p>产品：TiDB</p>
-<h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><ol>
-<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/ZG_24/article/details/87854982">OLTP、OLAP与HTAP中文</a>、 <a target="_blank" rel="noopener" href="https://blog.fearcat.in/a?ID=00950-a42e0705-69da-4b0d-a944-eba8a72b0662">OLTP, OLAP and HTAP英文</a></li>
-<li><a target="_blank" rel="noopener" href="https://thutmose.blog.csdn.net/article/details/108863376?spm=1001.2101.3001.6650.15&amp;utm_medium=distribute.pc_relevant.none-task-blog-2~default~BlogCommendFromBaidu~Rate-15.pc_relevant_default&amp;depth_1-utm_source=distribute.pc_relevant.none-task-blog-2~default~BlogCommendFromBaidu~Rate-15.pc_relevant_default&amp;utm_relevant_index=20">https://thutmose.blog.csdn.net/article/details/108863376?spm=1001.2101.3001.6650.15&amp;utm_medium=distribute.pc_relevant.none-task-blog-2~default~BlogCommendFromBaidu~Rate-15.pc_relevant_default&amp;depth_1-utm_source=distribute.pc_relevant.none-task-blog-2~default~BlogCommendFromBaidu~Rate-15.pc_relevant_default&amp;utm_relevant_index=20</a></li>
-<li><a target="_blank" rel="noopener" href="https://hurleywong.github.io/2021/09/02/%E5%A4%A7%E6%95%B0%E6%8D%AEOLAP%E7%BB%84%E4%BB%B6/">大数据OLAP组件</a></li>
-<li><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/a078fed07acc">大数据OLAP系统(1)</a>、<a target="_blank" rel="noopener" href="https://www.jianshu.com/p/4b3bcbabad77">大数据OLAP系统(2)</a></li>
-<li><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/266402829">https://zhuanlan.zhihu.com/p/266402829</a></li>
-<li><a target="_blank" rel="noopener" href="https://slidetodoc.com/data-warehouse-is-403-chapter-5-olap-dr/">https://slidetodoc.com/data-warehouse-is-403-chapter-5-olap-dr/</a></li>
-<li><a target="_blank" rel="noopener" href="https://www.stitchdata.com/resources/oltp-vs-olap/">https://www.stitchdata.com/resources/oltp-vs-olap/</a></li>
-<li><a target="_blank" rel="noopener" href="https://www.jamesserra.com/archive/2016/12/what-is-htap/">https://www.jamesserra.com/archive/2016/12/what-is-htap/</a></li>
-<li><a target="_blank" rel="noopener" href="https://pingcap.medium.com/delivering-real-time-analytics-and-true-htap-by-combining-columnstore-and-rowstore-1e006d3c3ef5">https://pingcap.medium.com/delivering-real-time-analytics-and-true-htap-by-combining-columnstore-and-rowstore-1e006d3c3ef5</a></li>
-<li><a target="_blank" rel="noopener" href="https://www.oreilly.com/library/view/building-real-time-data/9781491975879/ch01.html">https://www.oreilly.com/library/view/building-real-time-data/9781491975879/ch01.html</a></li>
-<li><a target="_blank" rel="noopener" href="https://www.ibm.com/cloud/blog/olap-vs-oltp">https://www.ibm.com/cloud/blog/olap-vs-oltp</a></li>
-<li><a target="_blank" rel="noopener" href="https://www.geeksforgeeks.org/difference-between-olap-and-oltp-in-dbms/">https://www.geeksforgeeks.org/difference-between-olap-and-oltp-in-dbms/</a></li>
-<li><a target="_blank" rel="noopener" href="https://www.educba.com/olap-tools/">https://www.educba.com/olap-tools/</a></li>
-</ol>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
   <nav class="pagination">
-    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><span class="space">&hellip;</span><a class="page-number" href="/page/8/">8</a><a class="extend next" rel="next" href="/page/2/"><i class="fa fa-angle-right" aria-label="Next page"></i></a>
+    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><span class="space">&hellip;</span><a class="page-number" href="/page/9/">9</a><a class="extend next" rel="next" href="/page/2/"><i class="fa fa-angle-right" aria-label="Next page"></i></a>
   </nav>
 
 </div>
